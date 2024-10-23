@@ -5,6 +5,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './domain/auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
+import { ConversationModule } from './domain/conversation/conversation.module';
+import { OpenaiModule } from './domain/openai/openai.module';
 
 @Module({
   imports: [
@@ -46,6 +48,8 @@ import { JwtModule } from '@nestjs/jwt';
     }),
     UsersModule,
     AuthModule,
+    ConversationModule,
+    OpenaiModule,
   ],
   controllers: [],
   providers: [],
