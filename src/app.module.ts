@@ -4,28 +4,31 @@ import { UsersModule } from './domain/users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './domain/auth/auth.module';
-import { JwtModule } from '@nestjs/jwt';
 import { ConversationModule } from './domain/conversation/conversation.module';
 import { OpenaiModule } from './domain/openai/openai.module';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './domain/auth/jwt-auth.guard';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: process.env.ENV === 'dev' ? '.env.dev' : '.env.test',
-      ignoreEnvFile: process.env.ENV === 'prod',
+      envFilePath:
+        process.env.NODE_ENV === 'production' ? '.env.prod' : '.env.dev',
       validationSchema: Joi.object({
-        ENV: Joi.string().valid('dev', 'prod').required(),
+        NODE_ENV: Joi.string()
+          .valid('development', 'production', 'test')
+          .default('development'),
         DB_HOST: Joi.string().required(),
         DB_PORT: Joi.number().required(),
         DB_USERNAME: Joi.string().required(),
         DB_PASSWORD: Joi.string().required(),
         DB_DATABASE: Joi.string().required(),
+        JWT_SECRET: Joi.string().required(),
+        JWT_EXPIRATION: Joi.string().default('1h'),
       }),
     }),
     TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
         host: configService.get('DB_HOST'),
@@ -33,18 +36,11 @@ import { OpenaiModule } from './domain/openai/openai.module';
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_DATABASE'),
-        synchronize: true,
-        logging: true,
+        synchronize: configService.get('NODE_ENV') !== 'production',
+        logging: configService.get('NODE_ENV') !== 'production',
         autoLoadEntities: true,
       }),
-    }),
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        secret: configService.get('JWT_SECRET'),
-        signOptions: { expiresIn: '1h' },
-      }),
     }),
     UsersModule,
     AuthModule,
@@ -52,6 +48,11 @@ import { OpenaiModule } from './domain/openai/openai.module';
     OpenaiModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+  ],
 })
 export class AppModule {}

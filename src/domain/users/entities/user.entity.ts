@@ -8,7 +8,10 @@ import {
 @Entity('user')
 export class UserEntity {
   @PrimaryGeneratedColumn()
-  id: number;
+  userId: number;
+
+  @Column()
+  username: string;
 
   @Column()
   email: string;
