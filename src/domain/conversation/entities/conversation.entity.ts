@@ -7,4 +7,7 @@ export class ConversationEntity {
 
   @Column()
   userId: number;
+
+  @Column()
+  createdAt: Date;
 }

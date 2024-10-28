@@ -1,4 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { BaseEntity } from 'src/common/entities/base.entity';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { ConversationEntity } from './conversation.entity';
 
 export enum MessageRole {
   USER = 'user',
@@ -6,15 +8,12 @@ export enum MessageRole {
 }
 
 @Entity('message')
-export class MessageEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @Column()
+export class MessageEntity extends BaseEntity {
+  @Column({ name: 'conversation_id' })
   conversationId: number;
 
-  @Column()
-  message: string;
+  @Column({ name: 'message_text', type: 'text' })
+  messageText: string;
 
   @Column({
     type: 'enum',
@@ -22,6 +21,7 @@ export class MessageEntity {
   })
   role: MessageRole;
 
-  @Column()
-  createdAt: Date;
+  @ManyToOne(() => ConversationEntity, (conversationId) => conversationId.id)
+  @JoinColumn({ name: 'conversation_id' })
+  conversation: ConversationEntity;
 }
