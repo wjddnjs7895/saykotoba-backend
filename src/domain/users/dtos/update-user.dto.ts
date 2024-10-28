@@ -1,7 +1,12 @@
-import { IsString, Length } from 'class-validator';
+import { IsNumber, IsString, Length } from 'class-validator';
 
-export class UpdateUserDto {
+export class UpdateUserRequestDto {
   @IsString()
   @Length(8, 20)
   password: string;
+}
+
+export class UpdateUserResponseDto {
+  @IsNumber()
+  userId: number;
 }

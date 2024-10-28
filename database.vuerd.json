@@ -4,8 +4,8 @@
   "settings": {
     "width": 2000,
     "height": 2000,
-    "scrollTop": -653.7385,
-    "scrollLeft": -800,
+    "scrollTop": -937.2442,
+    "scrollLeft": -25,
     "zoomLevel": 1,
     "show": 431,
     "database": 16,
@@ -143,6 +143,7 @@
           "kCrOxgf9GeC-RXLRQo-xb",
           "bAIW_QY7heU6MXeN2f-lq",
           "0gGVru1xKqGY5lYod1oZ_",
+          "qOZXsK4WgX54nOZtYvO5o",
           "oWQIHDeGnxtuSHKrP9JM_"
         ],
         "seqColumnIds": [
@@ -155,18 +156,19 @@
           "IPvT01DTBXEsxAnym74yQ",
           "Nf0ox2L4Ekl09jj7o9SFf",
           "0gGVru1xKqGY5lYod1oZ_",
+          "qOZXsK4WgX54nOZtYvO5o",
           "oWQIHDeGnxtuSHKrP9JM_"
         ],
         "ui": {
           "x": 139.2258,
-          "y": 1007.0968,
+          "y": 1036.0968,
           "zIndex": 133,
           "widthName": 60,
           "widthComment": 60,
           "color": ""
         },
         "meta": {
-          "updateAt": 1729667358346,
+          "updateAt": 1730075605116,
           "createAt": 1729072035427
         }
       },
@@ -614,20 +616,20 @@
       "0gGVru1xKqGY5lYod1oZ_": {
         "id": "0gGVru1xKqGY5lYod1oZ_",
         "tableId": "40UFpI7BKhi0D-vVqFWvm",
-        "name": "text",
+        "name": "message_text",
         "comment": "message text content",
-        "dataType": "VARCHAR",
+        "dataType": "TEXT",
         "default": "",
         "options": 8,
         "ui": {
           "keys": 0,
-          "widthName": 60,
+          "widthName": 81,
           "widthComment": 124,
           "widthDataType": 60,
           "widthDefault": 60
         },
         "meta": {
-          "updateAt": 1729072169344,
+          "updateAt": 1730076110390,
           "createAt": 1729072128046
         }
       },
@@ -689,6 +691,26 @@
         "meta": {
           "updateAt": 1729667408680,
           "createAt": 1729667354774
+        }
+      },
+      "qOZXsK4WgX54nOZtYvO5o": {
+        "id": "qOZXsK4WgX54nOZtYvO5o",
+        "tableId": "40UFpI7BKhi0D-vVqFWvm",
+        "name": "role",
+        "comment": "message owner role (user/assistant)",
+        "dataType": "ENUM",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 206,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1730075452963,
+          "createAt": 1730075379890
         }
       }
     },
@@ -768,8 +790,8 @@
           "columnIds": [
             "bAIW_QY7heU6MXeN2f-lq"
           ],
-          "x": 601.2257999999999,
-          "y": 1083.0968,
+          "x": 683.2257999999999,
+          "y": 1124.0968,
           "direction": 2
         },
         "meta": {
@@ -1045,8 +1067,8 @@
       1729072128045,
       -1,
       {
-        "name": 1729072149772,
-        "dataType": 1729072153344,
+        "name": 1730075964883,
+        "dataType": 1730076110389,
         "options(notNull)": 1729072169344,
         "comment": 1729072167213
       }
@@ -1093,6 +1115,17 @@
         "name": 1729667364639,
         "dataType": 1729667400126,
         "options(notNull)": 1729667408679
+      }
+    ],
+    "qOZXsK4WgX54nOZtYvO5o": [
+      "tableColumnEntities",
+      1730075379890,
+      -1,
+      {
+        "name": 1730075382385,
+        "dataType": 1730075423723,
+        "options(notNull)": 1730075430609,
+        "comment": 1730075452962
       }
     ]
   }

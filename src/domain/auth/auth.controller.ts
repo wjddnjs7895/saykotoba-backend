@@ -8,9 +8,9 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './local-auth.guard';
-import { RegisterDto } from './dtos/register.dto';
+import { RegisterRequestDto, RegisterResponseDto } from './dtos/register.dto';
 import { Public } from 'src/common/decorators/public.decorator';
-import { LoginDto } from './dtos/login.dto';
+import { LoginRequestDto, LoginResponseDto } from './dtos/login.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -19,13 +19,15 @@ export class AuthController {
   @Public()
   @Post('login')
   @UseGuards(LocalAuthGuard)
-  async login(@Body() loginDto: LoginDto) {
-    return this.authService.getAccessToken(loginDto);
+  async login(@Body() loginDto: LoginRequestDto): Promise<LoginResponseDto> {
+    return this.authService.generateAuthTokens(loginDto);
   }
 
   @Public()
   @Post('register')
-  async register(@Body() registerDto: RegisterDto) {
+  async register(
+    @Body() registerDto: RegisterRequestDto,
+  ): Promise<RegisterResponseDto> {
     return this.authService.register(registerDto);
   }
 
