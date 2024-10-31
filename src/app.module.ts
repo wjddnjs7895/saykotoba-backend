@@ -6,8 +6,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './domain/auth/auth.module';
 import { ConversationModule } from './domain/conversation/conversation.module';
 import { OpenaiModule } from './domain/openai/openai.module';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './domain/auth/jwt-auth.guard';
+import { CustomExceptionFilter } from './common/exception/exception.filter';
 
 @Module({
   imports: [
@@ -52,6 +53,10 @@ import { JwtAuthGuard } from './domain/auth/jwt-auth.guard';
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: CustomExceptionFilter,
     },
   ],
 })

@@ -1,3 +1,5 @@
+import { HttpStatus } from '@nestjs/common';
+
 class ErrorCodeVo {
   readonly status;
   readonly message;
@@ -10,4 +12,7 @@ class ErrorCodeVo {
 
 export type ErrorCode = ErrorCodeVo;
 
-export const ENTITY_NOT_FOUND = new ErrorCodeVo(404, 'Entity Not Found');
+export const ENTITY_NOT_FOUND = new ErrorCodeVo(
+  HttpStatus.NOT_FOUND,
+  'Entity Not Found',
+);
