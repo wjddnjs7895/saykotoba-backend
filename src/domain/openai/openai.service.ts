@@ -109,6 +109,58 @@ export class OpenAIService {
     };
   }
 
+  async processTextAndGenerateResponse(
+    conversationInfo: ConversationEntity,
+    messages: MessageEntity[],
+    userText: string,
+  ): Promise<{ response: string; missionResults: any }> {
+    const response = await this.openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content: PROMPTS.CONVERSATION_PARTNER(
+            conversationInfo.situation,
+            conversationInfo.missions,
+            DIFFICULTY_MAP[conversationInfo.difficulty],
+          ),
+        },
+        ...messages.map((message) => ({
+          role: message.role,
+          content: message.messageText,
+        })),
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text: userText,
+            },
+          ],
+        },
+      ],
+      tools: ConversationResponseTool,
+      tool_choice: 'required',
+    });
+
+    const toolCall = response.choices[0].message.tool_calls?.[0];
+    if (!toolCall) {
+      throw new Error('No tool response received');
+    }
+    const result = JSON.parse(toolCall.function.arguments);
+    Logger.log(
+      PROMPTS.CONVERSATION_PARTNER(
+        conversationInfo.situation,
+        conversationInfo.missions,
+        DIFFICULTY_MAP[conversationInfo.difficulty],
+      ),
+    );
+    return {
+      response: result.response,
+      missionResults: result.missionResults,
+    };
+  }
+
   async getAudioFromText(text: string): Promise<Buffer> {
     const response = await this.openai.audio.speech.create({
       model: 'tts-1-hd',

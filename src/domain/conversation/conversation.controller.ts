@@ -28,9 +28,21 @@ export class ConversationController {
     @Body('conversationId') conversationId: number,
     @UploadedFile() audio: Express.Multer.File,
   ) {
-    return this.conversationService.getAndProcessConversation(
+    return this.conversationService.getAndProcessConversationFromAudio(
       conversationId,
       audio,
+    );
+  }
+
+  @Public()
+  @Post('text-response')
+  async processTextMessage(
+    @Body('conversationId') conversationId: number,
+    @Body('userText') userText: string,
+  ) {
+    return this.conversationService.getAndProcessConversationFromText(
+      conversationId,
+      userText,
     );
   }
 

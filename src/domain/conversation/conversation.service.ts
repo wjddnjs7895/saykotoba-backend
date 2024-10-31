@@ -50,6 +50,22 @@ export class ConversationService {
     };
   }
 
+  async processTextResponse(conversationId: number, userText: string) {
+    const conversationInfo = await this.getConversationInfo(conversationId);
+    const messages = await this.getAllMessage(conversationId);
+    const { response, missionResults } =
+      await this.openAIService.processTextAndGenerateResponse(
+        conversationInfo,
+        messages,
+        userText,
+      );
+
+    return {
+      text: response,
+      missionResults,
+    };
+  }
+
   async generateScenario(
     generateScenarioDto: GenerateScenarioRequestDto,
   ): Promise<GenerateScenarioResponseDto> {
@@ -119,7 +135,7 @@ export class ConversationService {
     });
   }
 
-  async getAndProcessConversation(
+  async getAndProcessConversationFromAudio(
     conversationId: number,
     audio: Express.Multer.File,
   ) {
@@ -133,6 +149,43 @@ export class ConversationService {
       );
 
       const aiResponse = await this.processAudioResponse(conversationId, audio);
+
+      const assistantMessage = await this.saveMessage(
+        conversationId,
+        aiResponse.text,
+        MessageRole.ASSISTANT,
+      );
+
+      const updatedMissions = await this.updateMissionStatus(
+        conversationId,
+        aiResponse.missionResults,
+      );
+
+      return {
+        userMessage,
+        assistantMessage,
+        missions: updatedMissions,
+      };
+    } catch (error) {
+      throw new Error('대화 처리 중 오류가 발생했습니다: ' + error.message);
+    }
+  }
+
+  async getAndProcessConversationFromText(
+    conversationId: number,
+    userText: string,
+  ) {
+    try {
+      const userMessage = await this.saveMessage(
+        conversationId,
+        userText,
+        MessageRole.USER,
+      );
+
+      const aiResponse = await this.processTextResponse(
+        conversationId,
+        userText,
+      );
 
       const assistantMessage = await this.saveMessage(
         conversationId,
