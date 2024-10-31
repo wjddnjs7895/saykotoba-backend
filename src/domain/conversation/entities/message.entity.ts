@@ -16,12 +16,13 @@ export class MessageEntity extends BaseEntity {
   messageText: string;
 
   @Column({
+    name: 'role',
     type: 'enum',
     enum: MessageRole,
   })
   role: MessageRole;
 
-  @ManyToOne(() => ConversationEntity, (conversationId) => conversationId.id)
+  @ManyToOne(() => ConversationEntity, (conversation) => conversation.messages)
   @JoinColumn({ name: 'conversation_id' })
   conversation: ConversationEntity;
 }

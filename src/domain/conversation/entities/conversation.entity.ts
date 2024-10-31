@@ -1,17 +1,22 @@
 import { BaseEntity } from 'src/common/entities/base.entity';
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
+import { MissionEntity } from './mission.entity';
+import { MessageEntity } from './message.entity';
 
 @Entity('conversation')
 export class ConversationEntity extends BaseEntity {
-  @Column()
+  @Column({ name: 'user_id' })
   userId: number;
 
-  @Column()
+  @Column({ name: 'difficulty' })
   difficulty: number;
 
-  @Column()
+  @Column({ name: 'situation' })
   situation: string;
 
-  @Column('text', { array: true })
-  missions: string[];
+  @OneToMany(() => MissionEntity, (mission) => mission.conversation)
+  missions: MissionEntity[];
+
+  @OneToMany(() => MessageEntity, (message) => message.conversation)
+  messages: MessageEntity[];
 }

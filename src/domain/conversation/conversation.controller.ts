@@ -8,9 +8,9 @@ import {
 import { ConversationService } from './conversation.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
-  GetScenarioRequestDto,
-  GetScenarioResponseDto,
-} from './dtos/get-scenario.dto';
+  GenerateScenarioRequestDto,
+  GenerateScenarioResponseDto,
+} from './dtos/generate-scenario';
 import {
   CreateConversationRequestDto,
   CreateConversationResponseDto,
@@ -21,20 +21,25 @@ import { Public } from 'src/common/decorators/public.decorator';
 export class ConversationController {
   constructor(private readonly conversationService: ConversationService) {}
 
-  @Post('response')
+  @Public()
+  @Post('audio-response')
   @UseInterceptors(FileInterceptor('audio'))
-  async getResponse(
+  async processAudioMessage(
     @Body('conversationId') conversationId: number,
     @UploadedFile() audio: Express.Multer.File,
   ) {
-    return this.conversationService.getResponse(conversationId, audio);
+    return this.conversationService.getAndProcessConversation(
+      conversationId,
+      audio,
+    );
   }
 
-  @Post('scenario')
-  async getScenario(
-    @Body() getScenarioDto: GetScenarioRequestDto,
-  ): Promise<GetScenarioResponseDto> {
-    return this.conversationService.getScenario(getScenarioDto);
+  @Public()
+  @Post('generate-scenario')
+  async generateScenario(
+    @Body() generateScenarioDto: GenerateScenarioRequestDto,
+  ): Promise<GenerateScenarioResponseDto> {
+    return this.conversationService.generateScenario(generateScenarioDto);
   }
 
   @Public()

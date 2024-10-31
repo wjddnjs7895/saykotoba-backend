@@ -1,6 +1,6 @@
 import { IsArray, IsNumber, IsString } from 'class-validator';
 
-export class GetScenarioRequestDto {
+export class GenerateScenarioRequestDto {
   @IsNumber()
   difficulty: number;
 
@@ -8,11 +8,11 @@ export class GetScenarioRequestDto {
   topic: string;
 }
 
-export class GetScenarioResponseDto {
+export class GenerateScenarioResponseDto {
   @IsString()
   scenario: string;
 
   @IsArray()
   @IsString({ each: true })
-  mission: string[];
+  missions: string[];
 }

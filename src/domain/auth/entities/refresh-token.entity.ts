@@ -13,19 +13,19 @@ export class RefreshToken extends BaseEntity {
   @Column()
   token: string;
 
-  @Column()
+  @Column({ name: 'user_id' })
   userId: number;
 
-  @Column()
+  @Column({ name: 'expires_at' })
   expiresAt: Date;
 
-  @Column()
+  @Column({ name: 'is_revoked', default: false })
   isRevoked: boolean;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
-  @ManyToOne(() => UserEntity, (userId) => userId.id)
-  @JoinColumn({ name: 'userId' })
+  @ManyToOne(() => UserEntity, (user) => user.id)
+  @JoinColumn({ name: 'user_id' })
   user: UserEntity;
 }

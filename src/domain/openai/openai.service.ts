@@ -1,12 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
 import { MessageEntity } from '../conversation/entities/message.entity';
 import {
-  GetScenarioRequestDto,
-  GetScenarioResponseDto,
-} from '../conversation/dtos/get-scenario.dto';
+  GenerateScenarioRequestDto,
+  GenerateScenarioResponseDto,
+} from '../conversation/dtos/generate-scenario';
 import { ConversationScenarioTool } from './tools/conversation-scenario.tool';
+import { ConversationEntity } from '../conversation/entities/conversation.entity';
+import { PROMPTS } from './prompts';
+import { ConversationResponseTool } from './tools/conversation-response.tool';
+import { DIFFICULTY_MAP } from './constants';
 
 @Injectable()
 export class OpenAIService {
@@ -19,29 +23,22 @@ export class OpenAIService {
     });
   }
 
-  async getScenario(
-    getScenarioDto: GetScenarioRequestDto,
-  ): Promise<GetScenarioResponseDto> {
-    const difficultyMap = {
-      1: 'beginner',
-      2: 'intermediate',
-      3: 'advanced',
-    };
-
+  async generateScenario(
+    generateScenarioDto: GenerateScenarioRequestDto,
+  ): Promise<GenerateScenarioResponseDto> {
     const difficultyLevel =
-      difficultyMap[getScenarioDto.difficulty] || 'intermediate';
+      DIFFICULTY_MAP[generateScenarioDto.difficulty] || 'intermediate';
 
     const response = await this.openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
         {
           role: 'system',
-          content:
-            'You are an expert in creating Japanese learning scenarios and missions.',
+          content: PROMPTS.SCENARIO_CREATOR,
         },
         {
           role: 'user',
-          content: `Please create a ${difficultyLevel} level conversation scenario about ${getScenarioDto.topic}. The situations should be specific and realistic, and the missions should be clear and achievable for learners.`,
+          content: `Please create a ${difficultyLevel} level conversation scenario about ${generateScenarioDto.topic}. The situations should be specific and realistic, and the missions should be clear and achievable for learners.`,
         },
       ],
       tools: ConversationScenarioTool,
@@ -54,16 +51,25 @@ export class OpenAIService {
     return JSON.parse(toolCall.function.arguments);
   }
 
-  async getResponseByAudio(
+  async processAudioAndGenerateResponse(
+    conversationInfo: ConversationEntity,
     messages: MessageEntity[],
     audio: Express.Multer.File,
-  ): Promise<string> {
+  ): Promise<{ response: string; missionResults: any }> {
     const base64message = audio.buffer.toString('base64');
+
     const response = await this.openai.chat.completions.create({
       model: 'gpt-4o-audio-preview',
       modalities: ['text'],
-      audio: { voice: 'alloy', format: 'wav' },
       messages: [
+        {
+          role: 'system',
+          content: PROMPTS.CONVERSATION_PARTNER(
+            conversationInfo.situation,
+            conversationInfo.missions,
+            DIFFICULTY_MAP[conversationInfo.difficulty],
+          ),
+        },
         ...messages.map((message) => ({
           role: message.role,
           content: message.messageText,
@@ -81,11 +87,29 @@ export class OpenAIService {
           ],
         },
       ],
+      tools: ConversationResponseTool,
+      tool_choice: 'required',
     });
-    return response.choices[0].message.content;
+
+    const toolCall = response.choices[0].message.tool_calls?.[0];
+    if (!toolCall) {
+      throw new Error('No tool response received');
+    }
+    const result = JSON.parse(toolCall.function.arguments);
+    Logger.log(
+      PROMPTS.CONVERSATION_PARTNER(
+        conversationInfo.situation,
+        conversationInfo.missions,
+        DIFFICULTY_MAP[conversationInfo.difficulty],
+      ),
+    );
+    return {
+      response: result.response,
+      missionResults: result.missionResults,
+    };
   }
 
-  async getAudioByText(text: string): Promise<Buffer> {
+  async getAudioFromText(text: string): Promise<Buffer> {
     const response = await this.openai.audio.speech.create({
       model: 'tts-1-hd',
       voice: 'shimmer',
@@ -95,7 +119,7 @@ export class OpenAIService {
     return buffer;
   }
 
-  async getTextByAudio(audio: Express.Multer.File): Promise<string> {
+  async getTextFromAudio(audio: Express.Multer.File): Promise<string> {
     const audioFile = new File([audio.buffer], audio.originalname, {
       type: audio.mimetype,
     });
@@ -108,5 +132,23 @@ export class OpenAIService {
     });
 
     return response;
+  }
+
+  async getFirstMessage(conversationInfo: ConversationEntity): Promise<string> {
+    const response = await this.openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content: PROMPTS.FIRST_MESSAGE(
+            conversationInfo.situation,
+            conversationInfo.missions,
+            DIFFICULTY_MAP[conversationInfo.difficulty],
+          ),
+        },
+      ],
+    });
+
+    return response.choices[0].message.content;
   }
 }
