@@ -10,6 +10,15 @@
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
+    "paths": {
+      "@/*": ["src/*"],
+      "@common/*": ["src/common/*"],
+      "@auth/*": ["src/domain/auth/*"],
+      "@users/*": ["src/domain/users/*"],
+      "@exception/*": ["src/common/exception/*"],
+      "@conversation/*": ["src/domain/conversation/*"],
+      "@openai/*": ["src/infrastructure/openai/*"]
+    },
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": false,
