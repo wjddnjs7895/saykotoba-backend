@@ -6,12 +6,13 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './domain/auth/auth.module';
 import { ConversationModule } from './domain/conversation/conversation.module';
 import { OpenaiModule } from './domain/openai/openai.module';
-import { APP_FILTER, APP_GUARD } from '@nestjs/core';
-import { JwtAuthGuard } from './domain/auth/jwt-auth.guard';
-import { CustomExceptionFilter } from './common/exception/exception.filter';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './domain/auth/passport/jwt-auth.guard';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath:
@@ -25,8 +26,10 @@ import { CustomExceptionFilter } from './common/exception/exception.filter';
         DB_USERNAME: Joi.string().required(),
         DB_PASSWORD: Joi.string().required(),
         DB_DATABASE: Joi.string().required(),
-        JWT_SECRET: Joi.string().required(),
-        JWT_EXPIRATION: Joi.string().default('1h'),
+        JWT_ACCESS_SECRET: Joi.string().required(),
+        JWT_REFRESH_SECRET: Joi.string().required(),
+        JWT_ACCESS_EXPIRATION: Joi.string().default('1h'),
+        JWT_REFRESH_EXPIRATION: Joi.string().default('7d'),
       }),
     }),
     TypeOrmModule.forRootAsync({
@@ -53,10 +56,6 @@ import { CustomExceptionFilter } from './common/exception/exception.filter';
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
-    },
-    {
-      provide: APP_FILTER,
-      useClass: CustomExceptionFilter,
     },
   ],
 })

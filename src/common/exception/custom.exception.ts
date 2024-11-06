@@ -1,19 +1,30 @@
-import { ENTITY_NOT_FOUND, ErrorCode } from './error-code';
+import { HttpException } from '@nestjs/common';
+import { ApiProperty } from '@nestjs/swagger';
 
-export const EntityNotFoundException = (message?: string): CustomException => {
-  return new CustomException(ENTITY_NOT_FOUND, message);
-};
+export interface ICustomException {
+  errorCode: string;
+  timestamp: string;
+  statusCode: number;
+  path: string;
+}
 
-export class CustomException extends Error {
-  readonly errorCode: ErrorCode;
-
-  constructor(errorCode: ErrorCode, message?: string) {
-    if (!message) {
-      message = errorCode.message;
-    }
-
-    super(message);
-
+export class CustomException extends HttpException implements ICustomException {
+  constructor(errorCode: string, statusCode: number, message?: string) {
+    super(errorCode, statusCode);
     this.errorCode = errorCode;
+    this.statusCode = statusCode;
+    this.message = message;
   }
+
+  @ApiProperty()
+  errorCode: string;
+
+  @ApiProperty()
+  statusCode: number;
+
+  @ApiProperty()
+  timestamp: string;
+
+  @ApiProperty()
+  path: string;
 }
