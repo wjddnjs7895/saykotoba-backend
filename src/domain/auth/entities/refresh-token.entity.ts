@@ -9,9 +9,9 @@ import {
 } from 'typeorm';
 
 @Entity()
-export class RefreshToken extends BaseEntity {
-  @Column()
-  token: string;
+export class RefreshTokenEntity extends BaseEntity {
+  @Column({ name: 'refresh_token' })
+  refreshToken: string;
 
   @Column({ name: 'user_id' })
   userId: number;

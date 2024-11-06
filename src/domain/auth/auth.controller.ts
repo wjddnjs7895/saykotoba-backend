@@ -7,10 +7,11 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LocalAuthGuard } from './local-auth.guard';
+import { LocalAuthGuard } from './passport/local-auth.guard';
 import { RegisterRequestDto, RegisterResponseDto } from './dtos/register.dto';
 import { Public } from 'src/common/decorators/public.decorator';
 import { LoginRequestDto, LoginResponseDto } from './dtos/login.dto';
+import { RefreshRequestDto, RefreshResponseDto } from './dtos/refresh.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -19,8 +20,27 @@ export class AuthController {
   @Public()
   @Post('login')
   @UseGuards(LocalAuthGuard)
-  async login(@Body() loginDto: LoginRequestDto): Promise<LoginResponseDto> {
-    return this.authService.generateAuthTokens(loginDto);
+  async login(
+    @Body() loginDto: LoginRequestDto,
+    @Request() req,
+  ): Promise<LoginResponseDto> {
+    const tokenResponse = await this.authService.generateAndSaveAuthTokens({
+      email: loginDto.email,
+      userId: req.user.id,
+    });
+    return tokenResponse;
+  }
+
+  @Post('refresh')
+  async refresh(
+    @Body() refreshDto: RefreshRequestDto,
+  ): Promise<RefreshResponseDto> {
+    return this.authService.refreshTokens(refreshDto.refreshToken);
+  }
+
+  @Post('logout')
+  async logout(@Request() req) {
+    return this.authService.logout(req.user.userId);
   }
 
   @Public()
