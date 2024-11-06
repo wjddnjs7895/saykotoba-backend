@@ -1,9 +1,11 @@
 import {
   Body,
   Controller,
+  Get,
   Post,
   UploadedFile,
   UseInterceptors,
+  Param,
 } from '@nestjs/common';
 import { ConversationService } from './conversation.service';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -15,26 +17,25 @@ import {
   CreateConversationRequestDto,
   CreateConversationResponseDto,
 } from './dtos/create-conversation.dto';
-import { Public } from 'src/common/decorators/public.decorator';
+import { GetConversationMessageResponseDto } from './dtos/get-conversation-message.dto';
 
 @Controller('conversation')
 export class ConversationController {
   constructor(private readonly conversationService: ConversationService) {}
 
-  @Public()
   @Post('audio-response')
   @UseInterceptors(FileInterceptor('audio'))
   async processAudioMessage(
     @Body('conversationId') conversationId: number,
     @UploadedFile() audio: Express.Multer.File,
   ) {
+    console.log('audio', audio);
     return this.conversationService.getAndProcessConversationFromAudio(
       conversationId,
       audio,
     );
   }
 
-  @Public()
   @Post('text-response')
   async processTextMessage(
     @Body('conversationId') conversationId: number,
@@ -46,7 +47,6 @@ export class ConversationController {
     );
   }
 
-  @Public()
   @Post('generate-scenario')
   async generateScenario(
     @Body() generateScenarioDto: GenerateScenarioRequestDto,
@@ -54,7 +54,6 @@ export class ConversationController {
     return this.conversationService.generateScenario(generateScenarioDto);
   }
 
-  @Public()
   @Post('create')
   async createConversation(
     @Body() createConversationDto: CreateConversationRequestDto,
@@ -63,5 +62,19 @@ export class ConversationController {
       createConversationDto,
     );
     return response;
+  }
+
+  @Get('get-conversation-message')
+  async getAllMessage(
+    @Param('conversationId') conversationId: number,
+  ): Promise<GetConversationMessageResponseDto[]> {
+    const messages =
+      await this.conversationService.getAllMessage(conversationId);
+    return messages.map((message) => ({
+      id: message.id,
+      message: message.messageText,
+      isUser: message.role === 'user',
+      createdAt: message.createdAt,
+    }));
   }
 }
