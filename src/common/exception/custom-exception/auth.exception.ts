@@ -73,16 +73,6 @@ export class LogoutFailedException extends CustomException {
   }
 }
 
-export class RegisterFailedException extends CustomException {
-  constructor() {
-    super(
-      AuthErrorCodeEnum.RegisterFailed,
-      HttpStatus.INTERNAL_SERVER_ERROR,
-      AuthErrorMessage.RegisterFailed,
-    );
-  }
-}
-
 export class EmailAlreadyExistsException extends CustomException {
   constructor() {
     super(
@@ -119,6 +109,46 @@ export class TokenCleanupFailedException extends CustomException {
       AuthErrorCodeEnum.TokenCleanupFailed,
       HttpStatus.INTERNAL_SERVER_ERROR,
       AuthErrorMessage.TokenCleanupFailed,
+    );
+  }
+}
+
+export class GoogleOAuthFailedException extends CustomException {
+  constructor() {
+    super(
+      AuthErrorCodeEnum.GoogleOAuthFailed,
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      AuthErrorMessage.GoogleOAuthFailed,
+    );
+  }
+}
+
+export class AppleOAuthFailedException extends CustomException {
+  constructor() {
+    super(
+      AuthErrorCodeEnum.AppleOAuthFailed,
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      AuthErrorMessage.AppleOAuthFailed,
+    );
+  }
+}
+
+export class GoogleIdTokenVerifyFailedException extends CustomException {
+  constructor() {
+    super(
+      AuthErrorCodeEnum.GoogleIdTokenVerifyFailed,
+      HttpStatus.BAD_REQUEST,
+      AuthErrorMessage.GoogleIdTokenVerifyFailed,
+    );
+  }
+}
+
+export class AppleIdTokenVerifyFailedException extends CustomException {
+  constructor() {
+    super(
+      AuthErrorCodeEnum.AppleIdTokenVerifyFailed,
+      HttpStatus.BAD_REQUEST,
+      AuthErrorMessage.AppleIdTokenVerifyFailed,
     );
   }
 }

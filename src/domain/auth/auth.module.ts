@@ -5,11 +5,12 @@ import { UsersModule } from '../users/users.module';
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { LocalStrategy } from './passport/local.strategy';
-import { AccessTokenStrategy } from './passport/jwt.access-strategy';
-import { RefreshTokenStrategy } from './passport/jwt.refresh-strategy';
+import { LocalStrategy } from './strategies/local.strategy';
+import { AccessTokenStrategy } from './strategies/jwt.access-strategy';
+import { RefreshTokenStrategy } from './strategies/jwt.refresh-strategy';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RefreshTokenEntity } from './entities/refresh-token.entity';
+import { TokenService } from './token.service';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { RefreshTokenEntity } from './entities/refresh-token.entity';
   controllers: [AuthController],
   providers: [
     AuthService,
+    TokenService,
     LocalStrategy,
     AccessTokenStrategy,
     RefreshTokenStrategy,

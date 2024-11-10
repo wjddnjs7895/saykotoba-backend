@@ -6,11 +6,14 @@ export enum AuthErrorCodeEnum {
   ExpiredRefreshToken = 'AUTH05',
   RefreshTokenFailed = 'AUTH06',
   LogoutFailed = 'AUTH07',
-  RegisterFailed = 'AUTH08',
   EmailAlreadyExists = 'AUTH09',
   PasswordHashFailed = 'AUTH10',
   TokenGenerateFailed = 'AUTH11',
   TokenCleanupFailed = 'AUTH12',
+  GoogleOAuthFailed = 'AUTH13',
+  AppleOAuthFailed = 'AUTH14',
+  GoogleIdTokenVerifyFailed = 'AUTH15',
+  AppleIdTokenVerifyFailed = 'AUTH16',
 }
 
 export enum UnexpectedErrorCodeEnum {

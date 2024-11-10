@@ -7,24 +7,33 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LocalAuthGuard } from './passport/local-auth.guard';
+import { LocalAuthGuard } from './guards/local-auth.guard';
 import { RegisterRequestDto, RegisterResponseDto } from './dtos/register.dto';
 import { Public } from 'src/common/decorators/public.decorator';
-import { LoginRequestDto, LoginResponseDto } from './dtos/login.dto';
+import { LocalLoginRequestDto, LocalLoginResponseDto } from './dtos/local.dto';
 import { RefreshRequestDto, RefreshResponseDto } from './dtos/refresh.dto';
+import {
+  GoogleLoginRequestDto,
+  GoogleLoginResponseDto,
+} from './dtos/google.dto';
+import { TokenService } from './token.service';
+import { AppleLoginRequestDto, AppleLoginResponseDto } from './dtos/apple.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly tokenService: TokenService,
+  ) {}
 
   @Public()
   @Post('login')
   @UseGuards(LocalAuthGuard)
-  async login(
-    @Body() loginDto: LoginRequestDto,
+  async localLogin(
+    @Body() loginDto: LocalLoginRequestDto,
     @Request() req,
-  ): Promise<LoginResponseDto> {
-    const tokenResponse = await this.authService.generateAndSaveAuthTokens({
+  ): Promise<LocalLoginResponseDto> {
+    const tokenResponse = await this.tokenService.generateAndSaveAuthTokens({
       email: loginDto.email,
       userId: req.user.id,
     });
@@ -48,11 +57,27 @@ export class AuthController {
   async register(
     @Body() registerDto: RegisterRequestDto,
   ): Promise<RegisterResponseDto> {
-    return this.authService.register(registerDto);
+    return this.authService.registerAndLogin(registerDto);
   }
 
   @Get('profile')
   async getProfile(@Request() req) {
     return req.user;
+  }
+
+  @Public()
+  @Post('google')
+  async googleLogin(
+    @Body() googleLoginRequestDto: GoogleLoginRequestDto,
+  ): Promise<GoogleLoginResponseDto> {
+    return this.authService.loginWithGoogle(googleLoginRequestDto);
+  }
+
+  @Public()
+  @Post('apple')
+  async appleLogin(
+    @Body() appleLoginRequestDto: AppleLoginRequestDto,
+  ): Promise<AppleLoginResponseDto> {
+    return this.authService.loginWithApple(appleLoginRequestDto);
   }
 }

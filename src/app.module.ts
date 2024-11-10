@@ -7,8 +7,9 @@ import { AuthModule } from './domain/auth/auth.module';
 import { ConversationModule } from './domain/conversation/conversation.module';
 import { OpenaiModule } from './domain/openai/openai.module';
 import { APP_GUARD } from '@nestjs/core';
-import { JwtAuthGuard } from './domain/auth/passport/jwt-auth.guard';
+import { JwtAuthGuard } from './domain/auth/guards/jwt-auth.guard';
 import { ScheduleModule } from '@nestjs/schedule';
+import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { ScheduleModule } from '@nestjs/schedule';
         synchronize: configService.get('NODE_ENV') !== 'production',
         logging: configService.get('NODE_ENV') !== 'production',
         autoLoadEntities: true,
+        namingStrategy: new SnakeNamingStrategy(),
       }),
       inject: [ConfigService],
     }),

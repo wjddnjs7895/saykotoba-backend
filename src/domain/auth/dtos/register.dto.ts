@@ -1,14 +1,45 @@
-import { IsString, Length, IsEmail } from 'class-validator';
+import { IsString, IsEmail, IsOptional } from 'class-validator';
+import { AuthProvider } from '../../users/constants/user.constants';
+import { TokenResponseDto } from './token.dto';
 
-export class RegisterRequestDto {
+export abstract class BaseRegisterRequestDto {
   @IsEmail()
   email: string;
 
+  @IsOptional()
   @IsString()
-  @Length(8, 20)
-  password: string;
+  name?: string;
+
+  abstract provider: AuthProvider;
 }
 
-export class RegisterResponseDto {
-  userId: number;
+export class LocalRegisterRequestDto extends BaseRegisterRequestDto {
+  @IsString()
+  name: string;
+
+  @IsString()
+  password: string;
+
+  provider = AuthProvider.LOCAL as const;
 }
+
+export class GoogleRegisterRequestDto extends BaseRegisterRequestDto {
+  @IsString()
+  googleId: string;
+
+  provider = AuthProvider.GOOGLE as const;
+}
+
+export class AppleRegisterRequestDto extends BaseRegisterRequestDto {
+  @IsString()
+  appleId: string;
+
+  provider = AuthProvider.APPLE as const;
+}
+
+export class RegisterResponseDto extends TokenResponseDto {}
+
+export type RegisterRequestDto =
+  | LocalRegisterRequestDto
+  | GoogleRegisterRequestDto
+  | AppleRegisterRequestDto;

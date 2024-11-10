@@ -1,21 +1,42 @@
-import { IsNumber, IsString, Length, IsEmail } from 'class-validator';
+import {
+  IsNumber,
+  IsString,
+  Length,
+  IsEmail,
+  IsEnum,
+  IsOptional,
+} from 'class-validator';
+import { AuthProvider } from '../constants/user.constants';
 
 export class CreateUserRequestDto {
   @IsEmail()
   email: string;
 
   @IsString()
-  username: string;
-
-  @IsNumber()
-  userTypeId: number;
+  name: string;
 
   @IsString()
   @Length(8, 20)
-  password: string;
+  @IsOptional()
+  password?: string;
+
+  @IsEnum(AuthProvider)
+  @IsOptional()
+  provider?: AuthProvider;
+
+  @IsString()
+  @IsOptional()
+  googleId?: string;
+
+  @IsString()
+  @IsOptional()
+  appleId?: string;
 }
 
 export class CreateUserResponseDto {
   @IsNumber()
   userId: number;
+
+  @IsEmail()
+  email: string;
 }

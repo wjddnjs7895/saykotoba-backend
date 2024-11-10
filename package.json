@@ -34,7 +34,9 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "cross-env": "^7.0.3",
+    "google-auth-library": "^9.14.2",
     "joi": "^17.13.3",
+    "jwks-rsa": "^3.1.0",
     "openai": "^4.68.2",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
@@ -42,7 +44,8 @@
     "pg": "^8.13.0",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
-    "typeorm": "^0.3.20"
+    "typeorm": "^0.3.20",
+    "typeorm-naming-strategies": "^4.1.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",

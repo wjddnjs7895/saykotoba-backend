@@ -6,9 +6,12 @@ export const AuthErrorMessage = {
   ExpiredRefreshToken: 'Expired refresh token',
   RefreshTokenFailed: 'Refresh token failed',
   LogoutFailed: 'Logout failed',
-  RegisterFailed: 'Register failed',
   EmailAlreadyExists: 'Email already exists',
   PasswordHashFailed: 'Password hash failed',
   TokenGenerateFailed: 'Token generate failed',
   TokenCleanupFailed: 'Token cleanup failed',
+  GoogleOAuthFailed: 'Google OAuth failed',
+  AppleOAuthFailed: 'Apple OAuth failed',
+  GoogleIdTokenVerifyFailed: 'Google ID token verify failed',
+  AppleIdTokenVerifyFailed: 'Apple ID token verify failed',
 };
