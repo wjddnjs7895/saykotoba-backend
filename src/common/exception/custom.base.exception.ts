@@ -8,11 +8,15 @@ export interface ICustomException {
   path: string;
 }
 
-export class CustomBaseException
+export abstract class CustomBaseException
   extends HttpException
   implements ICustomException
 {
-  constructor(errorCode: string, statusCode: number, message?: string) {
+  protected constructor(
+    errorCode: string,
+    statusCode: number,
+    message?: string,
+  ) {
     super(errorCode, statusCode);
     this.errorCode = errorCode;
     this.statusCode = statusCode;

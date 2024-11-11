@@ -11,8 +11,8 @@ import {
   InvalidRefreshTokenException,
   ExpiredRefreshTokenException,
   RefreshTokenFailedException,
-} from '@exception/custom-exception/auth.exception';
-import { CustomException } from '@/common/exception/custom.exception';
+} from '@/common/exception/custom-exception/auth.exception';
+import { CustomBaseException } from '@/common/exception/custom.base.exception';
 
 @Injectable()
 export class TokenService {
@@ -123,7 +123,7 @@ export class TokenService {
 
       return payload.sub;
     } catch (error) {
-      if (error instanceof CustomException) {
+      if (error instanceof CustomBaseException) {
         throw error;
       }
 
