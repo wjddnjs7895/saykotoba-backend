@@ -8,7 +8,10 @@ export interface ICustomException {
   path: string;
 }
 
-export class CustomException extends HttpException implements ICustomException {
+export class CustomBaseException
+  extends HttpException
+  implements ICustomException
+{
   constructor(errorCode: string, statusCode: number, message?: string) {
     super(errorCode, statusCode);
     this.errorCode = errorCode;

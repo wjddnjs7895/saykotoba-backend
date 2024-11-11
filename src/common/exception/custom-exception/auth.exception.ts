@@ -1,9 +1,9 @@
 import { HttpStatus } from '@nestjs/common';
-import { CustomException } from '../custom.exception';
+import { CustomBaseException } from '../custom.base.exception';
 import { AuthErrorCodeEnum } from '../error-constant/error.code';
 import { AuthErrorMessage } from '../error-constant/error.message';
 
-export class UserNotFoundException extends CustomException {
+export class UserNotFoundException extends CustomBaseException {
   constructor() {
     super(
       AuthErrorCodeEnum.UserNotFound,
@@ -13,7 +13,7 @@ export class UserNotFoundException extends CustomException {
   }
 }
 
-export class PasswordNotMatchException extends CustomException {
+export class PasswordNotMatchException extends CustomBaseException {
   constructor() {
     super(
       AuthErrorCodeEnum.PasswordNotMatch,
@@ -23,7 +23,7 @@ export class PasswordNotMatchException extends CustomException {
   }
 }
 
-export class RefreshTokenSaveException extends CustomException {
+export class RefreshTokenSaveException extends CustomBaseException {
   constructor() {
     super(
       AuthErrorCodeEnum.RefreshTokenSaveFailed,
@@ -33,7 +33,7 @@ export class RefreshTokenSaveException extends CustomException {
   }
 }
 
-export class InvalidRefreshTokenException extends CustomException {
+export class InvalidRefreshTokenException extends CustomBaseException {
   constructor() {
     super(
       AuthErrorCodeEnum.InvalidRefreshToken,
@@ -43,7 +43,7 @@ export class InvalidRefreshTokenException extends CustomException {
   }
 }
 
-export class ExpiredRefreshTokenException extends CustomException {
+export class ExpiredRefreshTokenException extends CustomBaseException {
   constructor() {
     super(
       AuthErrorCodeEnum.ExpiredRefreshToken,
@@ -53,7 +53,7 @@ export class ExpiredRefreshTokenException extends CustomException {
   }
 }
 
-export class RefreshTokenFailedException extends CustomException {
+export class RefreshTokenFailedException extends CustomBaseException {
   constructor() {
     super(
       AuthErrorCodeEnum.RefreshTokenFailed,
@@ -63,7 +63,7 @@ export class RefreshTokenFailedException extends CustomException {
   }
 }
 
-export class LogoutFailedException extends CustomException {
+export class LogoutFailedException extends CustomBaseException {
   constructor() {
     super(
       AuthErrorCodeEnum.LogoutFailed,
@@ -73,7 +73,7 @@ export class LogoutFailedException extends CustomException {
   }
 }
 
-export class EmailAlreadyExistsException extends CustomException {
+export class EmailAlreadyExistsException extends CustomBaseException {
   constructor() {
     super(
       AuthErrorCodeEnum.EmailAlreadyExists,
@@ -83,7 +83,7 @@ export class EmailAlreadyExistsException extends CustomException {
   }
 }
 
-export class PasswordHashFailedException extends CustomException {
+export class PasswordHashFailedException extends CustomBaseException {
   constructor() {
     super(
       AuthErrorCodeEnum.PasswordHashFailed,
@@ -93,7 +93,7 @@ export class PasswordHashFailedException extends CustomException {
   }
 }
 
-export class TokenGenerateFailedException extends CustomException {
+export class TokenGenerateFailedException extends CustomBaseException {
   constructor() {
     super(
       AuthErrorCodeEnum.TokenGenerateFailed,
@@ -103,7 +103,7 @@ export class TokenGenerateFailedException extends CustomException {
   }
 }
 
-export class TokenCleanupFailedException extends CustomException {
+export class TokenCleanupFailedException extends CustomBaseException {
   constructor() {
     super(
       AuthErrorCodeEnum.TokenCleanupFailed,
@@ -113,7 +113,7 @@ export class TokenCleanupFailedException extends CustomException {
   }
 }
 
-export class GoogleOAuthFailedException extends CustomException {
+export class GoogleOAuthFailedException extends CustomBaseException {
   constructor() {
     super(
       AuthErrorCodeEnum.GoogleOAuthFailed,
@@ -123,7 +123,7 @@ export class GoogleOAuthFailedException extends CustomException {
   }
 }
 
-export class AppleOAuthFailedException extends CustomException {
+export class AppleOAuthFailedException extends CustomBaseException {
   constructor() {
     super(
       AuthErrorCodeEnum.AppleOAuthFailed,
@@ -133,7 +133,7 @@ export class AppleOAuthFailedException extends CustomException {
   }
 }
 
-export class GoogleIdTokenVerifyFailedException extends CustomException {
+export class GoogleIdTokenVerifyFailedException extends CustomBaseException {
   constructor() {
     super(
       AuthErrorCodeEnum.GoogleIdTokenVerifyFailed,
@@ -143,7 +143,7 @@ export class GoogleIdTokenVerifyFailedException extends CustomException {
   }
 }
 
-export class AppleIdTokenVerifyFailedException extends CustomException {
+export class AppleIdTokenVerifyFailedException extends CustomBaseException {
   constructor() {
     super(
       AuthErrorCodeEnum.AppleIdTokenVerifyFailed,
