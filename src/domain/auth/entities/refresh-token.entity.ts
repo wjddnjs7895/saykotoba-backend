@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity()
+@Entity('refresh_token')
 export class RefreshTokenEntity extends BaseEntity {
   @Column({ name: 'refresh_token' })
   refreshToken: string;

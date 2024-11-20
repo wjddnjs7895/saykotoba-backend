@@ -27,6 +27,19 @@ export class AuthController {
   ) {}
 
   @Public()
+  @Post('register')
+  async register(
+    @Body() registerDto: RegisterRequestDto,
+  ): Promise<RegisterResponseDto> {
+    return this.authService.registerAndLogin(registerDto);
+  }
+
+  @Post('logout')
+  async logout(@Request() req) {
+    return this.authService.logout(req.user.userId);
+  }
+
+  @Public()
   @Post('login')
   @UseGuards(LocalAuthGuard)
   async localLogin(
@@ -38,31 +51,6 @@ export class AuthController {
       userId: req.user.id,
     });
     return tokenResponse;
-  }
-
-  @Post('refresh')
-  async refresh(
-    @Body() refreshDto: RefreshRequestDto,
-  ): Promise<RefreshResponseDto> {
-    return this.authService.refreshTokens(refreshDto.refreshToken);
-  }
-
-  @Post('logout')
-  async logout(@Request() req) {
-    return this.authService.logout(req.user.userId);
-  }
-
-  @Public()
-  @Post('register')
-  async register(
-    @Body() registerDto: RegisterRequestDto,
-  ): Promise<RegisterResponseDto> {
-    return this.authService.registerAndLogin(registerDto);
-  }
-
-  @Get('profile')
-  async getProfile(@Request() req) {
-    return req.user;
   }
 
   @Public()
@@ -79,5 +67,17 @@ export class AuthController {
     @Body() appleLoginRequestDto: AppleLoginRequestDto,
   ): Promise<AppleLoginResponseDto> {
     return this.authService.loginWithApple(appleLoginRequestDto);
+  }
+
+  @Post('refresh')
+  async refresh(
+    @Body() refreshDto: RefreshRequestDto,
+  ): Promise<RefreshResponseDto> {
+    return this.tokenService.refreshTokens(refreshDto.refreshToken);
+  }
+
+  @Get('validate')
+  async validateAccessToken(): Promise<boolean> {
+    return true;
   }
 }

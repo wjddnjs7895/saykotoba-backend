@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, MoreThan } from 'typeorm';
+import { Repository, MoreThan, LessThan } from 'typeorm';
 import { RefreshTokenEntity } from './entities/refresh-token.entity';
 import { TokenRequestDto, TokenResponseDto } from './dtos/token.dto';
 import {
@@ -11,8 +11,10 @@ import {
   InvalidRefreshTokenException,
   ExpiredRefreshTokenException,
   RefreshTokenFailedException,
+  TokenCleanupFailedException,
 } from '@/common/exception/custom-exception/auth.exception';
 import { CustomBaseException } from '@/common/exception/custom.base.exception';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class TokenService {
@@ -102,7 +104,7 @@ export class TokenService {
     }
   }
 
-  async refreshTokens(refreshToken: string) {
+  async refreshTokens(refreshToken: string): Promise<TokenResponseDto> {
     try {
       const payload = await this.jwtService.verifyAsync(refreshToken, {
         secret: this.configService.get('JWT_REFRESH_SECRET'),
@@ -121,7 +123,14 @@ export class TokenService {
         throw new InvalidRefreshTokenException();
       }
 
-      return payload.sub;
+      await this.revokeRefreshToken(storedRefreshToken.id);
+
+      const tokenRequestDto: TokenRequestDto = {
+        userId: payload.sub,
+        email: payload.email,
+      };
+
+      return this.generateAndSaveAuthTokens(tokenRequestDto);
     } catch (error) {
       if (error instanceof CustomBaseException) {
         throw error;
@@ -144,5 +153,16 @@ export class TokenService {
       { id: tokenId },
       { isRevoked: true },
     );
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async cleanupExpiredTokens() {
+    try {
+      await this.refreshTokenRepository.delete({
+        expiresAt: LessThan(new Date()),
+      });
+    } catch {
+      throw new TokenCleanupFailedException();
+    }
   }
 }

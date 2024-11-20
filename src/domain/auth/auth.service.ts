@@ -1,18 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import { UsersService } from '../users/users.service';
 import { LocalLoginRequestDto } from './dtos/local.dto';
 import { RegisterRequestDto, RegisterResponseDto } from './dtos/register.dto';
 import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import { RefreshTokenEntity } from './entities/refresh-token.entity';
-import { Repository, LessThan } from 'typeorm';
+import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   LogoutFailedException,
   PasswordNotMatchException,
   UserNotFoundException,
-  TokenCleanupFailedException,
   GoogleOAuthFailedException,
   GoogleIdTokenVerifyFailedException,
   AppleIdTokenVerifyFailedException,
@@ -71,20 +69,6 @@ export class AuthService {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...result } = user;
     return result;
-  }
-
-  async refreshTokens(refreshToken: string) {
-    const userId = await this.tokenService.refreshTokens(refreshToken);
-
-    const user = await this.usersService.findUserById(userId);
-    if (!user) {
-      throw new UserNotFoundException();
-    }
-
-    return this.tokenService.generateAndSaveAuthTokens({
-      email: user.email,
-      userId: user.id,
-    });
   }
 
   async logout(userId: number) {
@@ -173,11 +157,14 @@ export class AuthService {
   private async verifyGoogleIdToken(
     idToken: string,
   ): Promise<GoogleTokenPayloadDto> {
-    const client = new OAuth2Client(this.configService.get('GOOGLE_CLIENT_ID'));
+    const client = new OAuth2Client();
     try {
       const ticket = await client.verifyIdToken({
         idToken,
-        audience: this.configService.get('GOOGLE_CLIENT_ID'),
+        audience: [
+          this.configService.get('GOOGLE_IOS_CLIENT_ID'),
+          this.configService.get('GOOGLE_EXPO_CLIENT_ID'),
+        ],
       });
       const payload = ticket.getPayload();
       return payload as GoogleTokenPayloadDto;
@@ -233,17 +220,6 @@ export class AuthService {
       return payload as AppleTokenPayloadDto;
     } catch {
       throw new AppleIdTokenVerifyFailedException();
-    }
-  }
-
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
-  async cleanupExpiredTokens() {
-    try {
-      await this.refreshTokenRepository.delete({
-        expiresAt: LessThan(new Date()),
-      });
-    } catch {
-      throw new TokenCleanupFailedException();
     }
   }
 }
