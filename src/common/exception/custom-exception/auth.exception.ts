@@ -8,7 +8,7 @@ export class UserNotFoundException extends CustomBaseException {
     super(
       AuthErrorCodeEnum.UserNotFound,
       HttpStatus.NOT_FOUND,
-      AuthErrorMessage.UserNotFound,
+      AuthErrorMessage[AuthErrorCodeEnum.UserNotFound],
     );
   }
 }
@@ -18,7 +18,7 @@ export class PasswordNotMatchException extends CustomBaseException {
     super(
       AuthErrorCodeEnum.PasswordNotMatch,
       HttpStatus.UNAUTHORIZED,
-      AuthErrorMessage.PasswordNotMatch,
+      AuthErrorMessage[AuthErrorCodeEnum.PasswordNotMatch],
     );
   }
 }
@@ -28,7 +28,7 @@ export class RefreshTokenSaveException extends CustomBaseException {
     super(
       AuthErrorCodeEnum.RefreshTokenSaveFailed,
       HttpStatus.INTERNAL_SERVER_ERROR,
-      AuthErrorMessage.RefreshTokenSaveFailed,
+      AuthErrorMessage[AuthErrorCodeEnum.RefreshTokenSaveFailed],
     );
   }
 }
@@ -38,7 +38,7 @@ export class InvalidRefreshTokenException extends CustomBaseException {
     super(
       AuthErrorCodeEnum.InvalidRefreshToken,
       HttpStatus.UNAUTHORIZED,
-      AuthErrorMessage.InvalidRefreshToken,
+      AuthErrorMessage[AuthErrorCodeEnum.InvalidRefreshToken],
     );
   }
 }
@@ -48,7 +48,7 @@ export class ExpiredRefreshTokenException extends CustomBaseException {
     super(
       AuthErrorCodeEnum.ExpiredRefreshToken,
       HttpStatus.UNAUTHORIZED,
-      AuthErrorMessage.ExpiredRefreshToken,
+      AuthErrorMessage[AuthErrorCodeEnum.ExpiredRefreshToken],
     );
   }
 }
@@ -58,7 +58,7 @@ export class RefreshTokenFailedException extends CustomBaseException {
     super(
       AuthErrorCodeEnum.RefreshTokenFailed,
       HttpStatus.INTERNAL_SERVER_ERROR,
-      AuthErrorMessage.RefreshTokenFailed,
+      AuthErrorMessage[AuthErrorCodeEnum.RefreshTokenFailed],
     );
   }
 }
@@ -68,7 +68,7 @@ export class LogoutFailedException extends CustomBaseException {
     super(
       AuthErrorCodeEnum.LogoutFailed,
       HttpStatus.INTERNAL_SERVER_ERROR,
-      AuthErrorMessage.LogoutFailed,
+      AuthErrorMessage[AuthErrorCodeEnum.LogoutFailed],
     );
   }
 }
@@ -78,7 +78,7 @@ export class EmailAlreadyExistsException extends CustomBaseException {
     super(
       AuthErrorCodeEnum.EmailAlreadyExists,
       HttpStatus.CONFLICT,
-      AuthErrorMessage.EmailAlreadyExists,
+      AuthErrorMessage[AuthErrorCodeEnum.EmailAlreadyExists],
     );
   }
 }
@@ -88,7 +88,7 @@ export class PasswordHashFailedException extends CustomBaseException {
     super(
       AuthErrorCodeEnum.PasswordHashFailed,
       HttpStatus.INTERNAL_SERVER_ERROR,
-      AuthErrorMessage.PasswordHashFailed,
+      AuthErrorMessage[AuthErrorCodeEnum.PasswordHashFailed],
     );
   }
 }
@@ -98,7 +98,7 @@ export class TokenGenerateFailedException extends CustomBaseException {
     super(
       AuthErrorCodeEnum.TokenGenerateFailed,
       HttpStatus.INTERNAL_SERVER_ERROR,
-      AuthErrorMessage.TokenGenerateFailed,
+      AuthErrorMessage[AuthErrorCodeEnum.TokenGenerateFailed],
     );
   }
 }
@@ -108,7 +108,7 @@ export class TokenCleanupFailedException extends CustomBaseException {
     super(
       AuthErrorCodeEnum.TokenCleanupFailed,
       HttpStatus.INTERNAL_SERVER_ERROR,
-      AuthErrorMessage.TokenCleanupFailed,
+      AuthErrorMessage[AuthErrorCodeEnum.TokenCleanupFailed],
     );
   }
 }
@@ -118,7 +118,7 @@ export class GoogleOAuthFailedException extends CustomBaseException {
     super(
       AuthErrorCodeEnum.GoogleOAuthFailed,
       HttpStatus.INTERNAL_SERVER_ERROR,
-      AuthErrorMessage.GoogleOAuthFailed,
+      AuthErrorMessage[AuthErrorCodeEnum.GoogleOAuthFailed],
     );
   }
 }
@@ -128,7 +128,7 @@ export class AppleOAuthFailedException extends CustomBaseException {
     super(
       AuthErrorCodeEnum.AppleOAuthFailed,
       HttpStatus.INTERNAL_SERVER_ERROR,
-      AuthErrorMessage.AppleOAuthFailed,
+      AuthErrorMessage[AuthErrorCodeEnum.AppleOAuthFailed],
     );
   }
 }
@@ -138,7 +138,7 @@ export class GoogleIdTokenVerifyFailedException extends CustomBaseException {
     super(
       AuthErrorCodeEnum.GoogleIdTokenVerifyFailed,
       HttpStatus.BAD_REQUEST,
-      AuthErrorMessage.GoogleIdTokenVerifyFailed,
+      AuthErrorMessage[AuthErrorCodeEnum.GoogleIdTokenVerifyFailed],
     );
   }
 }
@@ -148,7 +148,7 @@ export class AppleIdTokenVerifyFailedException extends CustomBaseException {
     super(
       AuthErrorCodeEnum.AppleIdTokenVerifyFailed,
       HttpStatus.BAD_REQUEST,
-      AuthErrorMessage.AppleIdTokenVerifyFailed,
+      AuthErrorMessage[AuthErrorCodeEnum.AppleIdTokenVerifyFailed],
     );
   }
 }

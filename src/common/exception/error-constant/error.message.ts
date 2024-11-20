@@ -1,17 +1,34 @@
-export const AuthErrorMessage = {
-  UserNotFound: 'User not found',
-  PasswordNotMatch: 'Password not match',
-  PasswordHashFailed: 'Password hash failed',
-  EmailAlreadyExists: 'Email already exists',
-  TokenGenerateFailed: 'Token generate failed',
-  TokenCleanupFailed: 'Token cleanup failed',
-  RefreshTokenSaveFailed: 'Refresh token save failed',
-  InvalidRefreshToken: 'Invalid refresh token',
-  ExpiredRefreshToken: 'Expired refresh token',
-  RefreshTokenFailed: 'Refresh token failed',
-  LogoutFailed: 'Logout failed',
-  GoogleOAuthFailed: 'Google OAuth failed',
-  GoogleIdTokenVerifyFailed: 'Google ID token verify failed',
-  AppleOAuthFailed: 'Apple OAuth failed',
-  AppleIdTokenVerifyFailed: 'Apple ID token verify failed',
+import { AuthErrorCodeEnum, UnexpectedErrorCodeEnum } from './error.code';
+
+type AuthErrorMessageType = {
+  readonly [K in AuthErrorCodeEnum]: string;
+};
+
+type UnexpectedErrorMessageType = {
+  readonly [K in UnexpectedErrorCodeEnum]: string;
+};
+
+export const AuthErrorMessage: AuthErrorMessageType = {
+  [AuthErrorCodeEnum.LogoutFailed]: 'Logout failed',
+  [AuthErrorCodeEnum.UserNotFound]: 'User not found',
+  [AuthErrorCodeEnum.PasswordNotMatch]: 'Password not match',
+  [AuthErrorCodeEnum.PasswordHashFailed]: 'Password hash failed',
+  [AuthErrorCodeEnum.EmailAlreadyExists]: 'Email already exists',
+
+  [AuthErrorCodeEnum.TokenGenerateFailed]: 'Token generate failed',
+  [AuthErrorCodeEnum.TokenCleanupFailed]: 'Token cleanup failed',
+  [AuthErrorCodeEnum.RefreshTokenSaveFailed]: 'Refresh token save failed',
+  [AuthErrorCodeEnum.InvalidRefreshToken]: 'Invalid refresh token',
+  [AuthErrorCodeEnum.ExpiredRefreshToken]: 'Expired refresh token',
+  [AuthErrorCodeEnum.RefreshTokenFailed]: 'Refresh token failed',
+
+  [AuthErrorCodeEnum.GoogleOAuthFailed]: 'Google OAuth failed',
+  [AuthErrorCodeEnum.GoogleIdTokenVerifyFailed]:
+    'Google ID token verify failed',
+  [AuthErrorCodeEnum.AppleOAuthFailed]: 'Apple OAuth failed',
+  [AuthErrorCodeEnum.AppleIdTokenVerifyFailed]: 'Apple ID token verify failed',
+};
+
+export const UnexpectedErrorMessage: UnexpectedErrorMessageType = {
+  [UnexpectedErrorCodeEnum.Unexpected]: 'Unexpected error',
 };

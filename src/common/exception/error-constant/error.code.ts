@@ -1,22 +1,21 @@
 export enum AuthErrorCodeEnum {
+  LogoutFailed = 'AUTH00',
   UserNotFound = 'AUTH01',
   PasswordNotMatch = 'AUTH02',
   PasswordHashFailed = 'AUTH03',
   EmailAlreadyExists = 'AUTH04',
 
-  TokenGenerateFailed = 'AUTH05',
-  TokenCleanupFailed = 'AUTH06',
-  RefreshTokenSaveFailed = 'AUTH07',
-  InvalidRefreshToken = 'AUTH08',
-  ExpiredRefreshToken = 'AUTH09',
-  RefreshTokenFailed = 'AUTH10',
+  TokenGenerateFailed = 'AUTH10',
+  TokenCleanupFailed = 'AUTH11',
+  RefreshTokenSaveFailed = 'AUTH12',
+  InvalidRefreshToken = 'AUTH13',
+  ExpiredRefreshToken = 'AUTH14',
+  RefreshTokenFailed = 'AUTH15',
 
-  LogoutFailed = 'AUTH11',
-
-  GoogleOAuthFailed = 'AUTH12',
-  GoogleIdTokenVerifyFailed = 'AUTH13',
-  AppleOAuthFailed = 'AUTH14',
-  AppleIdTokenVerifyFailed = 'AUTH15',
+  GoogleOAuthFailed = 'AUTH20',
+  GoogleIdTokenVerifyFailed = 'AUTH21',
+  AppleOAuthFailed = 'AUTH22',
+  AppleIdTokenVerifyFailed = 'AUTH23',
 }
 
 export enum UnexpectedErrorCodeEnum {

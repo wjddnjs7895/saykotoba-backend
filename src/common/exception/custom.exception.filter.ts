@@ -16,22 +16,22 @@ export class CustomExceptionFilter implements ExceptionFilter {
         ? exception
         : new UnexpectedException();
 
-    this.logger.error({
-      message: res.message,
+    const errorResponse = {
       errorCode: res.errorCode,
+      statusCode: res.getStatus(),
+      message: res.message,
+      timestamp: res.timestamp,
       path: request.url,
-      timestamp: new Date().toISOString(),
+    };
+
+    this.logger.error({
+      ...errorResponse,
       ...(!(exception instanceof CustomBaseException) && {
         stack: exception.stack,
         originalError: exception,
       }),
     });
 
-    response.status(res.statusCode).json({
-      errorCode: res.errorCode,
-      statusCode: res.statusCode,
-      timestamp: new Date().toISOString(),
-      path: request.url,
-    });
+    response.status(res.getStatus()).json(errorResponse);
   }
 }

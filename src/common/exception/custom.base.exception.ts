@@ -1,37 +1,20 @@
 import { HttpException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 
-export interface ICustomException {
-  errorCode: string;
-  timestamp: string;
-  statusCode: number;
-  path: string;
-}
-
-export abstract class CustomBaseException
-  extends HttpException
-  implements ICustomException
-{
+export abstract class CustomBaseException extends HttpException {
   protected constructor(
     errorCode: string,
     statusCode: number,
-    message?: string,
+    message: string,
   ) {
-    super(errorCode, statusCode);
+    super(message, statusCode);
     this.errorCode = errorCode;
-    this.statusCode = statusCode;
-    this.message = message;
+    this.timestamp = new Date().toISOString();
   }
 
   @ApiProperty()
   errorCode: string;
 
   @ApiProperty()
-  statusCode: number;
-
-  @ApiProperty()
   timestamp: string;
-
-  @ApiProperty()
-  path: string;
 }
