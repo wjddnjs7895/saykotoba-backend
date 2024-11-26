@@ -33,10 +33,12 @@ import { JwksClient } from 'jwks-rsa';
 import * as jwt from 'jsonwebtoken';
 import { AppleOAuthFailedException } from '@/common/exception/custom-exception/auth.exception';
 import { TokenService } from './token.service';
+import { AppleUtils } from './utils/apple.utils';
 
 @Injectable()
 export class AuthService {
   private jwksClient: JwksClient;
+  private appleUtils: AppleUtils;
 
   constructor(
     @InjectRepository(RefreshTokenEntity)
@@ -49,7 +51,11 @@ export class AuthService {
       jwksUri: 'https://appleid.apple.com/auth/keys',
       cache: true,
       rateLimit: true,
+      requestHeaders: {},
     });
+
+    this.appleUtils = new AppleUtils(this.configService);
+    this.appleUtils.validateAppleConfigs();
   }
 
   async validateAuthentication(loginDto: LocalLoginRequestDto) {
@@ -110,6 +116,8 @@ export class AuthService {
 
     if (registerDto.provider === AuthProvider.LOCAL) {
       const hashedPassword = await this.hashPassword(registerDto.password);
+      console.log('registerDto.password', registerDto.password);
+      console.log('hashedPassword', hashedPassword);
       Object.assign(userData, { password: hashedPassword });
     } else if (registerDto.provider === AuthProvider.GOOGLE) {
       Object.assign(userData, { googleId: registerDto.googleId });
@@ -177,7 +185,7 @@ export class AuthService {
     appleLoginDto: AppleLoginRequestDto,
   ): Promise<AppleLoginResponseDto> {
     try {
-      const payload = await this.verifyAppleToken(appleLoginDto.identityToken);
+      const payload = await this.verifyAppleToken(appleLoginDto.idToken);
       const { email, sub: appleId } = payload;
 
       const existingUser = await this.usersService.findUserByEmail(email);
@@ -204,20 +212,35 @@ export class AuthService {
   }
 
   private async verifyAppleToken(
-    identityToken: string,
+    idToken: string,
   ): Promise<AppleTokenPayloadDto> {
     try {
-      const decodedToken = jwt.decode(identityToken, { complete: true });
+      const decodedToken = jwt.decode(idToken, { complete: true });
+      if (!decodedToken) {
+        throw new AppleIdTokenVerifyFailedException();
+      }
+
       const signingKey = await this.jwksClient.getSigningKey(
         decodedToken.header.kid,
       );
 
-      const payload = jwt.verify(identityToken, signingKey.getPublicKey(), {
+      const audience =
+        process.env.NODE_ENV === 'development'
+          ? 'host.exp.Exponent'
+          : this.configService.get('APPLE_CLIENT_ID');
+
+      const payload = jwt.verify(idToken, signingKey.getPublicKey(), {
         algorithms: ['RS256'],
         issuer: 'https://appleid.apple.com',
-        audience: this.configService.get('APPLE_CLIENT_ID'),
+        audience,
       });
-      return payload as AppleTokenPayloadDto;
+      console.log('payload', payload);
+      const typedPayload = payload as AppleTokenPayloadDto;
+      if (!typedPayload.sub || !typedPayload.email) {
+        throw new AppleIdTokenVerifyFailedException();
+      }
+
+      return typedPayload;
     } catch {
       throw new AppleIdTokenVerifyFailedException();
     }

@@ -1,8 +1,8 @@
 import { IsArray, IsNumber, IsString } from 'class-validator';
 
 export class CreateConversationRequestDto {
-  @IsNumber()
-  userId: number;
+  @IsString()
+  title: string;
 
   @IsNumber()
   difficulty: number;
@@ -13,6 +13,11 @@ export class CreateConversationRequestDto {
   @IsArray()
   @IsString({ each: true })
   missions: string[];
+}
+
+export interface CreateConversationServiceDto
+  extends CreateConversationRequestDto {
+  userId: number;
 }
 
 export class CreateConversationResponseDto {

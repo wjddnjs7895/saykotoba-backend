@@ -1,5 +1,11 @@
+import {
+  ExpiredAccessTokenException,
+  InvalidAccessTokenException,
+  UnauthorizedTokenException,
+} from '@/common/exception/custom-exception/auth.exception';
 import { ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { JsonWebTokenError } from '@nestjs/jwt';
 import { AuthGuard } from '@nestjs/passport';
 import { IS_PUBLIC_KEY } from 'src/common/decorators/public.decorator';
 
@@ -18,5 +24,20 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       return true;
     }
     return super.canActivate(context);
+  }
+
+  handleRequest(err, user, info) {
+    if (info instanceof JsonWebTokenError) {
+      if (info.name === 'TokenExpiredError') {
+        throw new ExpiredAccessTokenException();
+      }
+      throw new InvalidAccessTokenException();
+    }
+
+    if (err || !user) {
+      throw new UnauthorizedTokenException();
+    }
+
+    return user;
   }
 }

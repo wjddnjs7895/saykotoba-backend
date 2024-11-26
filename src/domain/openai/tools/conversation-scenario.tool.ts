@@ -9,6 +9,10 @@ export const ConversationScenarioTool = [
       parameters: {
         type: 'object',
         properties: {
+          title: {
+            type: 'string',
+            description: 'Title of the conversation scenario',
+          },
           situation: {
             type: 'string',
             description:
@@ -24,7 +28,7 @@ export const ConversationScenarioTool = [
               '2-3 achievable conversation missions for the situation',
           },
         },
-        required: ['situation', 'mission'],
+        required: ['title', 'situation', 'mission'],
         additionalProperties: false,
       },
     },

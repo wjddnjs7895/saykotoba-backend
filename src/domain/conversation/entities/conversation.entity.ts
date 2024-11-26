@@ -8,6 +8,9 @@ export class ConversationEntity extends BaseEntity {
   @Column({ name: 'user_id' })
   userId: number;
 
+  @Column({ name: 'title' })
+  title: string;
+
   @Column({ name: 'difficulty' })
   difficulty: number;
 

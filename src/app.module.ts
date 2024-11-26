@@ -17,7 +17,9 @@ import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath:
-        process.env.NODE_ENV === 'production' ? '.env.prod' : '.env.dev',
+        process.env.NODE_ENV === 'production'
+          ? 'config/env/.env.prod'
+          : 'config/env/.env.dev',
       validationSchema: Joi.object({
         NODE_ENV: Joi.string()
           .valid('development', 'production', 'test')
@@ -31,6 +33,8 @@ import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
         JWT_REFRESH_SECRET: Joi.string().required(),
         JWT_ACCESS_EXPIRATION: Joi.string().default('1h'),
         JWT_REFRESH_EXPIRATION: Joi.string().default('7d'),
+        APPLE_CLIENT_ID: Joi.string().required(),
+        APPLE_TEAM_ID: Joi.string().required(),
       }),
     }),
     TypeOrmModule.forRootAsync({

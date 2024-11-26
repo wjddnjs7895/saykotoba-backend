@@ -18,10 +18,20 @@ import {
   CreateConversationResponseDto,
 } from './dtos/create-conversation.dto';
 import { GetConversationMessageResponseDto } from './dtos/get-conversation-message.dto';
+import { User } from '@common/decorators/user.decorator';
+import { GetConversationListResponseDto } from './dtos/get-conversation-list.dto';
+import { UserEntity } from '../users/entities/user.entity';
 
 @Controller('conversation')
 export class ConversationController {
   constructor(private readonly conversationService: ConversationService) {}
+
+  @Get('get-my-conversation-list')
+  async getMyConversationList(
+    @User() user: UserEntity,
+  ): Promise<GetConversationListResponseDto[]> {
+    return this.conversationService.getConversationsByUserId(user.id);
+  }
 
   @Post('audio-response')
   @UseInterceptors(FileInterceptor('audio'))
@@ -56,11 +66,13 @@ export class ConversationController {
 
   @Post('create')
   async createConversation(
+    @User() user: UserEntity,
     @Body() createConversationDto: CreateConversationRequestDto,
   ): Promise<CreateConversationResponseDto> {
-    const response = await this.conversationService.createConversation(
-      createConversationDto,
-    );
+    const response = await this.conversationService.createConversation({
+      ...createConversationDto,
+      userId: user.id,
+    });
     return response;
   }
 

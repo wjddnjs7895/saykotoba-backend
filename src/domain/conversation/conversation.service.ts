@@ -9,11 +9,12 @@ import {
 } from './dtos/generate-scenario';
 import { ConversationEntity } from './entities/conversation.entity';
 import {
-  CreateConversationRequestDto,
   CreateConversationResponseDto,
+  CreateConversationServiceDto,
 } from './dtos/create-conversation.dto';
 import { MissionEntity } from './entities/mission.entity';
 import { MissionResultType } from '../openai/tools/conversation-response.tool';
+import { GetConversationListResponseDto } from './dtos/get-conversation-list.dto';
 
 @Injectable()
 export class ConversationService {
@@ -26,6 +27,21 @@ export class ConversationService {
     private readonly conversationRepository: Repository<ConversationEntity>,
     private readonly openAIService: OpenAIService,
   ) {}
+
+  async getConversationsByUserId(
+    userId: number,
+  ): Promise<GetConversationListResponseDto[]> {
+    const conversations = await this.conversationRepository.find({
+      where: { userId },
+      order: { createdAt: 'DESC' },
+    });
+
+    return conversations.map((conversation) => ({
+      conversationId: conversation.id,
+      title: conversation.title,
+      createdAt: conversation.createdAt,
+    }));
+  }
 
   async getAllMessage(conversationId: number) {
     return await this.messageRepository.findBy({ conversationId });
@@ -82,12 +98,13 @@ export class ConversationService {
   }
 
   async createConversation(
-    createConversationDto: CreateConversationRequestDto,
+    createConversationDto: CreateConversationServiceDto,
   ): Promise<CreateConversationResponseDto> {
     try {
       // 대화 생성
       const newConversation = this.conversationRepository.create({
         userId: createConversationDto.userId,
+        title: createConversationDto.title,
         difficulty: createConversationDto.difficulty,
         situation: createConversationDto.situation,
       });

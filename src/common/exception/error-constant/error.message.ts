@@ -17,6 +17,8 @@ export const AuthErrorMessage: AuthErrorMessageType = {
 
   [AuthErrorCodeEnum.TokenGenerateFailed]: 'Token generate failed',
   [AuthErrorCodeEnum.TokenCleanupFailed]: 'Token cleanup failed',
+  [AuthErrorCodeEnum.InvalidAccessToken]: 'Invalid access token',
+  [AuthErrorCodeEnum.ExpiredAccessToken]: 'Expired access token',
   [AuthErrorCodeEnum.RefreshTokenSaveFailed]: 'Refresh token save failed',
   [AuthErrorCodeEnum.InvalidRefreshToken]: 'Invalid refresh token',
   [AuthErrorCodeEnum.ExpiredRefreshToken]: 'Expired refresh token',
@@ -27,6 +29,7 @@ export const AuthErrorMessage: AuthErrorMessageType = {
     'Google ID token verify failed',
   [AuthErrorCodeEnum.AppleOAuthFailed]: 'Apple OAuth failed',
   [AuthErrorCodeEnum.AppleIdTokenVerifyFailed]: 'Apple ID token verify failed',
+  [AuthErrorCodeEnum.UnauthorizedToken]: 'Unauthorized token',
 };
 
 export const UnexpectedErrorMessage: UnexpectedErrorMessageType = {

@@ -33,6 +33,26 @@ export class RefreshTokenSaveException extends CustomBaseException {
   }
 }
 
+export class InvalidAccessTokenException extends CustomBaseException {
+  constructor() {
+    super(
+      AuthErrorCodeEnum.InvalidAccessToken,
+      HttpStatus.UNAUTHORIZED,
+      AuthErrorMessage[AuthErrorCodeEnum.InvalidAccessToken],
+    );
+  }
+}
+
+export class ExpiredAccessTokenException extends CustomBaseException {
+  constructor() {
+    super(
+      AuthErrorCodeEnum.ExpiredAccessToken,
+      HttpStatus.UNAUTHORIZED,
+      AuthErrorMessage[AuthErrorCodeEnum.ExpiredAccessToken],
+    );
+  }
+}
+
 export class InvalidRefreshTokenException extends CustomBaseException {
   constructor() {
     super(
@@ -149,6 +169,16 @@ export class AppleIdTokenVerifyFailedException extends CustomBaseException {
       AuthErrorCodeEnum.AppleIdTokenVerifyFailed,
       HttpStatus.BAD_REQUEST,
       AuthErrorMessage[AuthErrorCodeEnum.AppleIdTokenVerifyFailed],
+    );
+  }
+}
+
+export class UnauthorizedTokenException extends CustomBaseException {
+  constructor() {
+    super(
+      AuthErrorCodeEnum.UnauthorizedToken,
+      HttpStatus.UNAUTHORIZED,
+      AuthErrorMessage[AuthErrorCodeEnum.UnauthorizedToken],
     );
   }
 }

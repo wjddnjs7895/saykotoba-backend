@@ -3,7 +3,7 @@ import { TokenResponseDto } from './token.dto';
 
 export class AppleLoginRequestDto {
   @IsString()
-  identityToken: string;
+  idToken: string;
 
   @IsOptional()
   @IsObject()

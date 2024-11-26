@@ -18,6 +18,7 @@ import {
 } from './dtos/google.dto';
 import { TokenService } from './token.service';
 import { AppleLoginRequestDto, AppleLoginResponseDto } from './dtos/apple.dto';
+import { AuthProvider } from '../users/constants/user.constants';
 
 @Controller('auth')
 export class AuthController {
@@ -31,7 +32,10 @@ export class AuthController {
   async register(
     @Body() registerDto: RegisterRequestDto,
   ): Promise<RegisterResponseDto> {
-    return this.authService.registerAndLogin(registerDto);
+    return this.authService.registerAndLogin({
+      provider: AuthProvider.LOCAL,
+      ...registerDto,
+    });
   }
 
   @Post('logout')
@@ -69,6 +73,7 @@ export class AuthController {
     return this.authService.loginWithApple(appleLoginRequestDto);
   }
 
+  @Public()
   @Post('refresh')
   async refresh(
     @Body() refreshDto: RefreshRequestDto,

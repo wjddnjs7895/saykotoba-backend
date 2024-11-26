@@ -7,10 +7,13 @@ export enum AuthErrorCodeEnum {
 
   TokenGenerateFailed = 'AUTH10',
   TokenCleanupFailed = 'AUTH11',
-  RefreshTokenSaveFailed = 'AUTH12',
-  InvalidRefreshToken = 'AUTH13',
-  ExpiredRefreshToken = 'AUTH14',
-  RefreshTokenFailed = 'AUTH15',
+  InvalidAccessToken = 'AUTH12',
+  ExpiredAccessToken = 'AUTH13',
+  RefreshTokenSaveFailed = 'AUTH14',
+  InvalidRefreshToken = 'AUTH15',
+  ExpiredRefreshToken = 'AUTH16',
+  RefreshTokenFailed = 'AUTH17',
+  UnauthorizedToken = 'AUTH18',
 
   GoogleOAuthFailed = 'AUTH20',
   GoogleIdTokenVerifyFailed = 'AUTH21',
