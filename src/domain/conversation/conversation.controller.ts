@@ -21,12 +21,13 @@ import { GetConversationMessageResponseDto } from './dtos/get-conversation-messa
 import { User } from '@common/decorators/user.decorator';
 import { GetConversationListResponseDto } from './dtos/get-conversation-list.dto';
 import { UserEntity } from '../users/entities/user.entity';
+import { GetConversationInfoResponseDto } from './dtos/get-conversation-info.dto';
 
 @Controller('conversation')
 export class ConversationController {
   constructor(private readonly conversationService: ConversationService) {}
 
-  @Get('get-my-conversation-list')
+  @Get('my-conversation-list')
   async getMyConversationList(
     @User() user: UserEntity,
   ): Promise<GetConversationListResponseDto[]> {
@@ -76,7 +77,7 @@ export class ConversationController {
     return response;
   }
 
-  @Get('get-conversation-message')
+  @Get('conversation-message')
   async getAllMessage(
     @Param('conversationId') conversationId: number,
   ): Promise<GetConversationMessageResponseDto[]> {
@@ -88,5 +89,12 @@ export class ConversationController {
       isUser: message.role === 'user',
       createdAt: message.createdAt,
     }));
+  }
+
+  @Get('conversation-info/:conversationId')
+  async getConversationInfo(
+    @Param('conversationId') conversationId: number,
+  ): Promise<GetConversationInfoResponseDto> {
+    return this.conversationService.getConversationInfo(conversationId);
   }
 }

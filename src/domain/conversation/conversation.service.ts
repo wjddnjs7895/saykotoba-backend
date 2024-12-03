@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { MessageEntity, MessageRole } from './entities/message.entity';
@@ -15,6 +15,7 @@ import {
 import { MissionEntity } from './entities/mission.entity';
 import { MissionResultType } from '../openai/tools/conversation-response.tool';
 import { GetConversationListResponseDto } from './dtos/get-conversation-list.dto';
+import { GetConversationInfoResponseDto } from './dtos/get-conversation-info.dto';
 
 @Injectable()
 export class ConversationService {
@@ -44,14 +45,22 @@ export class ConversationService {
   }
 
   async getAllMessage(conversationId: number) {
-    return await this.messageRepository.findBy({ conversationId });
+    return this.messageRepository.find({
+      where: { conversationId },
+      order: {
+        createdAt: 'ASC',
+      },
+    });
   }
 
   async processAudioResponse(
     conversationId: number,
     audio: Express.Multer.File,
   ) {
-    const conversationInfo = await this.getConversationInfo(conversationId);
+    const conversationInfo = await this.conversationRepository.findOne({
+      where: { id: conversationId },
+      relations: ['missions'],
+    });
     const messages = await this.getAllMessage(conversationId);
     const { response, missionResults } =
       await this.openAIService.processAudioAndGenerateResponse(
@@ -67,7 +76,10 @@ export class ConversationService {
   }
 
   async processTextResponse(conversationId: number, userText: string) {
-    const conversationInfo = await this.getConversationInfo(conversationId);
+    const conversationInfo = await this.conversationRepository.findOne({
+      where: { id: conversationId },
+      relations: ['missions'],
+    });
     const messages = await this.getAllMessage(conversationId);
     const { response, missionResults } =
       await this.openAIService.processTextAndGenerateResponse(
@@ -88,13 +100,21 @@ export class ConversationService {
     return this.openAIService.generateScenario(generateScenarioDto);
   }
 
-  async getConversationInfo(conversationId: number) {
+  async getConversationInfo(
+    conversationId: number,
+  ): Promise<GetConversationInfoResponseDto> {
     const conversationInfo = await this.conversationRepository.findOne({
       where: { id: conversationId },
       relations: ['missions'],
     });
-    Logger.log('conversationInfo', JSON.stringify(conversationInfo));
-    return conversationInfo;
+    const response = new GetConversationInfoResponseDto();
+    response.title = conversationInfo.title;
+    response.situation = conversationInfo.situation;
+    response.missions = conversationInfo.missions.map((mission) => ({
+      mission: mission.mission,
+      isCompleted: mission.isCompleted,
+    }));
+    return response;
   }
 
   async createConversation(
