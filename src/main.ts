@@ -4,13 +4,17 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { CustomExceptionFilter } from './common/exception/custom.exception.filter';
 import { CustomLogger } from './common/logger/custom.logger';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 
 async function bootstrap() {
+  const logger = new CustomLogger();
+
   const app = await NestFactory.create(AppModule, {
-    logger: new CustomLogger(),
+    logger,
   });
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalFilters(new CustomExceptionFilter());
+  app.useGlobalInterceptors(new LoggingInterceptor(logger));
 
   const config = new DocumentBuilder()
     .setTitle('API List')
