@@ -26,8 +26,7 @@ export class OpenAIService {
   async generateScenario(
     generateScenarioDto: GenerateScenarioRequestDto,
   ): Promise<GenerateScenarioResponseDto> {
-    const difficultyLevel =
-      DIFFICULTY_MAP[generateScenarioDto.difficulty] || 'intermediate';
+    const difficultyLevel = DIFFICULTY_MAP[generateScenarioDto.difficulty];
 
     const response = await this.openai.chat.completions.create({
       model: 'gpt-4o-mini',
@@ -38,7 +37,17 @@ export class OpenAIService {
         },
         {
           role: 'user',
-          content: `Please create a ${difficultyLevel} level conversation scenario about ${generateScenarioDto.topic}. The situations should be specific and realistic, and the missions should be clear and achievable for learners.`,
+          content: `Please create a ${difficultyLevel} level conversation scenario about ${generateScenarioDto.topic}. 
+          The situations should be specific and realistic, and the missions should be clear and achievable for learners.
+          Available difficulty levels are: ${Object.values(DIFFICULTY_MAP).join(', ')}.
+          In this scenario:
+          - You (AI) will play the role of: ${generateScenarioDto.aiRole}
+          - The user will play the role of: ${generateScenarioDto.userRole}
+          
+          Please include these exact values in your response:
+          - difficulty: "${generateScenarioDto.difficulty}"
+          - aiRole: "${generateScenarioDto.aiRole}"
+          - userRole: "${generateScenarioDto.userRole}"`,
         },
       ],
       tools: ConversationScenarioTool,
@@ -202,5 +211,25 @@ export class OpenAIService {
     });
 
     return response.choices[0].message.content;
+  }
+
+  async createImage({ prompt }: { prompt: string }): Promise<{ url: string }> {
+    const enhancedPrompt = `${prompt}. Center focused, centered composition, main subject in the middle of the frame, symmetrical composition`;
+    const response = await this.openai.images.generate({
+      model: 'dall-e-2',
+      prompt: enhancedPrompt,
+      n: 1,
+      size: '1024x1024',
+      quality: 'standard',
+      style: 'natural',
+    });
+
+    if (!response.data?.[0]?.url) {
+      throw new Error('Failed to generate image');
+    }
+
+    return {
+      url: response.data[0].url,
+    };
   }
 }

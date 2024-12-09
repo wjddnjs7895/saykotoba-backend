@@ -127,6 +127,8 @@ export class ConversationService {
         title: createConversationDto.title,
         difficulty: createConversationDto.difficulty,
         situation: createConversationDto.situation,
+        aiRole: createConversationDto.aiRole,
+        userRole: createConversationDto.userRole,
       });
       await this.conversationRepository.save(newConversation);
 

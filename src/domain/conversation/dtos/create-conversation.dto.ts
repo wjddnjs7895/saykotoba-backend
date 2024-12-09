@@ -1,11 +1,12 @@
-import { IsArray, IsNumber, IsString } from 'class-validator';
+import { ConversationDifficulty } from '@/common/constants/conversation.constants';
+import { IsArray, IsEnum, IsNumber, IsString } from 'class-validator';
 
 export class CreateConversationRequestDto {
   @IsString()
   title: string;
 
-  @IsNumber()
-  difficulty: number;
+  @IsEnum(ConversationDifficulty)
+  difficulty: ConversationDifficulty;
 
   @IsString()
   situation: string;
@@ -13,6 +14,12 @@ export class CreateConversationRequestDto {
   @IsArray()
   @IsString({ each: true })
   missions: string[];
+
+  @IsString()
+  aiRole: string;
+
+  @IsString()
+  userRole: string;
 }
 
 export interface CreateConversationServiceDto

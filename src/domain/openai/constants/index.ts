@@ -1,7 +1,10 @@
 const DIFFICULTY_MAP = {
-  1: 'beginner',
+  0: 'beginner',
+  1: 'elementary',
   2: 'intermediate',
-  3: 'advanced',
+  3: 'upper-intermediate',
+  4: 'advanced',
+  5: 'challenge',
 };
 
 export { DIFFICULTY_MAP };

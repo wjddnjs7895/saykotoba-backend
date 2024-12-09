@@ -1,14 +1,34 @@
-import { IsArray, IsNumber, IsString } from 'class-validator';
+import { IsArray, IsNumber, IsString, IsEnum } from 'class-validator';
+
+import { ConversationDifficulty } from '@common/constants/conversation.constants';
 
 export class GenerateScenarioRequestDto {
+  @IsEnum(ConversationDifficulty)
+  difficulty: ConversationDifficulty;
+
+  @IsString()
+  topic: string;
+
+  @IsString()
+  userRole: string;
+
+  @IsString()
+  aiRole: string;
+}
+
+export class GenerateScenarioResponseDto {
   @IsNumber()
   difficulty: number;
 
   @IsString()
-  topic: string;
-}
+  title: string;
 
-export class GenerateScenarioResponseDto {
+  @IsString()
+  userRole: string;
+
+  @IsString()
+  aiRole: string;
+
   @IsString()
   scenario: string;
 

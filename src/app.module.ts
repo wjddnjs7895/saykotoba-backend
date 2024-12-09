@@ -10,6 +10,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './domain/auth/guards/jwt-auth.guard';
 import { ScheduleModule } from '@nestjs/schedule';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
+import * as fs from 'fs';
 
 @Module({
   imports: [
@@ -49,6 +50,12 @@ import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
         logging: configService.get('NODE_ENV') !== 'production',
         autoLoadEntities: true,
         namingStrategy: new SnakeNamingStrategy(),
+        // ssl: {
+        //   ca: fs.readFileSync('config/ssl/global-bundle.pem'),
+        // },
+        // extra: {
+        //   ssl: { rejectUnauthorized: false },
+        // },
       }),
       inject: [ConfigService],
     }),
