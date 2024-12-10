@@ -1,13 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
-import { MessageEntity } from '../conversation/entities/message.entity';
+import { MessageEntity } from '../../domain/conversation/entities/message.entity';
 import {
   GenerateScenarioRequestDto,
   GenerateScenarioResponseDto,
-} from '../conversation/dtos/generate-scenario';
+} from '../../domain/conversation/dtos/generate-scenario';
 import { ConversationScenarioTool } from './tools/conversation-scenario.tool';
-import { ConversationEntity } from '../conversation/entities/conversation.entity';
+import { ConversationEntity } from '../../domain/conversation/entities/conversation.entity';
 import { PROMPTS } from './prompts';
 import { ConversationResponseTool } from './tools/conversation-response.tool';
 import { DIFFICULTY_MAP } from './constants';

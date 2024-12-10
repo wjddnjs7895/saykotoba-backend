@@ -17,7 +17,8 @@
       "@users/*": ["src/domain/users/*"],
       "@exception/*": ["src/common/exception/*"],
       "@conversation/*": ["src/domain/conversation/*"],
-      "@openai/*": ["src/infrastructure/openai/*"]
+      "@openai/*": ["src/infrastructure/openai/*"],
+      "@aws/*": ["src/infrastructure/aws/*"]
     },
     "incremental": true,
     "skipLibCheck": true,

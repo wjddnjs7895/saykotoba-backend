@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { MessageEntity, MessageRole } from './entities/message.entity';
-import { OpenAIService } from '../openai/openai.service';
+import { OpenAIService } from '../../integrations/openai/openai.service';
 import {
   GenerateScenarioRequestDto,
   GenerateScenarioResponseDto,
@@ -13,7 +13,7 @@ import {
   CreateConversationServiceDto,
 } from './dtos/create-conversation.dto';
 import { MissionEntity } from './entities/mission.entity';
-import { MissionResultType } from '../openai/tools/conversation-response.tool';
+import { MissionResultType } from '../../integrations/openai/tools/conversation-response.tool';
 import { GetConversationListResponseDto } from './dtos/get-conversation-list.dto';
 import { GetConversationInfoResponseDto } from './dtos/get-conversation-info.dto';
 

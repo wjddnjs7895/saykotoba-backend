@@ -4,7 +4,7 @@ import { ConversationController } from './conversation.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConversationEntity } from './entities/conversation.entity';
 import { MessageEntity } from './entities/message.entity';
-import { OpenAIService } from '../openai/openai.service';
+import { OpenAIService } from '../../integrations/openai/openai.service';
 import { MissionEntity } from './entities/mission.entity';
 
 @Module({
