@@ -32,14 +32,17 @@ ${formatMissions(missions)}
 
   FIRST_MESSAGE: (
     situation: string,
-    missions: MissionEntity[],
+    missions: string[],
     difficulty: string,
+    aiRole: string,
+    userRole: string,
   ) =>
     `You are playing the role of the conversation partner in this Japanese learning scenario.
     Current Situation: ${situation}
-    Learning Objectives:
-${formatMissions(missions)}
+    Learning Objectives: ${missions.join('\n')}
     Difficulty Level: ${difficulty}
+    User's Role: ${userRole}
+    Your Role: ${aiRole}
     
     Act naturally as the person in this situation (e.g., shop staff, friend, colleague) and start the conversation appropriately.
     Keep your first message brief and friendly, typically 1-2 sentences, as would be natural in this scenario.

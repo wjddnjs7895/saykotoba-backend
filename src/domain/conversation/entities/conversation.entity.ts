@@ -33,4 +33,7 @@ export class ConversationEntity extends BaseEntity {
 
   @OneToMany(() => MessageEntity, (message) => message.conversation)
   messages: MessageEntity[];
+
+  @Column({ name: 'thumbnail_url', nullable: true })
+  thumbnailUrl: string;
 }

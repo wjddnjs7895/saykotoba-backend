@@ -16,6 +16,7 @@ import { MissionEntity } from './entities/mission.entity';
 import { MissionResultType } from '../../integrations/openai/tools/conversation-response.tool';
 import { GetConversationListResponseDto } from './dtos/get-conversation-list.dto';
 import { GetConversationInfoResponseDto } from './dtos/get-conversation-info.dto';
+import { S3Service } from '@/integrations/aws/services/s3/s3.service';
 
 @Injectable()
 export class ConversationService {
@@ -27,6 +28,7 @@ export class ConversationService {
     @InjectRepository(ConversationEntity)
     private readonly conversationRepository: Repository<ConversationEntity>,
     private readonly openAIService: OpenAIService,
+    private readonly s3Service: S3Service,
   ) {}
 
   async getConversationsByUserId(
@@ -121,7 +123,6 @@ export class ConversationService {
     createConversationDto: CreateConversationServiceDto,
   ): Promise<CreateConversationResponseDto> {
     try {
-      // 대화 생성
       const newConversation = this.conversationRepository.create({
         userId: createConversationDto.userId,
         title: createConversationDto.title,
@@ -132,7 +133,6 @@ export class ConversationService {
       });
       await this.conversationRepository.save(newConversation);
 
-      // 미션 생성
       const missionPromises = createConversationDto.missions.map((mission) =>
         this.missionRepository.save({
           conversationId: newConversation.id,
@@ -142,8 +142,7 @@ export class ConversationService {
       );
       await Promise.all(missionPromises);
 
-      // 첫 메시지 생성
-      const firstMessage = await this.getFirstMessage(newConversation);
+      const firstMessage = await this.getFirstMessage(createConversationDto);
       await this.saveMessage(
         newConversation.id,
         firstMessage,
@@ -158,7 +157,7 @@ export class ConversationService {
     }
   }
 
-  async getFirstMessage(conversationInfo: ConversationEntity) {
+  async getFirstMessage(conversationInfo: CreateConversationServiceDto) {
     return await this.openAIService.getFirstMessage(conversationInfo);
   }
 

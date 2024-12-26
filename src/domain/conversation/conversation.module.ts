@@ -6,6 +6,7 @@ import { ConversationEntity } from './entities/conversation.entity';
 import { MessageEntity } from './entities/message.entity';
 import { OpenAIService } from '../../integrations/openai/openai.service';
 import { MissionEntity } from './entities/mission.entity';
+import { S3Service } from '@/integrations/aws/services/s3/s3.service';
 
 @Module({
   imports: [
@@ -15,7 +16,7 @@ import { MissionEntity } from './entities/mission.entity';
       MissionEntity,
     ]),
   ],
-  providers: [ConversationService, OpenAIService],
+  providers: [ConversationService, OpenAIService, S3Service],
   controllers: [ConversationController],
 })
 export class ConversationModule {}

@@ -10,6 +10,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './domain/auth/guards/jwt-auth.guard';
 import { ScheduleModule } from '@nestjs/schedule';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
+import { AwsModule } from './integrations/aws/aws.module';
 import * as fs from 'fs';
 
 @Module({
@@ -63,6 +64,7 @@ import * as fs from 'fs';
     AuthModule,
     ConversationModule,
     OpenaiModule,
+    AwsModule,
   ],
   controllers: [],
   providers: [

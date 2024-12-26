@@ -11,6 +11,7 @@ import { ConversationEntity } from '../../domain/conversation/entities/conversat
 import { PROMPTS } from './prompts';
 import { ConversationResponseTool } from './tools/conversation-response.tool';
 import { DIFFICULTY_MAP } from './constants';
+import { GetFirstMessageDto } from './dtos/get-first-message.dto';
 
 @Injectable()
 export class OpenAIService {
@@ -27,6 +28,7 @@ export class OpenAIService {
     generateScenarioDto: GenerateScenarioRequestDto,
   ): Promise<GenerateScenarioResponseDto> {
     const difficultyLevel = DIFFICULTY_MAP[generateScenarioDto.difficulty];
+    const language = 'en';
 
     const response = await this.openai.chat.completions.create({
       model: 'gpt-4o-mini',
@@ -47,7 +49,8 @@ export class OpenAIService {
           Please include these exact values in your response:
           - difficulty: "${generateScenarioDto.difficulty}"
           - aiRole: "${generateScenarioDto.aiRole}"
-          - userRole: "${generateScenarioDto.userRole}"`,
+          - userRole: "${generateScenarioDto.userRole}"
+          - language: "${language}"`,
         },
       ],
       tools: ConversationScenarioTool,
@@ -195,41 +198,25 @@ export class OpenAIService {
     return response;
   }
 
-  async getFirstMessage(conversationInfo: ConversationEntity): Promise<string> {
+  async getFirstMessage(
+    getFirstMessageDto: GetFirstMessageDto,
+  ): Promise<string> {
     const response = await this.openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
         {
           role: 'system',
           content: PROMPTS.FIRST_MESSAGE(
-            conversationInfo.situation,
-            conversationInfo.missions,
-            DIFFICULTY_MAP[conversationInfo.difficulty],
+            getFirstMessageDto.situation,
+            getFirstMessageDto.missions,
+            DIFFICULTY_MAP[getFirstMessageDto.difficulty],
+            getFirstMessageDto.aiRole,
+            getFirstMessageDto.userRole,
           ),
         },
       ],
     });
 
     return response.choices[0].message.content;
-  }
-
-  async createImage({ prompt }: { prompt: string }): Promise<{ url: string }> {
-    const enhancedPrompt = `${prompt}. Center focused, centered composition, main subject in the middle of the frame, symmetrical composition`;
-    const response = await this.openai.images.generate({
-      model: 'dall-e-2',
-      prompt: enhancedPrompt,
-      n: 1,
-      size: '1024x1024',
-      quality: 'standard',
-      style: 'natural',
-    });
-
-    if (!response.data?.[0]?.url) {
-      throw new Error('Failed to generate image');
-    }
-
-    return {
-      url: response.data[0].url,
-    };
   }
 }
