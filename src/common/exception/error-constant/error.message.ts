@@ -1,11 +1,24 @@
-import { AuthErrorCodeEnum, UnexpectedErrorCodeEnum } from './error.code';
+import {
+  AuthErrorCodeEnum,
+  ConversationErrorCodeEnum,
+  OpenAIErrorCodeEnum,
+  UnexpectedErrorCodeEnum,
+} from './error.code';
 
 type AuthErrorMessageType = {
   readonly [K in AuthErrorCodeEnum]: string;
 };
 
+type ConversationErrorMessageType = {
+  readonly [K in ConversationErrorCodeEnum]: string;
+};
+
 type UnexpectedErrorMessageType = {
   readonly [K in UnexpectedErrorCodeEnum]: string;
+};
+
+type OpenAIErrorMessageType = {
+  readonly [K in OpenAIErrorCodeEnum]: string;
 };
 
 export const AuthErrorMessage: AuthErrorMessageType = {
@@ -30,6 +43,22 @@ export const AuthErrorMessage: AuthErrorMessageType = {
   [AuthErrorCodeEnum.AppleOAuthFailed]: 'Apple OAuth failed',
   [AuthErrorCodeEnum.AppleIdTokenVerifyFailed]: 'Apple ID token verify failed',
   [AuthErrorCodeEnum.UnauthorizedToken]: 'Unauthorized token',
+};
+
+export const ConversationErrorMessage: ConversationErrorMessageType = {
+  [ConversationErrorCodeEnum.ConversationNotFound]: 'Conversation not found',
+  [ConversationErrorCodeEnum.MessageNotFound]: 'Message not found',
+  [ConversationErrorCodeEnum.ConversationSaveFailed]:
+    'Conversation save failed',
+  [ConversationErrorCodeEnum.MissionSaveFailed]: 'Mission save failed',
+  [ConversationErrorCodeEnum.MessageSaveFailed]: 'Message save failed',
+  [ConversationErrorCodeEnum.MissionNotFound]: 'Mission not found',
+};
+
+export const OpenAIErrorMessage: OpenAIErrorMessageType = {
+  [OpenAIErrorCodeEnum.NoToolResponseReceived]: 'No tool response received',
+  [OpenAIErrorCodeEnum.OpenAICreateFailed]: 'OpenAI create failed',
+  [OpenAIErrorCodeEnum.BufferToFileFailed]: 'Buffer to file failed',
 };
 
 export const UnexpectedErrorMessage: UnexpectedErrorMessageType = {

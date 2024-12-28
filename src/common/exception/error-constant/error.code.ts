@@ -21,6 +21,21 @@ export enum AuthErrorCodeEnum {
   AppleIdTokenVerifyFailed = 'AUTH23',
 }
 
+export enum ConversationErrorCodeEnum {
+  ConversationNotFound = 'CONV01',
+  MessageNotFound = 'CONV02',
+  ConversationSaveFailed = 'CONV03',
+  MissionSaveFailed = 'CONV04',
+  MessageSaveFailed = 'CONV05',
+  MissionNotFound = 'CONV06',
+}
+
+export enum OpenAIErrorCodeEnum {
+  NoToolResponseReceived = 'OPENAI01',
+  OpenAICreateFailed = 'OPENAI02',
+  BufferToFileFailed = 'OPENAI03',
+}
+
 export enum UnexpectedErrorCodeEnum {
   Unexpected = 'UNEXP99',
 }
