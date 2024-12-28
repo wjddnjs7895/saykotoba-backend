@@ -17,6 +17,17 @@ import { MissionResultType } from '../../integrations/openai/tools/conversation-
 import { GetConversationListResponseDto } from './dtos/get-conversation-list.dto';
 import { GetConversationInfoResponseDto } from './dtos/get-conversation-info.dto';
 import { S3Service } from '@/integrations/aws/services/s3/s3.service';
+import { ChatResponseDto } from './dtos/chat-response';
+import {
+  ConversationNotFoundException,
+  ConversationSaveFailedException,
+  MessageNotFoundException,
+  MessageSaveFailedException,
+  MissionNotFoundException,
+  MissionSaveFailedException,
+} from '@/common/exception/custom-exception/conversation.exception';
+import { CustomBaseException } from '@/common/exception/custom.base.exception';
+import { UnexpectedException } from '@/common/exception/custom-exception/unexpected.exception';
 
 @Injectable()
 export class ConversationService {
@@ -39,6 +50,10 @@ export class ConversationService {
       order: { createdAt: 'DESC' },
     });
 
+    if (!conversations || conversations.length === 0) {
+      throw new ConversationNotFoundException();
+    }
+
     return conversations.map((conversation) => ({
       conversationId: conversation.id,
       title: conversation.title,
@@ -46,13 +61,19 @@ export class ConversationService {
     }));
   }
 
-  async getAllMessage(conversationId: number) {
-    return this.messageRepository.find({
+  async getAllMessage(conversationId: number): Promise<MessageEntity[]> {
+    const messages = await this.messageRepository.find({
       where: { conversationId },
       order: {
         createdAt: 'ASC',
       },
     });
+
+    if (!messages || messages.length === 0) {
+      throw new MessageNotFoundException();
+    }
+
+    return messages;
   }
 
   async processAudioResponse(
@@ -63,8 +84,18 @@ export class ConversationService {
       where: { id: conversationId },
       relations: ['missions'],
     });
+
+    if (!conversationInfo) {
+      throw new ConversationNotFoundException();
+    }
+
     const messages = await this.getAllMessage(conversationId);
-    const { response, missionResults } =
+
+    if (messages.length === 0) {
+      throw new MessageNotFoundException();
+    }
+
+    const { response, missionResults, suggestedReplies } =
       await this.openAIService.processAudioAndGenerateResponse(
         conversationInfo,
         messages,
@@ -74,27 +105,28 @@ export class ConversationService {
     return {
       text: response,
       missionResults,
+      suggestedReplies,
     };
   }
 
-  async processTextResponse(conversationId: number, userText: string) {
-    const conversationInfo = await this.conversationRepository.findOne({
-      where: { id: conversationId },
-      relations: ['missions'],
-    });
-    const messages = await this.getAllMessage(conversationId);
-    const { response, missionResults } =
-      await this.openAIService.processTextAndGenerateResponse(
-        conversationInfo,
-        messages,
-        userText,
-      );
+  // async processTextResponse(conversationId: number, userText: string) {
+  //   const conversationInfo = await this.conversationRepository.findOne({
+  //     where: { id: conversationId },
+  //     relations: ['missions'],
+  //   });
+  //   const messages = await this.getAllMessage(conversationId);
+  //   const { response, missionResults } =
+  //     await this.openAIService.processTextAndGenerateResponse(
+  //       conversationInfo,
+  //       messages,
+  //       userText,
+  //     );
 
-    return {
-      text: response,
-      missionResults,
-    };
-  }
+  //   return {
+  //     text: response,
+  //     missionResults,
+  //   };
+  // }
 
   async generateScenario(
     generateScenarioDto: GenerateScenarioRequestDto,
@@ -109,6 +141,11 @@ export class ConversationService {
       where: { id: conversationId },
       relations: ['missions'],
     });
+
+    if (!conversationInfo) {
+      throw new ConversationNotFoundException();
+    }
+
     const response = new GetConversationInfoResponseDto();
     response.title = conversationInfo.title;
     response.situation = conversationInfo.situation;
@@ -131,7 +168,11 @@ export class ConversationService {
         aiRole: createConversationDto.aiRole,
         userRole: createConversationDto.userRole,
       });
-      await this.conversationRepository.save(newConversation);
+      try {
+        await this.conversationRepository.save(newConversation);
+      } catch {
+        throw new ConversationSaveFailedException();
+      }
 
       const missionPromises = createConversationDto.missions.map((mission) =>
         this.missionRepository.save({
@@ -140,59 +181,66 @@ export class ConversationService {
           isCompleted: false,
         }),
       );
-      await Promise.all(missionPromises);
+      try {
+        await Promise.all(missionPromises);
+      } catch {
+        throw new MissionSaveFailedException();
+      }
 
       const firstMessage = await this.getFirstMessage(createConversationDto);
-      await this.saveMessage(
-        newConversation.id,
-        firstMessage,
-        MessageRole.ASSISTANT,
-      );
+      try {
+        await this.messageRepository.save({
+          conversationId: newConversation.id,
+          messageText: firstMessage,
+          role: MessageRole.ASSISTANT,
+        });
+      } catch {
+        throw new MessageSaveFailedException();
+      }
 
       return { conversationId: newConversation.id };
     } catch (error) {
-      throw new Error(
-        '새로운 대화 생성 중 오류가 발생했습니다: ' + error.message,
-      );
+      if (error instanceof CustomBaseException) {
+        throw error;
+      }
+      throw new UnexpectedException();
     }
   }
 
-  async getFirstMessage(conversationInfo: CreateConversationServiceDto) {
+  async getFirstMessage(
+    conversationInfo: CreateConversationServiceDto,
+  ): Promise<string> {
     return await this.openAIService.getFirstMessage(conversationInfo);
-  }
-
-  async saveMessage(
-    conversationId: number,
-    messageText: string,
-    role: MessageRole,
-  ) {
-    return await this.messageRepository.save({
-      conversationId,
-      messageText,
-      role,
-    });
   }
 
   async getAndProcessConversationFromAudio(
     conversationId: number,
     audio: Express.Multer.File,
-  ) {
+  ): Promise<ChatResponseDto> {
     try {
       const userText = await this.openAIService.getTextFromAudio(audio);
 
-      const userMessage = await this.saveMessage(
-        conversationId,
-        userText,
-        MessageRole.USER,
-      );
+      try {
+        await this.messageRepository.save({
+          conversationId,
+          messageText: userText,
+          role: MessageRole.USER,
+        });
+      } catch {
+        throw new MessageSaveFailedException();
+      }
 
       const aiResponse = await this.processAudioResponse(conversationId, audio);
 
-      const assistantMessage = await this.saveMessage(
-        conversationId,
-        aiResponse.text,
-        MessageRole.ASSISTANT,
-      );
+      try {
+        await this.messageRepository.save({
+          conversationId,
+          messageText: aiResponse.text,
+          role: MessageRole.ASSISTANT,
+        });
+      } catch {
+        throw new MessageSaveFailedException();
+      }
 
       const updatedMissions = await this.updateMissionStatus(
         conversationId,
@@ -200,51 +248,55 @@ export class ConversationService {
       );
 
       return {
-        userMessage,
-        assistantMessage,
+        userMessage: userText,
+        assistantMessage: aiResponse.text,
         missions: updatedMissions,
+        suggestedReplies: aiResponse.suggestedReplies,
       };
     } catch (error) {
-      throw new Error('대화 처리 중 오류가 발생했습니다: ' + error.message);
+      if (error instanceof CustomBaseException) {
+        throw error;
+      }
+      throw new UnexpectedException();
     }
   }
 
-  async getAndProcessConversationFromText(
-    conversationId: number,
-    userText: string,
-  ) {
-    try {
-      const userMessage = await this.saveMessage(
-        conversationId,
-        userText,
-        MessageRole.USER,
-      );
+  // async getAndProcessConversationFromText(
+  //   conversationId: number,
+  //   userText: string,
+  // ) {
+  //   try {
+  //     const userMessage = await this.saveMessage(
+  //       conversationId,
+  //       userText,
+  //       MessageRole.USER,
+  //     );
 
-      const aiResponse = await this.processTextResponse(
-        conversationId,
-        userText,
-      );
+  //     const aiResponse = await this.processTextResponse(
+  //       conversationId,
+  //       userText,
+  //     );
 
-      const assistantMessage = await this.saveMessage(
-        conversationId,
-        aiResponse.text,
-        MessageRole.ASSISTANT,
-      );
+  //     const assistantMessage = await this.saveMessage(
+  //       conversationId,
+  //       aiResponse.text,
+  //       MessageRole.ASSISTANT,
+  //     );
 
-      const updatedMissions = await this.updateMissionStatus(
-        conversationId,
-        aiResponse.missionResults,
-      );
+  //     const updatedMissions = await this.updateMissionStatus(
+  //       conversationId,
+  //       aiResponse.missionResults,
+  //     );
 
-      return {
-        userMessage,
-        assistantMessage,
-        missions: updatedMissions,
-      };
-    } catch (error) {
-      throw new Error('대화 처리 중 오류가 발생했습니다: ' + error.message);
-    }
-  }
+  //     return {
+  //       userMessage,
+  //       assistantMessage,
+  //       missions: updatedMissions,
+  //     };
+  //   } catch (error) {
+  //     throw new Error('대화 처리 중 오류가 발생했습니다: ' + error.message);
+  //   }
+  // }
 
   async updateMissionStatus(
     conversationId: number,
@@ -260,22 +312,25 @@ export class ConversationService {
         });
 
         if (!mission) {
-          throw new Error(
-            `미션 ID ${missionResult.missionId}를 찾을 수 없습니다.`,
-          );
+          throw new MissionNotFoundException();
         }
 
         mission.isCompleted = missionResult.isCompleted;
-        return this.missionRepository.save(mission);
+        try {
+          return this.missionRepository.save(mission);
+        } catch {
+          throw new MissionSaveFailedException();
+        }
       });
 
       await Promise.all(updatePromises);
 
       return await this.missionRepository.findBy({ conversationId });
     } catch (error) {
-      throw new Error(
-        '미션 상태 업데이트 중 오류가 발생했습니다: ' + error.message,
-      );
+      if (error instanceof CustomBaseException) {
+        throw error;
+      }
+      throw new UnexpectedException();
     }
   }
 }

@@ -8,6 +8,7 @@ import {
   Param,
 } from '@nestjs/common';
 import { ConversationService } from './conversation.service';
+import { OpenAIService } from '../../integrations/openai/openai.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
   GenerateScenarioRequestDto,
@@ -22,10 +23,14 @@ import { User } from '@common/decorators/user.decorator';
 import { GetConversationListResponseDto } from './dtos/get-conversation-list.dto';
 import { UserEntity } from '../users/entities/user.entity';
 import { GetConversationInfoResponseDto } from './dtos/get-conversation-info.dto';
+import { ChatResponseDto } from './dtos/chat-response';
 
 @Controller('conversation')
 export class ConversationController {
-  constructor(private readonly conversationService: ConversationService) {}
+  constructor(
+    private readonly conversationService: ConversationService,
+    private readonly openaiService: OpenAIService,
+  ) {}
 
   @Get('my-conversation-list')
   async getMyConversationList(
@@ -36,27 +41,26 @@ export class ConversationController {
 
   @Post('audio-response')
   @UseInterceptors(FileInterceptor('audio'))
-  async processAudioMessage(
+  async getResponseFromAudio(
     @Body('conversationId') conversationId: number,
     @UploadedFile() audio: Express.Multer.File,
-  ) {
-    console.log('audio', audio);
+  ): Promise<ChatResponseDto> {
     return this.conversationService.getAndProcessConversationFromAudio(
       conversationId,
       audio,
     );
   }
 
-  @Post('text-response')
-  async processTextMessage(
-    @Body('conversationId') conversationId: number,
-    @Body('userText') userText: string,
-  ) {
-    return this.conversationService.getAndProcessConversationFromText(
-      conversationId,
-      userText,
-    );
-  }
+  // @Post('text-response')
+  // async processTextMessage(
+  //   @Body('conversationId') conversationId: number,
+  //   @Body('userText') userText: string,
+  // ) {
+  //   return this.conversationService.getAndProcessConversationFromText(
+  //     conversationId,
+  //     userText,
+  //   );
+  // }
 
   @Post('generate-scenario')
   async generateScenario(
@@ -96,5 +100,10 @@ export class ConversationController {
     @Param('conversationId') conversationId: number,
   ): Promise<GetConversationInfoResponseDto> {
     return this.conversationService.getConversationInfo(conversationId);
+  }
+
+  @Post('audio-from-text')
+  async getAudioFromText(@Body('text') text: string): Promise<Buffer> {
+    return this.openaiService.getAudioFromText(text);
   }
 }
