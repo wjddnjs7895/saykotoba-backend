@@ -24,6 +24,7 @@ import { GetConversationListResponseDto } from './dtos/get-conversation-list.dto
 import { UserEntity } from '../users/entities/user.entity';
 import { GetConversationInfoResponseDto } from './dtos/get-conversation-info.dto';
 import { ChatResponseDto } from './dtos/chat-response';
+import { GetFeedbackResponseDto } from '@/integrations/openai/dtos/get-feedback.dto';
 
 @Controller('conversation')
 export class ConversationController {
@@ -105,5 +106,12 @@ export class ConversationController {
   @Post('audio-from-text')
   async getAudioFromText(@Body('text') text: string): Promise<Buffer> {
     return this.openaiService.getAudioFromText(text);
+  }
+
+  @Get('feedback/:conversationId')
+  async getFeedback(
+    @Param('conversationId') conversationId: number,
+  ): Promise<GetFeedbackResponseDto> {
+    return this.conversationService.getFeedBack(conversationId);
   }
 }

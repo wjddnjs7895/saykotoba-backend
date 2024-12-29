@@ -1,4 +1,4 @@
-import { IsArray, IsString } from 'class-validator';
+import { IsArray, IsNumber, IsString } from 'class-validator';
 
 export class GetFirstMessageDto {
   @IsString()
@@ -11,8 +11,8 @@ export class GetFirstMessageDto {
   @IsString({ each: true })
   missions: string[];
 
-  @IsString()
-  difficulty: string;
+  @IsNumber()
+  difficultyLevel: number;
 
   @IsString()
   aiRole: string;

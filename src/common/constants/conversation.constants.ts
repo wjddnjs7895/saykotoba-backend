@@ -1,8 +1,8 @@
-export enum ConversationDifficulty {
-  BEGINNER = 'beginner',
-  ELEMENTARY = 'elementary',
-  INTERMEDIATE = 'intermediate',
-  UPPER_INTERMEDIATE = 'upperIntermediate',
-  ADVANCED = 'advanced',
-  CHALLENGE = 'challenge',
+export enum DIFFICULTY_MAP {
+  BEGINNER,
+  ELEMENTARY,
+  INTERMEDIATE,
+  UPPER_INTERMEDIATE,
+  ADVANCED,
+  CHALLENGE,
 }

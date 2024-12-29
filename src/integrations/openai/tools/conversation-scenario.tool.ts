@@ -10,12 +10,13 @@ export const ConversationScenarioTool = [
         properties: {
           title: {
             type: 'string',
-            description: 'Title of the conversation scenario',
+            description:
+              'Title of the conversation scenario. Only provide title in the requested language (i.e. en, ko)',
           },
           situation: {
             type: 'string',
             description:
-              'Detailed description of the conversation situation (including location, context)',
+              'Detailed description of the conversation situation (including location, context). Only provide description in the requested language (i.e. en, ko)',
           },
           missions: {
             type: 'array',
@@ -24,15 +25,11 @@ export const ConversationScenarioTool = [
               properties: {
                 mission: {
                   type: 'string',
-                  description: 'Specific conversation mission to complete',
-                },
-                isCompleted: {
-                  type: 'boolean',
-                  description: 'Mission completion status',
-                  default: false,
+                  description:
+                    'Specific conversation mission to complete. Only provide mission in the requested language (i.e. en, ko)',
                 },
               },
-              required: ['mission', 'isCompleted'],
+              required: ['mission'],
             },
             description: `Number of missions per difficulty level:
               - beginner: 2 missions
@@ -46,16 +43,14 @@ export const ConversationScenarioTool = [
           },
           difficulty: {
             type: 'string',
-            description:
-              'Difficulty level of the conversation (beginner, elementary, intermediate, upperIntermediate, advanced, challenge)',
-            enum: [
-              'beginner',
-              'elementary',
-              'intermediate',
-              'upperIntermediate',
-              'advanced',
-              'challenge',
-            ],
+            enum: [0, 1, 2, 3, 4, 5],
+            description: `Difficulty level of the conversation:
+              0: BEGINNER
+              1: ELEMENTARY
+              2: INTERMEDIATE
+              3: UPPER_INTERMEDIATE
+              4: ADVANCED
+              5: CHALLENGE`,
           },
           aiRole: {
             type: 'string',

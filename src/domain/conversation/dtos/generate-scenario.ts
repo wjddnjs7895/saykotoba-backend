@@ -1,10 +1,10 @@
-import { IsArray, IsNumber, IsString, IsEnum } from 'class-validator';
-
-import { ConversationDifficulty } from '@common/constants/conversation.constants';
+import { IsArray, IsNumber, IsString, Min, Max } from 'class-validator';
 
 export class GenerateScenarioRequestDto {
-  @IsEnum(ConversationDifficulty)
-  difficulty: ConversationDifficulty;
+  @IsNumber()
+  @Min(0)
+  @Max(5)
+  difficultyLevel: number;
 
   @IsString()
   topic: string;
@@ -18,7 +18,7 @@ export class GenerateScenarioRequestDto {
 
 export class GenerateScenarioResponseDto {
   @IsNumber()
-  difficulty: number;
+  difficultyLevel: number;
 
   @IsString()
   title: string;

@@ -163,7 +163,7 @@ export class ConversationService {
       const newConversation = this.conversationRepository.create({
         userId: createConversationDto.userId,
         title: createConversationDto.title,
-        difficulty: createConversationDto.difficulty,
+        difficultyLevel: createConversationDto.difficultyLevel,
         situation: createConversationDto.situation,
         aiRole: createConversationDto.aiRole,
         userRole: createConversationDto.userRole,
@@ -332,5 +332,20 @@ export class ConversationService {
       }
       throw new UnexpectedException();
     }
+  }
+
+  async getFeedBack(conversationId: number) {
+    const conversationInfo = await this.conversationRepository.findOne({
+      where: { id: conversationId },
+      relations: ['messages'],
+    });
+    if (!conversationInfo) {
+      throw new ConversationNotFoundException();
+    }
+    return await this.openAIService.getFeedBack({
+      messages: conversationInfo.messages,
+      difficulty: conversationInfo.difficultyLevel,
+      language: 'ja',
+    });
   }
 }

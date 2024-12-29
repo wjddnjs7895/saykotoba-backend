@@ -10,7 +10,6 @@ import { ConversationScenarioTool } from './tools/conversation-scenario.tool';
 import { ConversationEntity } from '../../domain/conversation/entities/conversation.entity';
 import { PROMPTS } from './prompts';
 import { ConversationResponseTool } from './tools/conversation-response.tool';
-import { DIFFICULTY_MAP } from './constants';
 import { GetFirstMessageDto } from './dtos/get-first-message.dto';
 import { GenerateResponseDto } from './dtos/generate-response.dto';
 import {
@@ -20,6 +19,12 @@ import {
 } from '@/common/exception/custom-exception/openai.exception';
 import { CustomBaseException } from '@/common/exception/custom.base.exception';
 import { UnexpectedException } from '@/common/exception/custom-exception/unexpected.exception';
+import { ConversationFeedbackTool } from './tools/conversation-feedback.tool';
+import {
+  GetFeedbackRequestDto,
+  GetFeedbackResponseDto,
+} from './dtos/get-feedback.dto';
+import { DIFFICULTY_MAP } from '@/common/constants/conversation.constants';
 
 @Injectable()
 export class OpenAIService {
@@ -35,7 +40,6 @@ export class OpenAIService {
   async generateScenario(
     generateScenarioDto: GenerateScenarioRequestDto,
   ): Promise<GenerateScenarioResponseDto> {
-    const difficultyLevel = DIFFICULTY_MAP[generateScenarioDto.difficulty];
     const language = 'en';
     try {
       const response = await this.openai.chat.completions.create({
@@ -43,22 +47,13 @@ export class OpenAIService {
         messages: [
           {
             role: 'system',
-            content: PROMPTS.SCENARIO_CREATOR,
-          },
-          {
-            role: 'user',
-            content: `Please create a ${difficultyLevel} level conversation scenario about ${generateScenarioDto.topic}. 
-          The situations should be specific and realistic, and the missions should be clear and achievable for learners.
-          Available difficulty levels are: ${Object.values(DIFFICULTY_MAP).join(', ')}.
-          In this scenario:
-          - You (AI) will play the role of: ${generateScenarioDto.aiRole}
-          - The user will play the role of: ${generateScenarioDto.userRole}
-          
-          Please include these exact values in your response:
-          - difficulty: "${generateScenarioDto.difficulty}"
-          - aiRole: "${generateScenarioDto.aiRole}"
-          - userRole: "${generateScenarioDto.userRole}"
-          - language: "${language}"`,
+            content: PROMPTS.SCENARIO_CREATOR(
+              DIFFICULTY_MAP[generateScenarioDto.difficultyLevel],
+              generateScenarioDto.topic,
+              generateScenarioDto.aiRole,
+              generateScenarioDto.userRole,
+              language,
+            ),
           },
         ],
         tools: ConversationScenarioTool,
@@ -100,7 +95,7 @@ export class OpenAIService {
             content: PROMPTS.CONVERSATION_PARTNER(
               conversationInfo.situation,
               conversationInfo.missions,
-              DIFFICULTY_MAP[conversationInfo.difficulty],
+              conversationInfo.difficultyLevel,
             ),
           },
           ...messages.map((message) => ({
@@ -253,7 +248,7 @@ export class OpenAIService {
           content: PROMPTS.FIRST_MESSAGE(
             getFirstMessageDto.situation,
             getFirstMessageDto.missions,
-            DIFFICULTY_MAP[getFirstMessageDto.difficulty],
+            getFirstMessageDto.difficultyLevel,
             getFirstMessageDto.aiRole,
             getFirstMessageDto.userRole,
           ),
@@ -266,5 +261,38 @@ export class OpenAIService {
     }
 
     return response.choices[0].message.content;
+  }
+
+  async getFeedBack(
+    getFeedbackRequestDto: GetFeedbackRequestDto,
+  ): Promise<GetFeedbackResponseDto> {
+    const response = await this.openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content: PROMPTS.FEEDBACK(
+            getFeedbackRequestDto.messages,
+            getFeedbackRequestDto.difficulty,
+            getFeedbackRequestDto.language,
+          ),
+        },
+      ],
+      tools: ConversationFeedbackTool,
+      tool_choice: 'required',
+    });
+
+    if (!response) {
+      throw new OpenAICreateFailedException();
+    }
+
+    const toolCall = response.choices[0].message.tool_calls?.[0];
+    if (!toolCall) {
+      throw new NoToolResponseReceivedException();
+    }
+
+    const result = JSON.parse(toolCall.function.arguments);
+
+    return result;
   }
 }

@@ -1,18 +1,20 @@
-import { ConversationDifficulty } from '@/common/constants/conversation.constants';
 import {
   IsArray,
-  IsEnum,
   IsNumber,
   IsOptional,
   IsString,
+  Max,
+  Min,
 } from 'class-validator';
 
 export class CreateConversationRequestDto {
   @IsString()
   title: string;
 
-  @IsEnum(ConversationDifficulty)
-  difficulty: ConversationDifficulty;
+  @IsNumber()
+  @Min(0)
+  @Max(5)
+  difficultyLevel: number;
 
   @IsString()
   situation: string;

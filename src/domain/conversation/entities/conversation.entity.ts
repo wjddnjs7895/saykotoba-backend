@@ -1,5 +1,4 @@
 import { BaseEntity } from 'src/common/entities/base.entity';
-import { ConversationDifficulty } from '@common/constants/conversation.constants';
 import { Column, Entity, OneToMany } from 'typeorm';
 import { MissionEntity } from './mission.entity';
 import { MessageEntity } from './message.entity';
@@ -18,12 +17,8 @@ export class ConversationEntity extends BaseEntity {
   @Column({ name: 'user_role' })
   userRole: string;
 
-  @Column({
-    name: 'difficulty',
-    type: 'enum',
-    enum: ConversationDifficulty,
-  })
-  difficulty: ConversationDifficulty;
+  @Column({ name: 'difficulty_level' })
+  difficultyLevel: number;
 
   @Column({ name: 'situation' })
   situation: string;
