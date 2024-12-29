@@ -41,8 +41,8 @@ export const ConversationScenarioTool = [
             minItems: 2,
             maxItems: 10,
           },
-          difficulty: {
-            type: 'string',
+          difficultyLevel: {
+            type: 'number',
             enum: [0, 1, 2, 3, 4, 5],
             description: `Difficulty level of the conversation:
               0: BEGINNER
@@ -65,7 +65,7 @@ export const ConversationScenarioTool = [
           'title',
           'situation',
           'missions',
-          'difficulty',
+          'difficultyLevel',
           'aiRole',
           'userRole',
         ],
