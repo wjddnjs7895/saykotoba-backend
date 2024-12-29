@@ -36,29 +36,8 @@ export const ConversationResponseTool = [
               required: ['missionId', 'mission', 'isCompleted'],
             },
           },
-          suggestedReplies: {
-            type: 'array',
-            description:
-              'The list of suggested replies for the user to respond to the conversation response, considering the entire input conversation',
-            minItems: 3,
-            maxItems: 3,
-            items: {
-              type: 'object',
-              properties: {
-                japanese: {
-                  type: 'string',
-                  description: 'The suggested reply in Japanese',
-                },
-                meaning: {
-                  type: 'string',
-                  description: 'The meaning of the Japanese reply in English',
-                },
-              },
-              required: ['japanese', 'meaning'],
-            },
-          },
         },
-        required: ['response', 'missionResults', 'suggestedReplies'],
+        required: ['response', 'missionResults'],
       },
     },
   } as const,

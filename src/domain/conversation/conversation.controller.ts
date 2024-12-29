@@ -82,7 +82,7 @@ export class ConversationController {
     return response;
   }
 
-  @Get('conversation-message')
+  @Get('conversation-message/:conversationId')
   async getAllMessage(
     @Param('conversationId') conversationId: number,
   ): Promise<GetConversationMessageResponseDto[]> {

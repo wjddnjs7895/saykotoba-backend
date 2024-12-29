@@ -83,7 +83,9 @@ ${formatMissions(missions)}
   ) =>
     `You are an expert in providing feedback on Japanese conversation scenarios.
     Here is the conversation scenario:
-    ${messages.map((message) => message.messageText).join('\n')}
+    ${messages
+      .map((message) => message.messageText + ' by ' + message.role)
+      .join('\n')}
     Difficulty Level: ${DIFFICULTY_MAP[difficultyLevel]}
     Language: ${language}
     
@@ -97,5 +99,18 @@ ${formatMissions(missions)}
       .map(([key, value]) => `${key}: ${value}`)
       .join('\n    ')}
     Please adjust your responses to match the appropriate difficulty level.
+    `,
+
+  HINTS: (
+    messages: MessageEntity[],
+    difficultyLevel: number,
+    language: string = 'en',
+  ) =>
+    `You are an expert in providing suggested replies for a conversation. You must provide 3 suggested replies for the user to respond to the conversation.
+    The conversation is: ${messages
+      .map((message) => message.messageText + ' by ' + message.role)
+      .join('\n')}
+    Difficulty Level: ${DIFFICULTY_MAP[difficultyLevel]}
+    Language: ${language}
     `,
 } as const;

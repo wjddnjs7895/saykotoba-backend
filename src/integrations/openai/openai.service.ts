@@ -133,7 +133,6 @@ export class OpenAIService {
       return {
         response: result.response,
         missionResults: result.missionResults,
-        suggestedReplies: result.suggestedReplies,
       };
     } catch (error) {
       if (error instanceof CustomBaseException) {

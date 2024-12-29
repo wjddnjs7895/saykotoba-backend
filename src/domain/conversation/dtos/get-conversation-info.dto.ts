@@ -1,4 +1,10 @@
-import { IsArray, IsBoolean, IsString, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsNumber,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 class MissionDto {
@@ -20,4 +26,13 @@ export class GetConversationInfoResponseDto {
   @ValidateNested({ each: true })
   @Type(() => MissionDto)
   missions: MissionDto[];
+
+  @IsNumber()
+  difficultyLevel: number;
+
+  @IsString()
+  aiRole: string;
+
+  @IsString()
+  userRole: string;
 }

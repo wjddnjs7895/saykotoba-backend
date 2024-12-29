@@ -95,7 +95,7 @@ export class ConversationService {
       throw new MessageNotFoundException();
     }
 
-    const { response, missionResults, suggestedReplies } =
+    const { response, missionResults } =
       await this.openAIService.processAudioAndGenerateResponse(
         conversationInfo,
         messages,
@@ -105,7 +105,6 @@ export class ConversationService {
     return {
       text: response,
       missionResults,
-      suggestedReplies,
     };
   }
 
@@ -153,6 +152,9 @@ export class ConversationService {
       mission: mission.mission,
       isCompleted: mission.isCompleted,
     }));
+    response.difficultyLevel = conversationInfo.difficultyLevel;
+    response.aiRole = conversationInfo.aiRole;
+    response.userRole = conversationInfo.userRole;
     return response;
   }
 
@@ -251,7 +253,6 @@ export class ConversationService {
         userMessage: userText,
         assistantMessage: aiResponse.text,
         missions: updatedMissions,
-        suggestedReplies: aiResponse.suggestedReplies,
       };
     } catch (error) {
       if (error instanceof CustomBaseException) {

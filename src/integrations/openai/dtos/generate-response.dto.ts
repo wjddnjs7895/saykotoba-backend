@@ -12,14 +12,6 @@ class MissionResult {
   isCompleted: boolean;
 }
 
-class SuggestedReply {
-  @IsString()
-  japanese: string;
-
-  @IsString()
-  meaning: string;
-}
-
 export class GenerateResponseDto {
   @IsString()
   response: string;
@@ -28,9 +20,4 @@ export class GenerateResponseDto {
   @ValidateNested({ each: true })
   @Type(() => MissionResult)
   missionResults: MissionResult[];
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => SuggestedReply)
-  suggestedReplies: SuggestedReply[];
 }

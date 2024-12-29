@@ -1,14 +1,6 @@
 import { IsArray, IsString } from 'class-validator';
 import { MissionEntity } from '../entities/mission.entity';
 
-class SuggestedReply {
-  @IsString()
-  japanese: string;
-
-  @IsString()
-  meaning: string;
-}
-
 export class ChatResponseDto {
   @IsString()
   userMessage: string;
@@ -18,7 +10,4 @@ export class ChatResponseDto {
 
   @IsArray()
   missions: MissionEntity[];
-
-  @IsArray()
-  suggestedReplies: SuggestedReply[];
 }
