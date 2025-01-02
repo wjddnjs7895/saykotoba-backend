@@ -17,10 +17,11 @@ import { MissionResultType } from '../../integrations/openai/tools/conversation-
 import { GetConversationListResponseDto } from './dtos/get-conversation-list.dto';
 import { GetConversationInfoResponseDto } from './dtos/get-conversation-info.dto';
 import { S3Service } from '@/integrations/aws/services/s3/s3.service';
-import { ChatResponseDto } from './dtos/chat-response';
+import { ChatResponseDto } from './dtos/chat-response.dto';
 import {
   ConversationNotFoundException,
   ConversationSaveFailedException,
+  HintCountExceededException,
   MessageNotFoundException,
   MessageSaveFailedException,
   MissionNotFoundException,
@@ -28,6 +29,8 @@ import {
 } from '@/common/exception/custom-exception/conversation.exception';
 import { CustomBaseException } from '@/common/exception/custom.base.exception';
 import { UnexpectedException } from '@/common/exception/custom-exception/unexpected.exception';
+import { DIFFICULTY_MAP } from '@/common/constants/conversation.constants';
+import { GetHintResponseDto } from './dtos/get-hint.dto';
 
 @Injectable()
 export class ConversationService {
@@ -162,6 +165,8 @@ export class ConversationService {
     createConversationDto: CreateConversationServiceDto,
   ): Promise<CreateConversationResponseDto> {
     try {
+      const hintCount =
+        DIFFICULTY_MAP.CHALLENGE - createConversationDto.difficultyLevel;
       const newConversation = this.conversationRepository.create({
         userId: createConversationDto.userId,
         title: createConversationDto.title,
@@ -169,6 +174,7 @@ export class ConversationService {
         situation: createConversationDto.situation,
         aiRole: createConversationDto.aiRole,
         userRole: createConversationDto.userRole,
+        remainingHintCount: hintCount,
       });
       try {
         await this.conversationRepository.save(newConversation);
@@ -336,6 +342,7 @@ export class ConversationService {
   }
 
   async getFeedBack(conversationId: number) {
+    const language = 'en';
     const conversationInfo = await this.conversationRepository.findOne({
       where: { id: conversationId },
       relations: ['messages'],
@@ -346,7 +353,44 @@ export class ConversationService {
     return await this.openAIService.getFeedBack({
       messages: conversationInfo.messages,
       difficulty: conversationInfo.difficultyLevel,
-      language: 'ja',
+      language,
     });
+  }
+
+  async getHintAndCount(conversationId: number): Promise<GetHintResponseDto> {
+    try {
+      const language = 'en';
+      const conversationInfo = await this.conversationRepository.findOne({
+        where: { id: conversationId },
+        relations: ['messages'],
+      });
+      if (!conversationInfo) {
+        throw new ConversationNotFoundException();
+      }
+
+      if (conversationInfo.remainingHintCount === 0) {
+        throw new HintCountExceededException();
+      }
+      const aiResult = await this.openAIService.generateHint({
+        messages: conversationInfo.messages,
+        difficultyLevel: conversationInfo.difficultyLevel,
+        language,
+      });
+
+      const remainingHintCount = conversationInfo.remainingHintCount - 1;
+      await this.conversationRepository.update(conversationId, {
+        remainingHintCount: remainingHintCount,
+      });
+
+      return {
+        hints: aiResult.hints,
+        remainingHintCount: remainingHintCount,
+      };
+    } catch (error) {
+      if (error instanceof CustomBaseException) {
+        throw error;
+      }
+      throw new UnexpectedException();
+    }
   }
 }

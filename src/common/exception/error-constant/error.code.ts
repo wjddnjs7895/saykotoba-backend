@@ -28,6 +28,7 @@ export enum ConversationErrorCodeEnum {
   MissionSaveFailed = 'CONV04',
   MessageSaveFailed = 'CONV05',
   MissionNotFound = 'CONV06',
+  HintCountExceeded = 'CONV07',
 }
 
 export enum OpenAIErrorCodeEnum {

@@ -23,8 +23,9 @@ import { User } from '@common/decorators/user.decorator';
 import { GetConversationListResponseDto } from './dtos/get-conversation-list.dto';
 import { UserEntity } from '../users/entities/user.entity';
 import { GetConversationInfoResponseDto } from './dtos/get-conversation-info.dto';
-import { ChatResponseDto } from './dtos/chat-response';
+import { ChatResponseDto } from './dtos/chat-response.dto';
 import { GetFeedbackResponseDto } from '@/integrations/openai/dtos/get-feedback.dto';
+import { GetHintResponseDto } from './dtos/get-hint.dto';
 
 @Controller('conversation')
 export class ConversationController {
@@ -113,5 +114,12 @@ export class ConversationController {
     @Param('conversationId') conversationId: number,
   ): Promise<GetFeedbackResponseDto> {
     return this.conversationService.getFeedBack(conversationId);
+  }
+
+  @Get('hint/:conversationId')
+  async getHint(
+    @Param('conversationId') conversationId: number,
+  ): Promise<GetHintResponseDto> {
+    return this.conversationService.getHintAndCount(conversationId);
   }
 }

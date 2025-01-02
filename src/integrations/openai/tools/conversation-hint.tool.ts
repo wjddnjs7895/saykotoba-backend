@@ -16,9 +16,13 @@ export const ConversationHintTool = [
             items: {
               type: 'object',
               properties: {
-                japanese: {
+                hint: {
                   type: 'string',
                   description: 'The suggested reply in Japanese',
+                },
+                reading: {
+                  type: 'string',
+                  description: 'How to read the hint (in hiragana/katakana)',
                 },
                 meaning: {
                   type: 'string',
@@ -26,7 +30,7 @@ export const ConversationHintTool = [
                     'The meaning of the Japanese reply in required language (i.e. en, ko)',
                 },
               },
-              required: ['japanese', 'meaning'],
+              required: ['hint', 'reading', 'meaning'],
             },
           },
         },

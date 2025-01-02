@@ -31,4 +31,7 @@ export class ConversationEntity extends BaseEntity {
 
   @Column({ name: 'thumbnail_url', nullable: true })
   thumbnailUrl: string;
+
+  @Column({ name: 'remaining_hint_count', default: 3 })
+  remainingHintCount: number;
 }

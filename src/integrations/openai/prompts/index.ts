@@ -101,7 +101,7 @@ ${formatMissions(missions)}
     Please adjust your responses to match the appropriate difficulty level.
     `,
 
-  HINTS: (
+  HINT_CREATOR: (
     messages: MessageEntity[],
     difficultyLevel: number,
     language: string = 'en',

@@ -25,6 +25,11 @@ import {
   GetFeedbackResponseDto,
 } from './dtos/get-feedback.dto';
 import { DIFFICULTY_MAP } from '@/common/constants/conversation.constants';
+import {
+  GenerateHintRequestDto,
+  GenerateHintResponseDto,
+} from './dtos/generate-hint.dto';
+import { ConversationHintTool } from './tools/conversation-hint.tool';
 
 @Injectable()
 export class OpenAIService {
@@ -278,6 +283,39 @@ export class OpenAIService {
         },
       ],
       tools: ConversationFeedbackTool,
+      tool_choice: 'required',
+    });
+
+    if (!response) {
+      throw new OpenAICreateFailedException();
+    }
+
+    const toolCall = response.choices[0].message.tool_calls?.[0];
+    if (!toolCall) {
+      throw new NoToolResponseReceivedException();
+    }
+
+    const result = JSON.parse(toolCall.function.arguments);
+
+    return result;
+  }
+
+  async generateHint(
+    generateHintRequestDto: GenerateHintRequestDto,
+  ): Promise<GenerateHintResponseDto> {
+    const response = await this.openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content: PROMPTS.HINT_CREATOR(
+            generateHintRequestDto.messages,
+            generateHintRequestDto.difficultyLevel,
+            generateHintRequestDto.language,
+          ),
+        },
+      ],
+      tools: ConversationHintTool,
       tool_choice: 'required',
     });
 

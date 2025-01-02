@@ -64,3 +64,13 @@ export class MissionNotFoundException extends CustomBaseException {
     );
   }
 }
+
+export class HintCountExceededException extends CustomBaseException {
+  constructor() {
+    super(
+      ConversationErrorCodeEnum.HintCountExceeded,
+      HttpStatus.BAD_REQUEST,
+      ConversationErrorMessage[ConversationErrorCodeEnum.HintCountExceeded],
+    );
+  }
+}
