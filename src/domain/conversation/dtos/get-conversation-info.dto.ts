@@ -35,4 +35,7 @@ export class GetConversationInfoResponseDto {
 
   @IsString()
   userRole: string;
+
+  @IsNumber()
+  remainingHintCount: number;
 }

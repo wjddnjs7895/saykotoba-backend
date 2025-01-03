@@ -74,3 +74,13 @@ export class HintCountExceededException extends CustomBaseException {
     );
   }
 }
+
+export class MessageDeleteFailedException extends CustomBaseException {
+  constructor() {
+    super(
+      ConversationErrorCodeEnum.MessageDeleteFailed,
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      ConversationErrorMessage[ConversationErrorCodeEnum.MessageDeleteFailed],
+    );
+  }
+}

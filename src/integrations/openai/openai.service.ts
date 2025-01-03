@@ -30,6 +30,7 @@ import {
   GenerateHintResponseDto,
 } from './dtos/generate-hint.dto';
 import { ConversationHintTool } from './tools/conversation-hint.tool';
+import { TextToSpeechDto } from './dtos/text-to-speech.dto';
 
 @Injectable()
 export class OpenAIService {
@@ -199,12 +200,12 @@ export class OpenAIService {
   //   };
   // }
 
-  async getAudioFromText(text: string): Promise<Buffer> {
+  async getAudioFromText(textToSpeechDto: TextToSpeechDto): Promise<Buffer> {
     try {
       const response = await this.openai.audio.speech.create({
-        model: 'tts-1-hd',
-        voice: 'shimmer',
-        input: text,
+        model: 'tts-1',
+        voice: textToSpeechDto.voice,
+        input: textToSpeechDto.text,
       });
       if (!response) {
         throw new OpenAICreateFailedException();

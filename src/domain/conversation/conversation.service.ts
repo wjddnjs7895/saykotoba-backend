@@ -22,6 +22,7 @@ import {
   ConversationNotFoundException,
   ConversationSaveFailedException,
   HintCountExceededException,
+  MessageDeleteFailedException,
   MessageNotFoundException,
   MessageSaveFailedException,
   MissionNotFoundException,
@@ -31,6 +32,10 @@ import { CustomBaseException } from '@/common/exception/custom.base.exception';
 import { UnexpectedException } from '@/common/exception/custom-exception/unexpected.exception';
 import { DIFFICULTY_MAP } from '@/common/constants/conversation.constants';
 import { GetHintResponseDto } from './dtos/get-hint.dto';
+import {
+  GetAudioFromTextRequestDto,
+  GetAudioFromTextResponseDto,
+} from './dtos/get-audio-from-text.dto';
 
 @Injectable()
 export class ConversationService {
@@ -148,16 +153,7 @@ export class ConversationService {
       throw new ConversationNotFoundException();
     }
 
-    const response = new GetConversationInfoResponseDto();
-    response.title = conversationInfo.title;
-    response.situation = conversationInfo.situation;
-    response.missions = conversationInfo.missions.map((mission) => ({
-      mission: mission.mission,
-      isCompleted: mission.isCompleted,
-    }));
-    response.difficultyLevel = conversationInfo.difficultyLevel;
-    response.aiRole = conversationInfo.aiRole;
-    response.userRole = conversationInfo.userRole;
+    const response = conversationInfo;
     return response;
   }
 
@@ -226,14 +222,21 @@ export class ConversationService {
     audio: Express.Multer.File,
   ): Promise<ChatResponseDto> {
     try {
+      const response = new ChatResponseDto();
       const userText = await this.openAIService.getTextFromAudio(audio);
 
       try {
-        await this.messageRepository.save({
+        const userMessage = await this.messageRepository.save({
           conversationId,
           messageText: userText,
           role: MessageRole.USER,
         });
+        response.userMessage = {
+          id: userMessage.id,
+          message: userMessage.messageText,
+          isUser: true,
+          createdAt: userMessage.createdAt,
+        };
       } catch {
         throw new MessageSaveFailedException();
       }
@@ -241,11 +244,17 @@ export class ConversationService {
       const aiResponse = await this.processAudioResponse(conversationId, audio);
 
       try {
-        await this.messageRepository.save({
+        const assistantMessage = await this.messageRepository.save({
           conversationId,
           messageText: aiResponse.text,
           role: MessageRole.ASSISTANT,
         });
+        response.assistantMessage = {
+          id: assistantMessage.id,
+          message: assistantMessage.messageText,
+          isUser: false,
+          createdAt: assistantMessage.createdAt,
+        };
       } catch {
         throw new MessageSaveFailedException();
       }
@@ -255,11 +264,14 @@ export class ConversationService {
         aiResponse.missionResults,
       );
 
-      return {
-        userMessage: userText,
-        assistantMessage: aiResponse.text,
-        missions: updatedMissions,
-      };
+      response.missions = updatedMissions;
+
+      const { audioUrl } = await this.getAudioFromText({
+        text: aiResponse.text,
+        voice: 'shimmer',
+      });
+      response.audioUrl = audioUrl;
+      return response;
     } catch (error) {
       if (error instanceof CustomBaseException) {
         throw error;
@@ -391,6 +403,44 @@ export class ConversationService {
         throw error;
       }
       throw new UnexpectedException();
+    }
+  }
+
+  async getAudioFromText(
+    textToSpeechDto: GetAudioFromTextRequestDto,
+  ): Promise<GetAudioFromTextResponseDto> {
+    const audio = await this.openAIService.getAudioFromText(textToSpeechDto);
+    const base64Audio = audio.toString('base64');
+    return { audioUrl: `data:audio/mp3;base64,${base64Audio}` };
+  }
+
+  async undoChat(conversationId: number): Promise<boolean> {
+    const messages = await this.messageRepository.find({
+      where: { conversationId },
+      order: { createdAt: 'ASC' },
+    });
+
+    if (messages.length === 0) {
+      throw new MessageNotFoundException();
+    }
+
+    try {
+      const lastMessage = messages[messages.length - 1];
+      const secondLastMessage = messages[messages.length - 2];
+      if (
+        lastMessage.role === MessageRole.ASSISTANT &&
+        secondLastMessage?.role === MessageRole.USER
+      ) {
+        await this.messageRepository.delete([
+          lastMessage.id,
+          secondLastMessage.id,
+        ]);
+      } else {
+        await this.messageRepository.delete(lastMessage.id);
+      }
+      return true;
+    } catch {
+      throw new MessageDeleteFailedException();
     }
   }
 }

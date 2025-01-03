@@ -54,6 +54,7 @@ export const ConversationErrorMessage: ConversationErrorMessageType = {
   [ConversationErrorCodeEnum.MessageSaveFailed]: 'Message save failed',
   [ConversationErrorCodeEnum.MissionNotFound]: 'Mission not found',
   [ConversationErrorCodeEnum.HintCountExceeded]: 'Hint count exceeded',
+  [ConversationErrorCodeEnum.MessageDeleteFailed]: 'Message delete failed',
 };
 
 export const OpenAIErrorMessage: OpenAIErrorMessageType = {

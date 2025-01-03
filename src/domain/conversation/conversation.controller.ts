@@ -6,6 +6,7 @@ import {
   UploadedFile,
   UseInterceptors,
   Param,
+  Delete,
 } from '@nestjs/common';
 import { ConversationService } from './conversation.service';
 import { OpenAIService } from '../../integrations/openai/openai.service';
@@ -26,6 +27,10 @@ import { GetConversationInfoResponseDto } from './dtos/get-conversation-info.dto
 import { ChatResponseDto } from './dtos/chat-response.dto';
 import { GetFeedbackResponseDto } from '@/integrations/openai/dtos/get-feedback.dto';
 import { GetHintResponseDto } from './dtos/get-hint.dto';
+import {
+  GetAudioFromTextRequestDto,
+  GetAudioFromTextResponseDto,
+} from './dtos/get-audio-from-text.dto';
 
 @Controller('conversation')
 export class ConversationController {
@@ -105,8 +110,10 @@ export class ConversationController {
   }
 
   @Post('audio-from-text')
-  async getAudioFromText(@Body('text') text: string): Promise<Buffer> {
-    return this.openaiService.getAudioFromText(text);
+  async getAudioFromText(
+    @Body() textToSpeechDto: GetAudioFromTextRequestDto,
+  ): Promise<GetAudioFromTextResponseDto> {
+    return this.conversationService.getAudioFromText(textToSpeechDto);
   }
 
   @Get('feedback/:conversationId')
@@ -121,5 +128,12 @@ export class ConversationController {
     @Param('conversationId') conversationId: number,
   ): Promise<GetHintResponseDto> {
     return this.conversationService.getHintAndCount(conversationId);
+  }
+
+  @Delete('undo/:conversationId')
+  async undoMission(
+    @Param('conversationId') conversationId: number,
+  ): Promise<boolean> {
+    return this.conversationService.undoChat(conversationId);
   }
 }
