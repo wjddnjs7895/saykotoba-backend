@@ -1,12 +1,12 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class GetAudioFromTextRequestDto {
   @IsString()
   text: string;
 
   @IsOptional()
-  @IsString()
-  voice?: 'alloy' | 'echo' | 'fable' | 'onyx' | 'nova' | 'shimmer' = 'shimmer';
+  @IsNumber()
+  speakingRate?: number;
 }
 
 export class GetAudioFromTextResponseDto {

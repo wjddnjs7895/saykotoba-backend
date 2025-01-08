@@ -22,6 +22,9 @@ class MessageDto {
 
   @IsDate()
   createdAt: Date;
+
+  @IsString()
+  meaning?: string;
 }
 
 export class ChatResponseDto {

@@ -2,6 +2,7 @@ import {
   IsArray,
   IsBoolean,
   IsNumber,
+  IsObject,
   IsString,
   ValidateNested,
 } from 'class-validator';
@@ -13,6 +14,43 @@ class MissionDto {
 
   @IsBoolean()
   isCompleted: boolean;
+}
+
+class BetterExpressionDto {
+  @IsString()
+  sentence: string;
+
+  @IsString()
+  betterExpression: string;
+
+  @IsString()
+  reading: string;
+
+  @IsString()
+  feedback: string;
+}
+
+class DifficultWordDto {
+  @IsString()
+  word: string;
+
+  @IsString()
+  reading: string;
+
+  @IsString()
+  meaning: string;
+}
+
+class FeedbackDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => BetterExpressionDto)
+  betterExpressions: BetterExpressionDto[];
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => DifficultWordDto)
+  difficultWords: DifficultWordDto[];
 }
 
 export class GetConversationInfoResponseDto {
@@ -38,4 +76,15 @@ export class GetConversationInfoResponseDto {
 
   @IsNumber()
   remainingHintCount: number;
+
+  @IsNumber()
+  score: number;
+
+  @IsBoolean()
+  isCompleted: boolean;
+
+  @IsObject()
+  @ValidateNested()
+  @Type(() => FeedbackDto)
+  feedback: FeedbackDto;
 }

@@ -23,5 +23,8 @@ export class GetFirstMessageDto {
 
 export class GetFirstMessageResponseDto {
   @IsString()
-  message: string;
+  response: string;
+
+  @IsString()
+  meaning: string;
 }

@@ -21,10 +21,13 @@ import { ChatResponseDto } from './dtos/chat-response.dto';
 import {
   ConversationNotFoundException,
   ConversationSaveFailedException,
+  ConversationUpdateFailedException,
+  FeedbackSaveFailedException,
   HintCountExceededException,
   MessageDeleteFailedException,
   MessageNotFoundException,
   MessageSaveFailedException,
+  MissionNotCompletedException,
   MissionNotFoundException,
   MissionSaveFailedException,
 } from '@/common/exception/custom-exception/conversation.exception';
@@ -36,7 +39,9 @@ import {
   GetAudioFromTextRequestDto,
   GetAudioFromTextResponseDto,
 } from './dtos/get-audio-from-text.dto';
-
+import { GetFirstMessageResponseDto } from '@/integrations/openai/dtos/get-first-message.dto';
+import { GoogleService } from '@/integrations/google/google.service';
+import { FeedbackEntity } from './entities/feedback.entity';
 @Injectable()
 export class ConversationService {
   constructor(
@@ -46,8 +51,11 @@ export class ConversationService {
     private readonly missionRepository: Repository<MissionEntity>,
     @InjectRepository(ConversationEntity)
     private readonly conversationRepository: Repository<ConversationEntity>,
+    @InjectRepository(FeedbackEntity)
+    private readonly feedbackRepository: Repository<FeedbackEntity>,
     private readonly openAIService: OpenAIService,
     private readonly s3Service: S3Service,
+    private readonly googleService: GoogleService,
   ) {}
 
   async getConversationsByUserId(
@@ -103,7 +111,7 @@ export class ConversationService {
       throw new MessageNotFoundException();
     }
 
-    const { response, missionResults } =
+    const { response, meaning, missionResults } =
       await this.openAIService.processAudioAndGenerateResponse(
         conversationInfo,
         messages,
@@ -112,6 +120,7 @@ export class ConversationService {
 
     return {
       text: response,
+      meaning,
       missionResults,
     };
   }
@@ -146,7 +155,7 @@ export class ConversationService {
   ): Promise<GetConversationInfoResponseDto> {
     const conversationInfo = await this.conversationRepository.findOne({
       where: { id: conversationId },
-      relations: ['missions'],
+      relations: ['missions', 'feedback'],
     });
 
     if (!conversationInfo) {
@@ -195,7 +204,8 @@ export class ConversationService {
       try {
         await this.messageRepository.save({
           conversationId: newConversation.id,
-          messageText: firstMessage,
+          messageText: firstMessage.response,
+          meaning: firstMessage.meaning,
           role: MessageRole.ASSISTANT,
         });
       } catch {
@@ -213,12 +223,13 @@ export class ConversationService {
 
   async getFirstMessage(
     conversationInfo: CreateConversationServiceDto,
-  ): Promise<string> {
+  ): Promise<GetFirstMessageResponseDto> {
     return await this.openAIService.getFirstMessage(conversationInfo);
   }
 
   async getAndProcessConversationFromAudio(
     conversationId: number,
+    speakingRate: number,
     audio: Express.Multer.File,
   ): Promise<ChatResponseDto> {
     try {
@@ -247,11 +258,13 @@ export class ConversationService {
         const assistantMessage = await this.messageRepository.save({
           conversationId,
           messageText: aiResponse.text,
+          meaning: aiResponse.meaning,
           role: MessageRole.ASSISTANT,
         });
         response.assistantMessage = {
           id: assistantMessage.id,
           message: assistantMessage.messageText,
+          meaning: aiResponse.meaning,
           isUser: false,
           createdAt: assistantMessage.createdAt,
         };
@@ -268,7 +281,7 @@ export class ConversationService {
 
       const { audioUrl } = await this.getAudioFromText({
         text: aiResponse.text,
-        voice: 'shimmer',
+        speakingRate,
       });
       response.audioUrl = audioUrl;
       return response;
@@ -353,20 +366,48 @@ export class ConversationService {
     }
   }
 
-  async getFeedBack(conversationId: number) {
-    const language = 'en';
-    const conversationInfo = await this.conversationRepository.findOne({
-      where: { id: conversationId },
-      relations: ['messages'],
-    });
-    if (!conversationInfo) {
-      throw new ConversationNotFoundException();
+  async generateFeedBackAndSave(conversationId: number) {
+    try {
+      const language = 'en';
+      const conversationInfo = await this.conversationRepository.findOne({
+        where: { id: conversationId },
+        relations: ['messages', 'missions'],
+      });
+      if (!conversationInfo) {
+        throw new ConversationNotFoundException();
+      }
+      if (!conversationInfo.missions.every((mission) => mission.isCompleted)) {
+        throw new MissionNotCompletedException();
+      }
+      const feedback = await this.openAIService.generateFeedBack({
+        messages: conversationInfo.messages,
+        difficulty: conversationInfo.difficultyLevel,
+        language,
+      });
+      try {
+        await this.feedbackRepository.save({
+          conversationId: conversationId,
+          betterExpressions: feedback.betterExpressions,
+          difficultWords: feedback.difficultWords,
+        });
+      } catch {
+        throw new FeedbackSaveFailedException();
+      }
+      try {
+        await this.conversationRepository.update(conversationId, {
+          isCompleted: true,
+          score: feedback.score,
+        });
+      } catch {
+        throw new ConversationUpdateFailedException();
+      }
+      return feedback;
+    } catch (error) {
+      if (error instanceof CustomBaseException) {
+        throw error;
+      }
+      throw new UnexpectedException();
     }
-    return await this.openAIService.getFeedBack({
-      messages: conversationInfo.messages,
-      difficulty: conversationInfo.difficultyLevel,
-      language,
-    });
   }
 
   async getHintAndCount(conversationId: number): Promise<GetHintResponseDto> {
@@ -409,7 +450,7 @@ export class ConversationService {
   async getAudioFromText(
     textToSpeechDto: GetAudioFromTextRequestDto,
   ): Promise<GetAudioFromTextResponseDto> {
-    const audio = await this.openAIService.getAudioFromText(textToSpeechDto);
+    const audio = await this.googleService.getAudioFromText(textToSpeechDto);
     const base64Audio = audio.toString('base64');
     return { audioUrl: `data:audio/mp3;base64,${base64Audio}` };
   }

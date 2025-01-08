@@ -16,6 +16,9 @@ export class GenerateResponseDto {
   @IsString()
   response: string;
 
+  @IsString()
+  meaning: string;
+
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => MissionResult)

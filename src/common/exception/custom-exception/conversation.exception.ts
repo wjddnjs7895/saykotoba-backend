@@ -84,3 +84,45 @@ export class MessageDeleteFailedException extends CustomBaseException {
     );
   }
 }
+
+export class FeedbackSaveFailedException extends CustomBaseException {
+  constructor() {
+    super(
+      ConversationErrorCodeEnum.FeedbackSaveFailed,
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      ConversationErrorMessage[ConversationErrorCodeEnum.FeedbackSaveFailed],
+    );
+  }
+}
+
+export class ConversationUpdateFailedException extends CustomBaseException {
+  constructor() {
+    super(
+      ConversationErrorCodeEnum.ConversationUpdateFailed,
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      ConversationErrorMessage[
+        ConversationErrorCodeEnum.ConversationUpdateFailed
+      ],
+    );
+  }
+}
+
+export class FeedbackNotFoundException extends CustomBaseException {
+  constructor() {
+    super(
+      ConversationErrorCodeEnum.FeedbackNotFound,
+      HttpStatus.NOT_FOUND,
+      ConversationErrorMessage[ConversationErrorCodeEnum.FeedbackNotFound],
+    );
+  }
+}
+
+export class MissionNotCompletedException extends CustomBaseException {
+  constructor() {
+    super(
+      ConversationErrorCodeEnum.MissionNotCompleted,
+      HttpStatus.BAD_REQUEST,
+      ConversationErrorMessage[ConversationErrorCodeEnum.MissionNotCompleted],
+    );
+  }
+}

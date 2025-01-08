@@ -1,7 +1,8 @@
 import { BaseEntity } from 'src/common/entities/base.entity';
-import { Column, Entity, OneToMany } from 'typeorm';
+import { Column, Entity, OneToMany, OneToOne } from 'typeorm';
 import { MissionEntity } from './mission.entity';
 import { MessageEntity } from './message.entity';
+import { FeedbackEntity } from './feedback.entity';
 
 @Entity('conversation')
 export class ConversationEntity extends BaseEntity {
@@ -23,11 +24,20 @@ export class ConversationEntity extends BaseEntity {
   @Column({ name: 'situation' })
   situation: string;
 
+  @Column({ name: 'is_completed', default: false })
+  isCompleted: boolean;
+
+  @Column({ name: 'score', default: 0 })
+  score: number;
+
   @OneToMany(() => MissionEntity, (mission) => mission.conversation)
   missions: MissionEntity[];
 
   @OneToMany(() => MessageEntity, (message) => message.conversation)
   messages: MessageEntity[];
+
+  @OneToOne(() => FeedbackEntity, (feedback) => feedback.conversation)
+  feedback: FeedbackEntity;
 
   @Column({ name: 'thumbnail_url', nullable: true })
   thumbnailUrl: string;

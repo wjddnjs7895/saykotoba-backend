@@ -15,43 +15,22 @@ export const ConversationFeedbackTool = [
             minimum: 0,
             maximum: 100,
           },
-          grammar: {
-            type: 'array',
-            description:
-              'Feedback only for sentences with clear grammatical errors',
-            items: {
-              type: 'object',
-              properties: {
-                sentence: {
-                  type: 'string',
-                  description:
-                    'The original sentence that contains a grammatical error',
-                },
-                feedback: {
-                  type: 'string',
-                  description:
-                    'Feedback explaining the grammatical error and correction. Only provide feedback in the requested language (i.e. en, ko)',
-                },
-              },
-              required: ['sentence', 'feedback'],
-            },
-          },
           betterExpressions: {
             type: 'array',
             description:
-              'Feedback only for sentences that could be significantly improved in terms of naturalness or formality',
+              'Feedback for sentences that have grammatical errors or could be significantly improved in terms of naturalness or formality',
             items: {
               type: 'object',
               properties: {
                 sentence: {
                   type: 'string',
                   description:
-                    'The original sentence that needs significant improvement',
+                    'The original sentence that contains errors or needs improvement',
                 },
                 betterExpression: {
                   type: 'string',
                   description:
-                    'A significantly better or more natural Japanese expression',
+                    'A significantly better or more natural Japanese expression, with any grammatical errors corrected',
                 },
                 reading: {
                   type: 'string',
@@ -61,7 +40,7 @@ export const ConversationFeedbackTool = [
                 feedback: {
                   type: 'string',
                   description:
-                    'Explanation of why this expression is significantly better. Only provide feedback in the requested language (i.e. en, ko)',
+                    'Explanation of why this expression is better and/or correction of any grammatical errors. Only provide feedback in the requested language (i.e. en, ko)',
                 },
               },
               required: ['sentence', 'betterExpression', 'reading', 'feedback'],
@@ -92,7 +71,7 @@ export const ConversationFeedbackTool = [
             },
           },
         },
-        required: ['score', 'grammar', 'betterExpressions', 'difficultWords'],
+        required: ['score', 'betterExpressions', 'difficultWords'],
       },
     },
   } as const,

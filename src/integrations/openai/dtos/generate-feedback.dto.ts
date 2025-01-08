@@ -8,7 +8,7 @@ import {
 import { Type } from 'class-transformer';
 import { MessageEntity } from '@/domain/conversation/entities/message.entity';
 
-export class GetFeedbackRequestDto {
+export class AIFeedbackRequestDto {
   @IsNotEmpty()
   @IsArray()
   @ValidateNested({ each: true })
@@ -22,16 +22,6 @@ export class GetFeedbackRequestDto {
   @IsNotEmpty()
   @IsString()
   language: string;
-}
-
-class Grammar {
-  @IsNotEmpty()
-  @IsString()
-  sentence: string;
-
-  @IsNotEmpty()
-  @IsString()
-  feedback: string;
 }
 
 class BetterExpression {
@@ -66,14 +56,9 @@ class DifficultWord {
   meaning: string;
 }
 
-export class GetFeedbackResponseDto {
+export class AIFeedbackResponseDto {
   @IsNumber()
   score: number;
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => Grammar)
-  grammar: Grammar[];
 
   @IsArray()
   @ValidateNested({ each: true })

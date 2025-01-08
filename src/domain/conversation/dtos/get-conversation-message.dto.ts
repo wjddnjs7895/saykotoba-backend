@@ -5,6 +5,7 @@ export class GetConversationMessageRequestDto {
 export class GetConversationMessageResponseDto {
   id: number;
   message: string;
+  meaning?: string;
   isUser: boolean;
   createdAt: Date;
 }

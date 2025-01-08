@@ -25,12 +25,12 @@ import { GetConversationListResponseDto } from './dtos/get-conversation-list.dto
 import { UserEntity } from '../users/entities/user.entity';
 import { GetConversationInfoResponseDto } from './dtos/get-conversation-info.dto';
 import { ChatResponseDto } from './dtos/chat-response.dto';
-import { GetFeedbackResponseDto } from '@/integrations/openai/dtos/get-feedback.dto';
 import { GetHintResponseDto } from './dtos/get-hint.dto';
 import {
   GetAudioFromTextRequestDto,
   GetAudioFromTextResponseDto,
 } from './dtos/get-audio-from-text.dto';
+import { GenerateFeedbackResponseDto } from './dtos/generate-feedback.dto';
 
 @Controller('conversation')
 export class ConversationController {
@@ -49,11 +49,13 @@ export class ConversationController {
   @Post('audio-response')
   @UseInterceptors(FileInterceptor('audio'))
   async getResponseFromAudio(
-    @Body('conversationId') conversationId: number,
     @UploadedFile() audio: Express.Multer.File,
+    @Body() body: { conversationId: string; speakingRate: string },
   ): Promise<ChatResponseDto> {
+    console.log(body);
     return this.conversationService.getAndProcessConversationFromAudio(
-      conversationId,
+      parseInt(body.conversationId, 10),
+      parseFloat(body.speakingRate),
       audio,
     );
   }
@@ -97,6 +99,7 @@ export class ConversationController {
     return messages.map((message) => ({
       id: message.id,
       message: message.messageText,
+      meaning: message.meaning,
       isUser: message.role === 'user',
       createdAt: message.createdAt,
     }));
@@ -116,11 +119,13 @@ export class ConversationController {
     return this.conversationService.getAudioFromText(textToSpeechDto);
   }
 
-  @Get('feedback/:conversationId')
-  async getFeedback(
-    @Param('conversationId') conversationId: number,
-  ): Promise<GetFeedbackResponseDto> {
-    return this.conversationService.getFeedBack(conversationId);
+  @Post('feedback')
+  async generateFeedback(
+    @Body() body: { conversationId: number },
+  ): Promise<GenerateFeedbackResponseDto> {
+    return this.conversationService.generateFeedBackAndSave(
+      body.conversationId,
+    );
   }
 
   @Get('hint/:conversationId')

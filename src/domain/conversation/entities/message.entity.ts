@@ -15,6 +15,9 @@ export class MessageEntity extends BaseEntity {
   @Column({ name: 'message_text', type: 'text' })
   messageText: string;
 
+  @Column({ name: 'meaning', type: 'text', nullable: true })
+  meaning: string;
+
   @Column({
     name: 'role',
     type: 'enum',

@@ -11,6 +11,7 @@ import { JwtAuthGuard } from './domain/auth/guards/jwt-auth.guard';
 import { ScheduleModule } from '@nestjs/schedule';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { AwsModule } from './integrations/aws/aws.module';
+import { GoogleModule } from './integrations/google/google.module';
 import * as fs from 'fs';
 
 @Module({
@@ -65,6 +66,7 @@ import * as fs from 'fs';
     ConversationModule,
     OpenaiModule,
     AwsModule,
+    GoogleModule,
   ],
   controllers: [],
   providers: [

@@ -1,6 +1,7 @@
 import {
   AuthErrorCodeEnum,
   ConversationErrorCodeEnum,
+  GoogleErrorCodeEnum,
   OpenAIErrorCodeEnum,
   UnexpectedErrorCodeEnum,
 } from './error.code';
@@ -15,6 +16,10 @@ type ConversationErrorMessageType = {
 
 type UnexpectedErrorMessageType = {
   readonly [K in UnexpectedErrorCodeEnum]: string;
+};
+
+type GoogleErrorMessageType = {
+  readonly [K in GoogleErrorCodeEnum]: string;
 };
 
 type OpenAIErrorMessageType = {
@@ -55,12 +60,21 @@ export const ConversationErrorMessage: ConversationErrorMessageType = {
   [ConversationErrorCodeEnum.MissionNotFound]: 'Mission not found',
   [ConversationErrorCodeEnum.HintCountExceeded]: 'Hint count exceeded',
   [ConversationErrorCodeEnum.MessageDeleteFailed]: 'Message delete failed',
+  [ConversationErrorCodeEnum.FeedbackSaveFailed]: 'Feedback save failed',
+  [ConversationErrorCodeEnum.ConversationUpdateFailed]:
+    'Conversation update failed',
+  [ConversationErrorCodeEnum.FeedbackNotFound]: 'Feedback not found',
+  [ConversationErrorCodeEnum.MissionNotCompleted]: 'Mission not completed',
 };
 
 export const OpenAIErrorMessage: OpenAIErrorMessageType = {
   [OpenAIErrorCodeEnum.NoToolResponseReceived]: 'No tool response received',
   [OpenAIErrorCodeEnum.OpenAICreateFailed]: 'OpenAI create failed',
   [OpenAIErrorCodeEnum.BufferToFileFailed]: 'Buffer to file failed',
+};
+
+export const GoogleErrorMessage: GoogleErrorMessageType = {
+  [GoogleErrorCodeEnum.GoogleTTSFailed]: 'Google TTS failed',
 };
 
 export const UnexpectedErrorMessage: UnexpectedErrorMessageType = {

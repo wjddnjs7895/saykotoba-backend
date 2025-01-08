@@ -30,12 +30,20 @@ export enum ConversationErrorCodeEnum {
   MissionNotFound = 'CONV06',
   HintCountExceeded = 'CONV07',
   MessageDeleteFailed = 'CONV08',
+  FeedbackSaveFailed = 'CONV09',
+  ConversationUpdateFailed = 'CONV10',
+  FeedbackNotFound = 'CONV11',
+  MissionNotCompleted = 'CONV12',
 }
 
 export enum OpenAIErrorCodeEnum {
   NoToolResponseReceived = 'OPENAI01',
   OpenAICreateFailed = 'OPENAI02',
   BufferToFileFailed = 'OPENAI03',
+}
+
+export enum GoogleErrorCodeEnum {
+  GoogleTTSFailed = 'GOOGLE01',
 }
 
 export enum UnexpectedErrorCodeEnum {
