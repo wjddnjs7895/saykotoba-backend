@@ -10,7 +10,10 @@ import { ConversationScenarioTool } from './tools/conversation-scenario.tool';
 import { ConversationEntity } from '../../domain/conversation/entities/conversation.entity';
 import { PROMPTS } from './prompts';
 import { ConversationResponseTool } from './tools/conversation-response.tool';
-import { GetFirstMessageDto } from './dtos/get-first-message.dto';
+import {
+  GetFirstMessageDto,
+  GetFirstMessageResponseDto,
+} from './dtos/get-first-message.dto';
 import { GenerateResponseDto } from './dtos/generate-response.dto';
 import {
   BufferToFileFailedException,
@@ -21,16 +24,16 @@ import { CustomBaseException } from '@/common/exception/custom.base.exception';
 import { UnexpectedException } from '@/common/exception/custom-exception/unexpected.exception';
 import { ConversationFeedbackTool } from './tools/conversation-feedback.tool';
 import {
-  GetFeedbackRequestDto,
-  GetFeedbackResponseDto,
-} from './dtos/get-feedback.dto';
+  AIFeedbackRequestDto,
+  AIFeedbackResponseDto,
+} from './dtos/generate-feedback.dto';
 import { DIFFICULTY_MAP } from '@/common/constants/conversation.constants';
 import {
   GenerateHintRequestDto,
   GenerateHintResponseDto,
 } from './dtos/generate-hint.dto';
 import { ConversationHintTool } from './tools/conversation-hint.tool';
-import { TextToSpeechDto } from './dtos/text-to-speech.dto';
+import { ConversationFirstResponseTool } from './tools/conversation-first-response.tool';
 
 @Injectable()
 export class OpenAIService {
@@ -138,6 +141,7 @@ export class OpenAIService {
 
       return {
         response: result.response,
+        meaning: result.meaning,
         missionResults: result.missionResults,
       };
     } catch (error) {
@@ -200,26 +204,6 @@ export class OpenAIService {
   //   };
   // }
 
-  async getAudioFromText(textToSpeechDto: TextToSpeechDto): Promise<Buffer> {
-    try {
-      const response = await this.openai.audio.speech.create({
-        model: 'tts-1',
-        voice: textToSpeechDto.voice,
-        input: textToSpeechDto.text,
-      });
-      if (!response) {
-        throw new OpenAICreateFailedException();
-      }
-      const buffer = Buffer.from(await response.arrayBuffer());
-      return buffer;
-    } catch (error) {
-      if (error instanceof CustomBaseException) {
-        throw error;
-      }
-      throw new UnexpectedException();
-    }
-  }
-
   async getTextFromAudio(audio: Express.Multer.File): Promise<string> {
     const audioFile = new File([audio.buffer], audio.originalname, {
       type: audio.mimetype,
@@ -244,7 +228,7 @@ export class OpenAIService {
 
   async getFirstMessage(
     getFirstMessageDto: GetFirstMessageDto,
-  ): Promise<string> {
+  ): Promise<GetFirstMessageResponseDto> {
     const response = await this.openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
@@ -259,27 +243,39 @@ export class OpenAIService {
           ),
         },
       ],
+      tools: ConversationFirstResponseTool,
+      tool_choice: 'required',
     });
 
     if (!response) {
       throw new OpenAICreateFailedException();
     }
 
-    return response.choices[0].message.content;
+    const toolCall = response.choices[0].message.tool_calls?.[0];
+    if (!toolCall) {
+      throw new NoToolResponseReceivedException();
+    }
+
+    const result = JSON.parse(toolCall.function.arguments);
+
+    return {
+      response: result.response,
+      meaning: result.meaning,
+    };
   }
 
-  async getFeedBack(
-    getFeedbackRequestDto: GetFeedbackRequestDto,
-  ): Promise<GetFeedbackResponseDto> {
+  async generateFeedBack(
+    generateFeedbackRequestDto: AIFeedbackRequestDto,
+  ): Promise<AIFeedbackResponseDto> {
     const response = await this.openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
         {
           role: 'system',
           content: PROMPTS.FEEDBACK(
-            getFeedbackRequestDto.messages,
-            getFeedbackRequestDto.difficulty,
-            getFeedbackRequestDto.language,
+            generateFeedbackRequestDto.messages,
+            generateFeedbackRequestDto.difficulty,
+            generateFeedbackRequestDto.language,
           ),
         },
       ],
@@ -298,7 +294,11 @@ export class OpenAIService {
 
     const result = JSON.parse(toolCall.function.arguments);
 
-    return result;
+    return {
+      score: result.score,
+      betterExpressions: result.betterExpressions,
+      difficultWords: result.difficultWords,
+    };
   }
 
   async generateHint(
