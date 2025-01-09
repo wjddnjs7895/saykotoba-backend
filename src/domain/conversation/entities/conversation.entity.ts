@@ -1,11 +1,14 @@
 import { BaseEntity } from 'src/common/entities/base.entity';
-import { Column, Entity, OneToMany, OneToOne } from 'typeorm';
+import { Column, Entity, OneToMany, OneToOne, UpdateDateColumn } from 'typeorm';
 import { MissionEntity } from './mission.entity';
 import { MessageEntity } from './message.entity';
 import { FeedbackEntity } from './feedback.entity';
 
 @Entity('conversation')
 export class ConversationEntity extends BaseEntity {
+  @Column({ name: 'problem_id', nullable: true })
+  problemId: number;
+
   @Column({ name: 'user_id' })
   userId: number;
 
@@ -41,6 +44,12 @@ export class ConversationEntity extends BaseEntity {
 
   @Column({ name: 'thumbnail_url', nullable: true })
   thumbnailUrl: string;
+
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt: Date;
+
+  @Column({ name: 'exp', default: 0 })
+  exp: number;
 
   @Column({ name: 'remaining_hint_count', default: 3 })
   remainingHintCount: number;

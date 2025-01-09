@@ -87,4 +87,7 @@ export class GetConversationInfoResponseDto {
   @ValidateNested()
   @Type(() => FeedbackDto)
   feedback: FeedbackDto;
+
+  @IsNumber()
+  exp: number;
 }

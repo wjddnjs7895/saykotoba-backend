@@ -4,6 +4,7 @@ import {
   GoogleErrorCodeEnum,
   OpenAIErrorCodeEnum,
   UnexpectedErrorCodeEnum,
+  UserErrorCodeEnum,
 } from './error.code';
 
 type AuthErrorMessageType = {
@@ -12,6 +13,10 @@ type AuthErrorMessageType = {
 
 type ConversationErrorMessageType = {
   readonly [K in ConversationErrorCodeEnum]: string;
+};
+
+type UserErrorMessageType = {
+  readonly [K in UserErrorCodeEnum]: string;
 };
 
 type UnexpectedErrorMessageType = {
@@ -65,6 +70,11 @@ export const ConversationErrorMessage: ConversationErrorMessageType = {
     'Conversation update failed',
   [ConversationErrorCodeEnum.FeedbackNotFound]: 'Feedback not found',
   [ConversationErrorCodeEnum.MissionNotCompleted]: 'Mission not completed',
+};
+
+export const UserErrorMessage: UserErrorMessageType = {
+  [UserErrorCodeEnum.UserNotFound]: 'User not found',
+  [UserErrorCodeEnum.UserUpdateFailed]: 'User update failed',
 };
 
 export const OpenAIErrorMessage: OpenAIErrorMessageType = {

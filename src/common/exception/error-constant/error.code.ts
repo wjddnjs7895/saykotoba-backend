@@ -36,6 +36,11 @@ export enum ConversationErrorCodeEnum {
   MissionNotCompleted = 'CONV12',
 }
 
+export enum UserErrorCodeEnum {
+  UserNotFound = 'USER01',
+  UserUpdateFailed = 'USER02',
+}
+
 export enum OpenAIErrorCodeEnum {
   NoToolResponseReceived = 'OPENAI01',
   OpenAICreateFailed = 'OPENAI02',

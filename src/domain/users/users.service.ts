@@ -10,6 +10,11 @@ import {
   UpdateUserRequestDto,
   UpdateUserResponseDto,
 } from './dtos/update-user.dto';
+import {
+  UserNotFoundException,
+  UserUpdateFailedException,
+} from '@/common/exception/custom-exception/user.exception';
+import { TIER_MAP, TIER_THRESHOLD } from '@/common/constants/user.constants';
 
 @Injectable()
 export class UsersService {
@@ -26,10 +31,22 @@ export class UsersService {
     return { userId: newUser.id, email: newUser.email };
   }
 
-  async findUserById(id: number) {
-    const user = await this.userRepository.findOneBy({ id });
-    if (!user) return null;
-    return user;
+  async getUserInfo(id: number) {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: ['subscription'],
+    });
+    if (!user) throw new UserNotFoundException();
+    return {
+      id: user.id,
+      isOnboardingCompleted: user.isOnboardingCompleted,
+      name: user.name,
+      exp: user.exp,
+      tier: user.tier,
+      solvedConversationCount: user.solvedConversationCount,
+      solvedProblems: user.solvedProblems,
+      subscriptionStatus: user.subscription.status,
+    };
   }
 
   async findUserByEmail(email: string) {
@@ -53,5 +70,41 @@ export class UsersService {
 
   async removeUser(id: number) {
     return await this.userRepository.delete(id);
+  }
+
+  async updateUserExpAndCount(id: number, exp: number, problemId?: number) {
+    try {
+      await this.userRepository.update(id, {
+        exp,
+        solvedConversationCount: () => 'solvedConversationCount + 1',
+        ...(problemId && {
+          solvedProblems: () =>
+            `JSON_ARRAY_APPEND(solvedProblems, "$", ${problemId})`,
+        }),
+      });
+      await this.updateUserTier(id);
+    } catch {
+      throw new UserUpdateFailedException();
+    }
+  }
+
+  async updateUserTier(id: number) {
+    const user = await this.userRepository.findOneBy({ id });
+    if (!user) throw new UserNotFoundException();
+
+    const tier = Object.entries(TIER_THRESHOLD).reduce(
+      (highest, [tier, threshold]) => (user.exp >= threshold ? tier : highest),
+      'BRONZE_4',
+    );
+
+    try {
+      if (TIER_MAP[tier as keyof typeof TIER_MAP] !== user.tier) {
+        await this.userRepository.update(id, {
+          tier: TIER_MAP[tier as keyof typeof TIER_MAP],
+        });
+      }
+    } catch {
+      throw new UserUpdateFailedException();
+    }
   }
 }

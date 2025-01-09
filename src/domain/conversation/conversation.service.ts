@@ -16,7 +16,6 @@ import { MissionEntity } from './entities/mission.entity';
 import { MissionResultType } from '../../integrations/openai/tools/conversation-response.tool';
 import { GetConversationListResponseDto } from './dtos/get-conversation-list.dto';
 import { GetConversationInfoResponseDto } from './dtos/get-conversation-info.dto';
-import { S3Service } from '@/integrations/aws/services/s3/s3.service';
 import { ChatResponseDto } from './dtos/chat-response.dto';
 import {
   ConversationNotFoundException,
@@ -33,7 +32,11 @@ import {
 } from '@/common/exception/custom-exception/conversation.exception';
 import { CustomBaseException } from '@/common/exception/custom.base.exception';
 import { UnexpectedException } from '@/common/exception/custom-exception/unexpected.exception';
-import { DIFFICULTY_MAP } from '@/common/constants/conversation.constants';
+import {
+  DIFFICULTY_MAP,
+  EXP_PER_CONVERSATION,
+  SCORE_THRESHOLD,
+} from '@/common/constants/conversation.constants';
 import { GetHintResponseDto } from './dtos/get-hint.dto';
 import {
   GetAudioFromTextRequestDto,
@@ -42,6 +45,8 @@ import {
 import { GetFirstMessageResponseDto } from '@/integrations/openai/dtos/get-first-message.dto';
 import { GoogleService } from '@/integrations/google/google.service';
 import { FeedbackEntity } from './entities/feedback.entity';
+import { UsersService } from '../users/users.service';
+
 @Injectable()
 export class ConversationService {
   constructor(
@@ -54,8 +59,8 @@ export class ConversationService {
     @InjectRepository(FeedbackEntity)
     private readonly feedbackRepository: Repository<FeedbackEntity>,
     private readonly openAIService: OpenAIService,
-    private readonly s3Service: S3Service,
     private readonly googleService: GoogleService,
+    private readonly usersService: UsersService,
   ) {}
 
   async getConversationsByUserId(
@@ -63,7 +68,7 @@ export class ConversationService {
   ): Promise<GetConversationListResponseDto[]> {
     const conversations = await this.conversationRepository.find({
       where: { userId },
-      order: { createdAt: 'DESC' },
+      order: { updatedAt: 'DESC' },
     });
 
     if (!conversations || conversations.length === 0) {
@@ -185,6 +190,7 @@ export class ConversationService {
         aiRole: createConversationDto.aiRole,
         userRole: createConversationDto.userRole,
         remainingHintCount: hintCount,
+        exp: EXP_PER_CONVERSATION[createConversationDto.difficultyLevel],
       });
       try {
         await this.conversationRepository.save(newConversation);
@@ -253,6 +259,9 @@ export class ConversationService {
           isUser: true,
           createdAt: userMessage.createdAt,
         };
+        await this.conversationRepository.update(conversationId, {
+          updatedAt: new Date(),
+        });
       } catch {
         throw new MessageSaveFailedException();
       }
@@ -405,6 +414,26 @@ export class ConversationService {
         });
       } catch {
         throw new ConversationUpdateFailedException();
+      }
+      const user = await this.usersService.getUserInfo(conversationInfo.userId);
+      if (
+        conversationInfo.problemId &&
+        feedback.score >= SCORE_THRESHOLD.PASS &&
+        !user.solvedProblems.includes(conversationInfo.problemId)
+      ) {
+        await this.usersService.updateUserExpAndCount(
+          conversationInfo.userId,
+          conversationInfo.exp,
+          conversationInfo.problemId,
+        );
+      } else if (
+        !conversationInfo.problemId &&
+        feedback.score >= SCORE_THRESHOLD.PASS
+      ) {
+        await this.usersService.updateUserExpAndCount(
+          conversationInfo.userId,
+          conversationInfo.exp,
+        );
       }
       return feedback;
     } catch (error) {

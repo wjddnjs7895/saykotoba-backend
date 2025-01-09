@@ -16,7 +16,7 @@ import {
   UpdateUserRequestDto,
   UpdateUserResponseDto,
 } from './dtos/update-user.dto';
-import { UserEntity } from './entities/user.entity';
+import { GetUserInfoRespondDto } from './dtos/get-user-info.dto';
 
 @Controller('users')
 export class UsersController {
@@ -30,8 +30,8 @@ export class UsersController {
   }
 
   @Get(':id')
-  findUserById(@Param('id') id: number): Promise<UserEntity> {
-    return this.usersService.findUserById(id);
+  getUserInfo(@Param('id') id: number): Promise<GetUserInfoRespondDto> {
+    return this.usersService.getUserInfo(id);
   }
 
   @Patch(':id')

@@ -5,7 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './domain/auth/auth.module';
 import { ConversationModule } from './domain/conversation/conversation.module';
-import { OpenaiModule } from './integrations/openai/openai.module';
+import { OpenAIModule } from './integrations/openai/openai.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './domain/auth/guards/jwt-auth.guard';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -64,7 +64,7 @@ import * as fs from 'fs';
     UsersModule,
     AuthModule,
     ConversationModule,
-    OpenaiModule,
+    OpenAIModule,
     AwsModule,
     GoogleModule,
   ],
