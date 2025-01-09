@@ -10,7 +10,13 @@ export const ConversationResponseTool = [
         properties: {
           response: {
             type: 'string',
-            description: 'The conversation response to the user',
+            description:
+              'Natural and engaging conversation response to the user. The response should be in Japanese. Do not consider the mission too much.',
+          },
+          meaning: {
+            type: 'string',
+            description:
+              'The meaning of the conversation response only in required language (i.e. en, ko)',
           },
           missionResults: {
             type: 'array',
@@ -37,7 +43,7 @@ export const ConversationResponseTool = [
             },
           },
         },
-        required: ['response', 'missionResults'],
+        required: ['response', 'meaning', 'missionResults'],
       },
     },
   } as const,
