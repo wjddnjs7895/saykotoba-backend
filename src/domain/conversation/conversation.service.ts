@@ -156,6 +156,11 @@ export class ConversationService {
     const conversationInfo = await this.conversationRepository.findOne({
       where: { id: conversationId },
       relations: ['missions', 'feedback'],
+      order: {
+        missions: {
+          id: 'ASC',
+        },
+      },
     });
 
     if (!conversationInfo) {
