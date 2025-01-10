@@ -45,7 +45,7 @@ import {
 import { GetFirstMessageResponseDto } from '@/integrations/openai/dtos/get-first-message.dto';
 import { GoogleService } from '@/integrations/google/google.service';
 import { FeedbackEntity } from './entities/feedback.entity';
-import { UsersService } from '../users/users.service';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class ConversationService {
@@ -60,7 +60,7 @@ export class ConversationService {
     private readonly feedbackRepository: Repository<FeedbackEntity>,
     private readonly openAIService: OpenAIService,
     private readonly googleService: GoogleService,
-    private readonly usersService: UsersService,
+    private readonly userService: UserService,
   ) {}
 
   async getConversationsByUserId(
@@ -72,7 +72,7 @@ export class ConversationService {
     });
 
     if (!conversations || conversations.length === 0) {
-      throw new ConversationNotFoundException();
+      return [];
     }
 
     return conversations.map((conversation) => ({
@@ -415,13 +415,13 @@ export class ConversationService {
       } catch {
         throw new ConversationUpdateFailedException();
       }
-      const user = await this.usersService.getUserInfo(conversationInfo.userId);
+      const user = await this.userService.getUserInfo(conversationInfo.userId);
       if (
         conversationInfo.problemId &&
         feedback.score >= SCORE_THRESHOLD.PASS &&
         !user.solvedProblems.includes(conversationInfo.problemId)
       ) {
-        await this.usersService.updateUserExpAndCount(
+        await this.userService.updateUserExpAndCount(
           conversationInfo.userId,
           conversationInfo.exp,
           conversationInfo.problemId,
@@ -430,7 +430,7 @@ export class ConversationService {
         !conversationInfo.problemId &&
         feedback.score >= SCORE_THRESHOLD.PASS
       ) {
-        await this.usersService.updateUserExpAndCount(
+        await this.userService.updateUserExpAndCount(
           conversationInfo.userId,
           conversationInfo.exp,
         );

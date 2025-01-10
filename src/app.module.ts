@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import * as Joi from 'joi';
-import { UsersModule } from './domain/users/users.module';
+import { UserModule } from './domain/user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './domain/auth/auth.module';
@@ -61,7 +61,7 @@ import * as fs from 'fs';
       }),
       inject: [ConfigService],
     }),
-    UsersModule,
+    UserModule,
     AuthModule,
     ConversationModule,
     OpenAIModule,

@@ -17,7 +17,7 @@ import {
 import { TIER_MAP, TIER_THRESHOLD } from '@/common/constants/user.constants';
 
 @Injectable()
-export class UsersService {
+export class UserService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
@@ -38,7 +38,7 @@ export class UsersService {
     });
     if (!user) throw new UserNotFoundException();
     return {
-      id: user.id,
+      userId: user.id,
       isOnboardingCompleted: user.isOnboardingCompleted,
       name: user.name,
       exp: user.exp,

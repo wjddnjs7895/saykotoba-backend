@@ -14,7 +14,7 @@
       "@/*": ["src/*"],
       "@common/*": ["src/common/*"],
       "@auth/*": ["src/domain/auth/*"],
-      "@users/*": ["src/domain/users/*"],
+      "@user/*": ["src/domain/user/*"],
       "@exception/*": ["src/common/exception/*"],
       "@conversation/*": ["src/domain/conversation/*"],
       "@openai/*": ["src/integrations/openai/*"],

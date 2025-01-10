@@ -6,7 +6,7 @@ import { ConversationEntity } from './entities/conversation.entity';
 import { MessageEntity } from './entities/message.entity';
 import { MissionEntity } from './entities/mission.entity';
 import { FeedbackEntity } from './entities/feedback.entity';
-import { UsersModule } from '../users/users.module';
+import { UserModule } from '../user/user.module';
 import { OpenAIModule } from '@/integrations/openai/openai.module';
 import { AwsModule } from '@/integrations/aws/aws.module';
 import { GoogleModule } from '@/integrations/google/google.module';
@@ -19,7 +19,7 @@ import { GoogleModule } from '@/integrations/google/google.module';
       MissionEntity,
       FeedbackEntity,
     ]),
-    UsersModule,
+    UserModule,
     OpenAIModule,
     AwsModule,
     GoogleModule,

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { UsersService } from '../users/users.service';
+import { UserService } from '../user/user.service';
 import { LocalLoginRequestDto } from './dtos/local.dto';
 import { RegisterRequestDto, RegisterResponseDto } from './dtos/register.dto';
 import * as bcrypt from 'bcrypt';
@@ -23,7 +23,7 @@ import {
   GoogleTokenPayloadDto,
 } from './dtos/google.dto';
 import { OAuth2Client } from 'google-auth-library';
-import { AuthProvider } from '../users/constants/user.constants';
+import { AuthProvider } from '../user/constants/user.constants';
 import {
   AppleLoginRequestDto,
   AppleLoginResponseDto,
@@ -43,7 +43,7 @@ export class AuthService {
   constructor(
     @InjectRepository(RefreshTokenEntity)
     private readonly refreshTokenRepository: Repository<RefreshTokenEntity>,
-    private readonly usersService: UsersService,
+    private readonly userService: UserService,
     private readonly tokenService: TokenService,
     private readonly configService: ConfigService,
   ) {
@@ -59,7 +59,7 @@ export class AuthService {
   }
 
   async validateAuthentication(loginDto: LocalLoginRequestDto) {
-    const user = await this.usersService.findUserForAuth(loginDto.email);
+    const user = await this.userService.findUserForAuth(loginDto.email);
     if (!user) {
       throw new UserNotFoundException();
     }
@@ -101,7 +101,7 @@ export class AuthService {
   async registerAndLogin(
     registerDto: RegisterRequestDto,
   ): Promise<RegisterResponseDto> {
-    const existingUser = await this.usersService.findUserByEmail(
+    const existingUser = await this.userService.findUserByEmail(
       registerDto.email,
     );
     if (existingUser) {
@@ -125,7 +125,7 @@ export class AuthService {
       Object.assign(userData, { appleId: registerDto.appleId });
     }
 
-    const newUser = await this.usersService.createUser(userData);
+    const newUser = await this.userService.createUser(userData);
 
     return this.tokenService.generateAndSaveAuthTokens({
       email: newUser.email,
@@ -145,7 +145,7 @@ export class AuthService {
 
     const { email, name, sub: googleId } = payload;
 
-    const existingUser = await this.usersService.findUserByEmail(email);
+    const existingUser = await this.userService.findUserByEmail(email);
 
     if (!existingUser) {
       return await this.registerAndLogin({
@@ -188,7 +188,7 @@ export class AuthService {
       const payload = await this.verifyAppleToken(appleLoginDto.idToken);
       const { email, sub: appleId } = payload;
 
-      const existingUser = await this.usersService.findUserByEmail(email);
+      const existingUser = await this.userService.findUserByEmail(email);
 
       if (!existingUser) {
         const name = appleLoginDto.fullName

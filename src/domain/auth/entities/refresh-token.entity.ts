@@ -1,5 +1,5 @@
 import { BaseEntity } from 'src/common/entities/base.entity';
-import { UserEntity } from 'src/domain/users/entities/user.entity';
+import { UserEntity } from 'src/domain/user/entities/user.entity';
 import {
   Column,
   Entity,

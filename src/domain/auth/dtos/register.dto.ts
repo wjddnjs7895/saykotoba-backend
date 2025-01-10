@@ -1,5 +1,5 @@
 import { IsString, IsEmail, IsOptional } from 'class-validator';
-import { AuthProvider } from '../../users/constants/user.constants';
+import { AuthProvider } from '../../user/constants/user.constants';
 import { TokenResponseDto } from './token.dto';
 
 export abstract class BaseRegisterRequestDto {

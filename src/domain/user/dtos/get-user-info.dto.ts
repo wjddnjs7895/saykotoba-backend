@@ -4,7 +4,7 @@ import { IsBoolean, IsEnum, IsJSON, IsNumber, IsString } from 'class-validator';
 
 export class GetUserInfoRespondDto {
   @IsNumber()
-  id: number;
+  userId: number;
 
   @IsBoolean()
   isOnboardingCompleted: boolean;

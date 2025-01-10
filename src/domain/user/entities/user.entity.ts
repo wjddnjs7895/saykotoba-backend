@@ -4,7 +4,7 @@ import { AuthProvider } from '../constants/user.constants';
 import { SubscriptionEntity } from './subscription.entity';
 import { TIER_MAP } from '@/common/constants/user.constants';
 
-@Entity('users')
+@Entity('user')
 export class UserEntity extends BaseEntity {
   @Column({
     unique: true,

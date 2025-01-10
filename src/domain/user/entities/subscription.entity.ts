@@ -2,8 +2,8 @@ import { BaseEntity } from '@/common/entities/base.entity';
 import {
   StoreType,
   SubscriptionStatus,
-} from '@/domain/users/constants/user.constants';
-import { UserEntity } from '@/domain/users/entities/user.entity';
+} from '@/domain/user/constants/user.constants';
+import { UserEntity } from '@/domain/user/entities/user.entity';
 import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 
 @Entity('subscription')

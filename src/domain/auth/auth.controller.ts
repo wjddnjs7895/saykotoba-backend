@@ -18,7 +18,7 @@ import {
 } from './dtos/google.dto';
 import { TokenService } from './token.service';
 import { AppleLoginRequestDto, AppleLoginResponseDto } from './dtos/apple.dto';
-import { AuthProvider } from '../users/constants/user.constants';
+import { AuthProvider } from '../user/constants/user.constants';
 
 @Controller('auth')
 export class AuthController {

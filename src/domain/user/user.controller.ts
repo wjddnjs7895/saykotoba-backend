@@ -7,7 +7,7 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import { UsersService } from './users.service';
+import { UserService } from './user.service';
 import {
   CreateUserRequestDto,
   CreateUserResponseDto,
@@ -17,21 +17,23 @@ import {
   UpdateUserResponseDto,
 } from './dtos/update-user.dto';
 import { GetUserInfoRespondDto } from './dtos/get-user-info.dto';
+import { UserEntity } from './entities/user.entity';
+import { User } from '@/common/decorators/user.decorator';
 
-@Controller('users')
-export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+@Controller('user')
+export class UserController {
+  constructor(private readonly userService: UserService) {}
 
   @Post()
   createUser(
     @Body() createUserDto: CreateUserRequestDto,
   ): Promise<CreateUserResponseDto> {
-    return this.usersService.createUser(createUserDto);
+    return this.userService.createUser(createUserDto);
   }
 
-  @Get(':id')
-  getUserInfo(@Param('id') id: number): Promise<GetUserInfoRespondDto> {
-    return this.usersService.getUserInfo(id);
+  @Get()
+  getUserInfo(@User() user: UserEntity): Promise<GetUserInfoRespondDto> {
+    return this.userService.getUserInfo(user.id);
   }
 
   @Patch(':id')
@@ -39,11 +41,11 @@ export class UsersController {
     @Param('id') id: number,
     @Body() updateUserDto: UpdateUserRequestDto,
   ): Promise<UpdateUserResponseDto> {
-    return this.usersService.updateUser(id, updateUserDto);
+    return this.userService.updateUser(id, updateUserDto);
   }
 
   @Delete(':id')
   removeUser(@Param('id') id: number) {
-    return this.usersService.removeUser(id);
+    return this.userService.removeUser(id);
   }
 }
