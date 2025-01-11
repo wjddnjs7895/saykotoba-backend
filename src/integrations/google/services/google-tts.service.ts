@@ -1,11 +1,11 @@
 import { ConfigService } from '@nestjs/config';
 import { TextToSpeechClient } from '@google-cloud/text-to-speech';
 import { Injectable } from '@nestjs/common';
-import { TextToSpeechRequestDto } from './dtos/text-to-speech.dto';
 import { GoogleTTSFailedException } from '@/common/exception/custom-exception/google.exception';
+import { TextToSpeechRequestDto } from '../dtos/text-to-speech.dto';
 
 @Injectable()
-export class GoogleService {
+export class GoogleTTSService {
   private ttsClient: TextToSpeechClient;
   constructor(private readonly configService: ConfigService) {
     this.ttsClient = new TextToSpeechClient({

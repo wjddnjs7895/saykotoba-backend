@@ -15,12 +15,16 @@ import {
   UserUpdateFailedException,
 } from '@/common/exception/custom-exception/user.exception';
 import { TIER_MAP, TIER_THRESHOLD } from '@/common/constants/user.constants';
+import { SubscriptionEntity } from '../payment/entities/subscription.entity';
+import { SubscriptionStatus } from './constants/user.constants';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
+    @InjectRepository(SubscriptionEntity)
+    private readonly subscriptionRepository: Repository<SubscriptionEntity>,
   ) {}
 
   async createUser(
@@ -28,6 +32,10 @@ export class UserService {
   ): Promise<CreateUserResponseDto> {
     const newUser = this.userRepository.create(createUserDto);
     await this.userRepository.save(newUser);
+    await this.subscriptionRepository.save({
+      user: newUser,
+      status: SubscriptionStatus.NONE,
+    });
     return { userId: newUser.id, email: newUser.email };
   }
 

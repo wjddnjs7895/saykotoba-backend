@@ -1,7 +1,7 @@
 import { BaseEntity } from 'src/common/entities/base.entity';
 import { Column, Entity, OneToOne } from 'typeorm';
 import { AuthProvider } from '../constants/user.constants';
-import { SubscriptionEntity } from './subscription.entity';
+import { SubscriptionEntity } from '../../payment/entities/subscription.entity';
 import { TIER_MAP } from '@/common/constants/user.constants';
 
 @Entity('user')

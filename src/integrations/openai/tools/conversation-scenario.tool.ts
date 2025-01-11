@@ -4,7 +4,7 @@ export const ConversationScenarioTool = [
     function: {
       name: 'createConversationScenario',
       description:
-        'Generate an Japanese conversation scenario with specific situation and learning missions',
+        'Generate an Japanese conversation scenario with specific situation and learning missions. IMPORTANT: You must strictly follow the number of missions per difficulty level.',
       parameters: {
         type: 'object',
         properties: {
@@ -31,13 +31,14 @@ export const ConversationScenarioTool = [
               },
               required: ['mission'],
             },
-            description: `Number of missions per difficulty level:
-              - beginner: 2 missions
-              - elementary: 3 missions
-              - intermediate: 4 missions
-              - upperIntermediate: 5 missions
-              - advanced: 6 missions
-              - challenge: 10 missions`,
+            description: `IMPORTANT: You must strictly follow these exact numbers of missions per difficulty level:
+              - beginner(0): EXACTLY 2 missions
+              - elementary(1): EXACTLY 3 missions
+              - intermediate(2): EXACTLY 4 missions
+              - upperIntermediate(3): EXACTLY 5 missions
+              - advanced(4): EXACTLY 6 missions
+              - challenge(5): EXACTLY 10 missions
+              DO NOT generate more or fewer missions than specified.`,
             minItems: 2,
             maxItems: 10,
           },

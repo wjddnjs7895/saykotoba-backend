@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { GoogleService } from './google.service';
-
+import { GoogleTTSService } from './services/google-tts.service';
+import { GooglePaymentService } from './services/google-payment.service';
 @Module({
-  providers: [GoogleService],
-  exports: [GoogleService],
+  providers: [GoogleTTSService, GooglePaymentService],
+  exports: [GoogleTTSService, GooglePaymentService],
 })
 export class GoogleModule {}

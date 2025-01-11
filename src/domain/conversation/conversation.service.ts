@@ -43,9 +43,9 @@ import {
   GetAudioFromTextResponseDto,
 } from './dtos/get-audio-from-text.dto';
 import { GetFirstMessageResponseDto } from '@/integrations/openai/dtos/get-first-message.dto';
-import { GoogleService } from '@/integrations/google/google.service';
 import { FeedbackEntity } from './entities/feedback.entity';
 import { UserService } from '../user/user.service';
+import { GoogleTTSService } from '@/integrations/google/services/google-tts.service';
 
 @Injectable()
 export class ConversationService {
@@ -59,7 +59,7 @@ export class ConversationService {
     @InjectRepository(FeedbackEntity)
     private readonly feedbackRepository: Repository<FeedbackEntity>,
     private readonly openAIService: OpenAIService,
-    private readonly googleService: GoogleService,
+    private readonly googleTTSService: GoogleTTSService,
     private readonly userService: UserService,
   ) {}
 
@@ -484,7 +484,7 @@ export class ConversationService {
   async getAudioFromText(
     textToSpeechDto: GetAudioFromTextRequestDto,
   ): Promise<GetAudioFromTextResponseDto> {
-    const audio = await this.googleService.getAudioFromText(textToSpeechDto);
+    const audio = await this.googleTTSService.getAudioFromText(textToSpeechDto);
     const base64Audio = audio.toString('base64');
     return { audioUrl: `data:audio/mp3;base64,${base64Audio}` };
   }
