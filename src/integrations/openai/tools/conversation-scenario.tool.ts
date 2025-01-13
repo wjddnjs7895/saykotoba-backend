@@ -26,7 +26,7 @@ export const ConversationScenarioTool = [
                 mission: {
                   type: 'string',
                   description:
-                    'Specific conversation mission to complete. Only provide mission in the requested language (i.e. en, ko)',
+                    'Specific conversation mission to complete. It must be provided in the requested language (i.e. en, ko)',
                 },
               },
               required: ['mission'],

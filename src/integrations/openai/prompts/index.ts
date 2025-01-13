@@ -32,7 +32,7 @@ Please include these exact values in your response:
 - difficulty: "${difficulty}"
 - aiRole: "${aiRole}"
 - userRole: "${userRole}"
-- language: "${language}"`,
+- must be provided in ${language}`,
 
   CONVERSATION_PARTNER: (
     situation: string,
