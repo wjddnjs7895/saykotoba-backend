@@ -35,6 +35,7 @@ export class UserEntity extends BaseEntity {
 
   @Column({
     comment: 'User name',
+    nullable: true,
   })
   name: string;
 

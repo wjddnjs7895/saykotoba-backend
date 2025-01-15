@@ -19,6 +19,7 @@ export const TIER_THRESHOLD: Record<keyof typeof TIER_MAP, number> = {
   DIAMOND_3: 65000,
   DIAMOND_2: 100000,
   DIAMOND_1: 150000,
+  MASTER: 900000000,
 };
 
 export enum TIER_MAP {
@@ -42,4 +43,5 @@ export enum TIER_MAP {
   DIAMOND_3,
   DIAMOND_2,
   DIAMOND_1,
+  MASTER,
 }
