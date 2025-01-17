@@ -1,8 +1,20 @@
 import { BaseEntity } from 'src/common/entities/base.entity';
-import { Column, Entity, OneToMany, OneToOne, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  UpdateDateColumn,
+} from 'typeorm';
 import { MissionEntity } from './mission.entity';
 import { MessageEntity } from './message.entity';
 import { FeedbackEntity } from './feedback.entity';
+import { ConversationGroupEntity } from './conversation_group.entity';
+
+enum ConversationType {
+  NORMAL,
+}
 
 @Entity('conversation')
 export class ConversationEntity extends BaseEntity {
@@ -51,6 +63,12 @@ export class ConversationEntity extends BaseEntity {
   @Column({ name: 'exp', default: 0 })
   exp: number;
 
+  @Column({ name: 'type', default: ConversationType.NORMAL })
+  type: ConversationType;
+
   @Column({ name: 'remaining_hint_count', default: 3 })
   remainingHintCount: number;
+
+  @ManyToOne(() => ConversationGroupEntity, (group) => group.conversations)
+  group: ConversationGroupEntity;
 }

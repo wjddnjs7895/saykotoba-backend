@@ -3,6 +3,7 @@ import { Column, Entity, OneToOne } from 'typeorm';
 import { AuthProvider } from '../constants/user.constants';
 import { SubscriptionEntity } from '../../payment/entities/subscription.entity';
 import { TIER_MAP } from '@/common/constants/user.constants';
+import { ConversationGroupEntity } from '@/domain/conversation/entities/conversation_group.entity';
 
 @Entity('user')
 export class UserEntity extends BaseEntity {
@@ -79,6 +80,9 @@ export class UserEntity extends BaseEntity {
     comment: 'User tier',
   })
   tier: TIER_MAP;
+
+  @OneToOne(() => ConversationGroupEntity, (group) => group.user)
+  conversationGroup: ConversationGroupEntity;
 
   @OneToOne(() => SubscriptionEntity, (subscription) => subscription.user)
   subscription: SubscriptionEntity;

@@ -10,6 +10,7 @@ import { UserModule } from '../user/user.module';
 import { OpenAIModule } from '@/integrations/openai/openai.module';
 import { AwsModule } from '@/integrations/aws/aws.module';
 import { GoogleModule } from '@/integrations/google/google.module';
+import { ConversationGroupEntity } from './entities/conversation_group.entity';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { GoogleModule } from '@/integrations/google/google.module';
       MessageEntity,
       MissionEntity,
       FeedbackEntity,
+      ConversationGroupEntity,
     ]),
     UserModule,
     OpenAIModule,

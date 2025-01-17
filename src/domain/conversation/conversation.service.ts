@@ -152,7 +152,12 @@ export class ConversationService {
   async generateScenario(
     generateScenarioDto: GenerateScenarioRequestDto,
   ): Promise<GenerateScenarioResponseDto> {
-    return this.openAIService.generateScenario(generateScenarioDto);
+    const scenario =
+      await this.openAIService.generateScenario(generateScenarioDto);
+    return {
+      ...scenario,
+      exp: EXP_PER_CONVERSATION[generateScenarioDto.difficultyLevel],
+    };
   }
 
   async getConversationInfo(

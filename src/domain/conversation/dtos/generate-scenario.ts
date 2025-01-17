@@ -32,6 +32,9 @@ export class GenerateScenarioResponseDto {
   @IsString()
   scenario: string;
 
+  @IsNumber()
+  exp: number;
+
   @IsArray()
   @IsString({ each: true })
   missions: string[];
