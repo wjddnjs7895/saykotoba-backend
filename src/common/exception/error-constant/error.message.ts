@@ -70,6 +70,10 @@ export const ConversationErrorMessage: ConversationErrorMessageType = {
     'Conversation update failed',
   [ConversationErrorCodeEnum.FeedbackNotFound]: 'Feedback not found',
   [ConversationErrorCodeEnum.MissionNotCompleted]: 'Mission not completed',
+  [ConversationErrorCodeEnum.ConversationGroupNotFound]:
+    'Conversation group not found',
+  [ConversationErrorCodeEnum.ConversationGroupSaveFailed]:
+    'Conversation group save failed',
 };
 
 export const UserErrorMessage: UserErrorMessageType = {

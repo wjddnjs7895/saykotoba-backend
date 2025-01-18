@@ -13,6 +13,7 @@ import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { AwsModule } from './integrations/aws/aws.module';
 import { GoogleModule } from './integrations/google/google.module';
 import * as fs from 'fs';
+import { LectureModule } from './domain/lecture/lecture.module';
 
 @Module({
   imports: [
@@ -64,6 +65,7 @@ import * as fs from 'fs';
     UserModule,
     AuthModule,
     ConversationModule,
+    LectureModule,
     OpenAIModule,
     AwsModule,
     GoogleModule,

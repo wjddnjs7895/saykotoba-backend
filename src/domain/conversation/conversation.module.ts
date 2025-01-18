@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConversationService } from './conversation.service';
+import { ConversationService } from './services/conversation.service';
 import { ConversationController } from './conversation.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConversationEntity } from './entities/conversation.entity';
@@ -11,6 +11,7 @@ import { OpenAIModule } from '@/integrations/openai/openai.module';
 import { AwsModule } from '@/integrations/aws/aws.module';
 import { GoogleModule } from '@/integrations/google/google.module';
 import { ConversationGroupEntity } from './entities/conversation_group.entity';
+import { ConversationGroupService } from './services/conversation-group.service';
 
 @Module({
   imports: [
@@ -26,7 +27,7 @@ import { ConversationGroupEntity } from './entities/conversation_group.entity';
     AwsModule,
     GoogleModule,
   ],
-  providers: [ConversationService],
+  providers: [ConversationService, ConversationGroupService],
   controllers: [ConversationController],
 })
 export class ConversationModule {}

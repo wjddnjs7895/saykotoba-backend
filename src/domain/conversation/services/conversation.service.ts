@@ -1,22 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { MessageEntity, MessageRole } from './entities/message.entity';
-import { OpenAIService } from '../../integrations/openai/openai.service';
+import { MessageEntity, MessageRole } from '../entities/message.entity';
+import { OpenAIService } from '../../../integrations/openai/openai.service';
 import {
   GenerateScenarioRequestDto,
   GenerateScenarioResponseDto,
-} from './dtos/generate-scenario';
-import { ConversationEntity } from './entities/conversation.entity';
+} from '../dtos/generate-scenario';
+import { ConversationEntity } from '../entities/conversation.entity';
 import {
   CreateConversationResponseDto,
   CreateConversationServiceDto,
-} from './dtos/create-conversation.dto';
-import { MissionEntity } from './entities/mission.entity';
-import { MissionResultType } from '../../integrations/openai/tools/conversation-response.tool';
-import { GetConversationListResponseDto } from './dtos/get-conversation-list.dto';
-import { GetConversationInfoResponseDto } from './dtos/get-conversation-info.dto';
-import { ChatResponseDto } from './dtos/chat-response.dto';
+} from '../dtos/create-conversation.dto';
+import { MissionEntity } from '../entities/mission.entity';
+import { MissionResultType } from '../../../integrations/openai/tools/conversation-response.tool';
+import { GetConversationListResponseDto } from '../dtos/get-conversation-list.dto';
+import { GetConversationInfoResponseDto } from '../dtos/get-conversation-info.dto';
+import { ChatResponseDto } from '../dtos/chat-response.dto';
 import {
   ConversationNotFoundException,
   ConversationSaveFailedException,
@@ -37,14 +37,14 @@ import {
   EXP_PER_CONVERSATION,
   SCORE_THRESHOLD,
 } from '@/common/constants/conversation.constants';
-import { GetHintResponseDto } from './dtos/get-hint.dto';
+import { GetHintResponseDto } from '../dtos/get-hint.dto';
 import {
   GetAudioFromTextRequestDto,
   GetAudioFromTextResponseDto,
-} from './dtos/get-audio-from-text.dto';
+} from '../dtos/get-audio-from-text.dto';
 import { GetFirstMessageResponseDto } from '@/integrations/openai/dtos/get-first-message.dto';
-import { FeedbackEntity } from './entities/feedback.entity';
-import { UserService } from '../user/user.service';
+import { FeedbackEntity } from '../entities/feedback.entity';
+import { UserService } from '../../user/user.service';
 import { GoogleTTSService } from '@/integrations/google/services/google-tts.service';
 
 @Injectable()

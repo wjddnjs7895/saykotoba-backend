@@ -34,6 +34,8 @@ export enum ConversationErrorCodeEnum {
   ConversationUpdateFailed = 'CONV10',
   FeedbackNotFound = 'CONV11',
   MissionNotCompleted = 'CONV12',
+  ConversationGroupNotFound = 'CONV13',
+  ConversationGroupSaveFailed = 'CONV14',
 }
 
 export enum UserErrorCodeEnum {

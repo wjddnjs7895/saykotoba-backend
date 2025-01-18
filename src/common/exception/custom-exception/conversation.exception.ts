@@ -126,3 +126,27 @@ export class MissionNotCompletedException extends CustomBaseException {
     );
   }
 }
+
+export class ConversationGroupNotFoundException extends CustomBaseException {
+  constructor() {
+    super(
+      ConversationErrorCodeEnum.ConversationGroupNotFound,
+      HttpStatus.NOT_FOUND,
+      ConversationErrorMessage[
+        ConversationErrorCodeEnum.ConversationGroupNotFound
+      ],
+    );
+  }
+}
+
+export class ConversationGroupSaveFailedException extends CustomBaseException {
+  constructor() {
+    super(
+      ConversationErrorCodeEnum.ConversationGroupSaveFailed,
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      ConversationErrorMessage[
+        ConversationErrorCodeEnum.ConversationGroupSaveFailed
+      ],
+    );
+  }
+}

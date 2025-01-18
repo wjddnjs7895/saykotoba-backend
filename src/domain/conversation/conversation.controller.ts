@@ -8,8 +8,7 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
-import { ConversationService } from './conversation.service';
-import { OpenAIService } from '../../integrations/openai/openai.service';
+import { ConversationService } from './services/conversation.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
   GenerateScenarioRequestDto,
@@ -31,12 +30,19 @@ import {
   GetAudioFromTextResponseDto,
 } from './dtos/get-audio-from-text.dto';
 import { GenerateFeedbackResponseDto } from './dtos/generate-feedback.dto';
+import {
+  CreateConversationGroupRequestDto,
+  CreateConversationGroupResponseDto,
+} from './dtos/create-conversation-group.dto';
+import { ConversationGroupService } from './services/conversation-group.service';
+import { GetUserConversationGroupResponseDto } from './dtos/get-user-conversation-group.dto';
+import { GetLectureGroupResponseDto } from './dtos/get-user-lecture-group.dto';
 
 @Controller('conversation')
 export class ConversationController {
   constructor(
     private readonly conversationService: ConversationService,
-    private readonly openaiService: OpenAIService,
+    private readonly conversationGroupService: ConversationGroupService,
   ) {}
 
   @Get('my-conversation-list')
@@ -59,17 +65,6 @@ export class ConversationController {
       audio,
     );
   }
-
-  // @Post('text-response')
-  // async processTextMessage(
-  //   @Body('conversationId') conversationId: number,
-  //   @Body('userText') userText: string,
-  // ) {
-  //   return this.conversationService.getAndProcessConversationFromText(
-  //     conversationId,
-  //     userText,
-  //   );
-  // }
 
   @Post('generate-scenario')
   async generateScenario(
@@ -140,5 +135,28 @@ export class ConversationController {
     @Param('conversationId') conversationId: number,
   ): Promise<boolean> {
     return this.conversationService.undoChat(conversationId);
+  }
+
+  @Post('group')
+  async createConversationGroup(
+    @Body() createConversationGroupDto: CreateConversationGroupRequestDto,
+  ): Promise<CreateConversationGroupResponseDto> {
+    return this.conversationGroupService.createConversationGroup(
+      createConversationGroupDto,
+    );
+  }
+
+  @Get('group')
+  async getConversationGroup(
+    @User() user: UserEntity,
+  ): Promise<GetUserConversationGroupResponseDto[]> {
+    return this.conversationGroupService.getUserConversationGroups(user.id);
+  }
+
+  @Get('lecture-group')
+  async getUserLectureGroup(
+    @User() user: UserEntity,
+  ): Promise<GetLectureGroupResponseDto[]> {
+    return this.conversationGroupService.getUserLectureGroups(user.id);
   }
 }

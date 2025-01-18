@@ -2,6 +2,7 @@ import { BaseEntity } from 'src/common/entities/base.entity';
 import {
   Column,
   Entity,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   OneToOne,
@@ -11,6 +12,7 @@ import { MissionEntity } from './mission.entity';
 import { MessageEntity } from './message.entity';
 import { FeedbackEntity } from './feedback.entity';
 import { ConversationGroupEntity } from './conversation_group.entity';
+import { LectureEntity } from '@/domain/lecture/entities/lecture.entity';
 
 enum ConversationType {
   NORMAL,
@@ -38,6 +40,9 @@ export class ConversationEntity extends BaseEntity {
 
   @Column({ name: 'situation' })
   situation: string;
+
+  @Column({ name: 'restriction', default: '' })
+  restriction: string;
 
   @Column({ name: 'is_completed', default: false })
   isCompleted: boolean;
@@ -69,6 +74,13 @@ export class ConversationEntity extends BaseEntity {
   @Column({ name: 'remaining_hint_count', default: 3 })
   remainingHintCount: number;
 
-  @ManyToOne(() => ConversationGroupEntity, (group) => group.conversations)
+  @ManyToMany(() => LectureEntity, (lecture) => lecture.conversations, {
+    nullable: true,
+  })
+  lectures: LectureEntity[];
+
+  @ManyToOne(() => ConversationGroupEntity, (group) => group.conversations, {
+    nullable: true,
+  })
   group: ConversationGroupEntity;
 }
