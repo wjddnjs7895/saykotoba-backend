@@ -196,6 +196,7 @@ export class ConversationService {
         userRole: createConversationDto.userRole,
         remainingHintCount: hintCount,
         exp: EXP_PER_CONVERSATION[createConversationDto.difficultyLevel],
+        problemId: createConversationDto.problemId,
       });
       try {
         await this.conversationRepository.save(newConversation);

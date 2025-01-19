@@ -25,5 +25,8 @@ export class GetLectureInfoResponseDto {
 
   @IsArray({ each: true })
   @Type(() => Number)
-  conversationIds: number[];
+  lessons: {
+    id: number;
+    title: string;
+  }[];
 }

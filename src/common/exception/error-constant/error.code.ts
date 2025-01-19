@@ -38,6 +38,12 @@ export enum ConversationErrorCodeEnum {
   ConversationGroupSaveFailed = 'CONV14',
 }
 
+export enum LectureErrorCodeEnum {
+  LectureNotFound = 'LECTURE01',
+  LectureSaveFailed = 'LECTURE02',
+  LessonNotFound = 'LECTURE03',
+}
+
 export enum UserErrorCodeEnum {
   UserNotFound = 'USER01',
   UserUpdateFailed = 'USER02',

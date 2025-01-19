@@ -2,11 +2,7 @@ import { BaseEntity } from '@/common/entities/base.entity';
 import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { ConversationEntity } from './conversation.entity';
 import { UserEntity } from '@/domain/user/entities/user.entity';
-
-export enum ConversationGroupType {
-  LECTURE = 'LECTURE',
-  CUSTOM = 'CUSTOM',
-}
+import { CONVERSATION_GROUP_TYPE } from '@/common/constants/conversation.constants';
 
 @Entity('conversation_group')
 export class ConversationGroupEntity extends BaseEntity {
@@ -19,8 +15,13 @@ export class ConversationGroupEntity extends BaseEntity {
   @Column({ name: 'thumbnail_url', default: '' })
   thumbnailUrl: string;
 
-  @Column({ name: 'type', default: ConversationGroupType.CUSTOM })
-  type: ConversationGroupType;
+  @Column({
+    type: 'enum',
+    enum: CONVERSATION_GROUP_TYPE,
+    name: 'type',
+    default: CONVERSATION_GROUP_TYPE.CUSTOM,
+  })
+  type: CONVERSATION_GROUP_TYPE;
 
   @Column({ name: 'difficulty_level', nullable: true })
   difficultyLevel: number;

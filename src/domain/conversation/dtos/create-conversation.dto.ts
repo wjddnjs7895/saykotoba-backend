@@ -1,5 +1,7 @@
+import { CONVERSATION_TYPE } from '@/common/constants/conversation.constants';
 import {
   IsArray,
+  IsEnum,
   IsNumber,
   IsOptional,
   IsString,
@@ -32,6 +34,14 @@ export class CreateConversationRequestDto {
   @IsString()
   @IsOptional()
   thumbnailUrl?: string;
+
+  @IsEnum(CONVERSATION_TYPE)
+  @IsOptional()
+  type?: CONVERSATION_TYPE;
+
+  @IsNumber()
+  @IsOptional()
+  problemId?: number;
 }
 
 export interface CreateConversationServiceDto

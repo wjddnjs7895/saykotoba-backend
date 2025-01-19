@@ -2,6 +2,7 @@ import {
   AuthErrorCodeEnum,
   ConversationErrorCodeEnum,
   GoogleErrorCodeEnum,
+  LectureErrorCodeEnum,
   OpenAIErrorCodeEnum,
   UnexpectedErrorCodeEnum,
   UserErrorCodeEnum,
@@ -13,6 +14,10 @@ type AuthErrorMessageType = {
 
 type ConversationErrorMessageType = {
   readonly [K in ConversationErrorCodeEnum]: string;
+};
+
+type LectureErrorMessageType = {
+  readonly [K in LectureErrorCodeEnum]: string;
 };
 
 type UserErrorMessageType = {
@@ -74,6 +79,12 @@ export const ConversationErrorMessage: ConversationErrorMessageType = {
     'Conversation group not found',
   [ConversationErrorCodeEnum.ConversationGroupSaveFailed]:
     'Conversation group save failed',
+};
+
+export const LectureErrorMessage: LectureErrorMessageType = {
+  [LectureErrorCodeEnum.LectureNotFound]: 'Lecture not found',
+  [LectureErrorCodeEnum.LectureSaveFailed]: 'Lecture save failed',
+  [LectureErrorCodeEnum.LessonNotFound]: 'Lesson not found',
 };
 
 export const UserErrorMessage: UserErrorMessageType = {

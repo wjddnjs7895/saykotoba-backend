@@ -1,6 +1,16 @@
-import { IsString, IsNumber } from 'class-validator';
+import { CONVERSATION_GROUP_TYPE } from '@/common/constants/conversation.constants';
+import {
+  IsString,
+  IsNumber,
+  IsArray,
+  IsOptional,
+  IsEnum,
+} from 'class-validator';
 
 export class CreateConversationGroupRequestDto {
+  @IsNumber()
+  userId: number;
+
   @IsString()
   name: string;
 
@@ -12,9 +22,17 @@ export class CreateConversationGroupRequestDto {
 
   @IsNumber()
   difficultyLevel: number;
+
+  @IsEnum(CONVERSATION_GROUP_TYPE)
+  type: CONVERSATION_GROUP_TYPE;
+
+  @IsArray()
+  @IsOptional()
+  @IsNumber({}, { each: true })
+  conversationIds: number[];
 }
 
 export class CreateConversationGroupResponseDto {
   @IsNumber()
-  id: number;
+  groupId: number;
 }

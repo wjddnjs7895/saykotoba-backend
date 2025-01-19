@@ -1,10 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import {
-  ConversationGroupEntity,
-  ConversationGroupType,
-} from '../entities/conversation_group.entity';
+import { In, Repository } from 'typeorm';
+import { ConversationGroupEntity } from '../entities/conversation_group.entity';
 import { GetUserConversationGroupResponseDto } from '../dtos/get-user-conversation-group.dto';
 import {
   CreateConversationGroupRequestDto,
@@ -17,28 +14,18 @@ import {
 import { CustomBaseException } from '@/common/exception/custom.base.exception';
 import { UnexpectedException } from '@/common/exception/custom-exception/unexpected.exception';
 import { GetLectureGroupResponseDto } from '../dtos/get-user-lecture-group.dto';
+import { AddConversationToGroupRequestDto } from '../dtos/add-conversation-to-group.dto';
+import { ConversationEntity } from '../entities/conversation.entity';
+import { CONVERSATION_GROUP_TYPE } from '@/common/constants/conversation.constants';
 
 @Injectable()
 export class ConversationGroupService {
   constructor(
     @InjectRepository(ConversationGroupEntity)
     private readonly conversationGroupRepository: Repository<ConversationGroupEntity>,
+    @InjectRepository(ConversationEntity)
+    private readonly conversationRepository: Repository<ConversationEntity>,
   ) {}
-
-  async createConversationGroup(
-    conversationGroup: CreateConversationGroupRequestDto,
-  ): Promise<CreateConversationGroupResponseDto> {
-    try {
-      const newGroup =
-        this.conversationGroupRepository.create(conversationGroup);
-      const savedGroup = await this.conversationGroupRepository.save(newGroup);
-      return {
-        id: savedGroup.id,
-      };
-    } catch {
-      throw new ConversationGroupSaveFailedException();
-    }
-  }
 
   async getUserConversationGroups(
     userId: number,
@@ -68,7 +55,7 @@ export class ConversationGroupService {
     userId: number,
   ): Promise<GetLectureGroupResponseDto[]> {
     const groups = await this.conversationGroupRepository.find({
-      where: { user: { id: userId }, type: ConversationGroupType.LECTURE },
+      where: { user: { id: userId }, type: CONVERSATION_GROUP_TYPE.LECTURE },
       relations: ['user'],
     });
     return groups.map((group) => ({
@@ -78,5 +65,36 @@ export class ConversationGroupService {
       thumbnailUrl: group.thumbnailUrl,
       difficultyLevel: group.difficultyLevel,
     }));
+  }
+
+  async createConversationGroup(
+    conversationGroup: CreateConversationGroupRequestDto,
+  ): Promise<CreateConversationGroupResponseDto> {
+    try {
+      const newGroup = this.conversationGroupRepository.create({
+        ...conversationGroup,
+        user: { id: conversationGroup.userId },
+      });
+
+      const savedGroup = await this.conversationGroupRepository.save(newGroup);
+      return {
+        groupId: savedGroup.id,
+      };
+    } catch {
+      throw new ConversationGroupSaveFailedException();
+    }
+  }
+
+  async addConversationToGroup(
+    addConversationToGroupDto: AddConversationToGroupRequestDto,
+  ): Promise<void> {
+    const group = await this.conversationGroupRepository.findOne({
+      where: { id: addConversationToGroupDto.groupId },
+    });
+    const conversations = await this.conversationRepository.find({
+      where: { id: In(addConversationToGroupDto.conversationIds) },
+    });
+    group.conversations = [...group.conversations, ...conversations];
+    await this.conversationGroupRepository.save(group);
   }
 }

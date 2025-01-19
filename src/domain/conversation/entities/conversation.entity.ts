@@ -2,7 +2,6 @@ import { BaseEntity } from 'src/common/entities/base.entity';
 import {
   Column,
   Entity,
-  ManyToMany,
   ManyToOne,
   OneToMany,
   OneToOne,
@@ -12,11 +11,7 @@ import { MissionEntity } from './mission.entity';
 import { MessageEntity } from './message.entity';
 import { FeedbackEntity } from './feedback.entity';
 import { ConversationGroupEntity } from './conversation_group.entity';
-import { LectureEntity } from '@/domain/lecture/entities/lecture.entity';
-
-enum ConversationType {
-  NORMAL,
-}
+import { CONVERSATION_TYPE } from '@/common/constants/conversation.constants';
 
 @Entity('conversation')
 export class ConversationEntity extends BaseEntity {
@@ -68,16 +63,16 @@ export class ConversationEntity extends BaseEntity {
   @Column({ name: 'exp', default: 0 })
   exp: number;
 
-  @Column({ name: 'type', default: ConversationType.NORMAL })
-  type: ConversationType;
+  @Column({
+    type: 'enum',
+    enum: CONVERSATION_TYPE,
+    name: 'type',
+    default: CONVERSATION_TYPE.CUSTOM,
+  })
+  type: CONVERSATION_TYPE;
 
   @Column({ name: 'remaining_hint_count', default: 3 })
   remainingHintCount: number;
-
-  @ManyToMany(() => LectureEntity, (lecture) => lecture.conversations, {
-    nullable: true,
-  })
-  lectures: LectureEntity[];
 
   @ManyToOne(() => ConversationGroupEntity, (group) => group.conversations, {
     nullable: true,

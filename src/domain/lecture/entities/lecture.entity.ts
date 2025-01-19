@@ -1,12 +1,6 @@
 import { BaseEntity } from '@/common/entities/base.entity';
-import { ConversationEntity } from '@/domain/conversation/entities/conversation.entity';
-import {
-  Column,
-  Entity,
-  ManyToMany,
-  UpdateDateColumn,
-  JoinTable,
-} from 'typeorm';
+import { Column, Entity, OneToMany, UpdateDateColumn } from 'typeorm';
+import { LessonEntity } from './lesson.entity';
 
 @Entity('lecture')
 export class LectureEntity extends BaseEntity {
@@ -31,17 +25,6 @@ export class LectureEntity extends BaseEntity {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
-  @ManyToMany(
-    () => ConversationEntity,
-    (conversation) => conversation.lectures,
-    {
-      nullable: true,
-    },
-  )
-  @JoinTable({
-    name: 'lecture_conversation',
-    joinColumn: { name: 'lecture_id', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'conversation_id', referencedColumnName: 'id' },
-  })
-  conversations: ConversationEntity[];
+  @OneToMany(() => LessonEntity, (lesson) => lesson.lecture)
+  lessons: LessonEntity[];
 }
