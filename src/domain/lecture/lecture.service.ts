@@ -22,6 +22,10 @@ import {
   CONVERSATION_GROUP_TYPE,
   CONVERSATION_TYPE,
 } from '@/common/constants/conversation.constants';
+import {
+  ConversationGroupSaveFailedException,
+  ConversationSaveFailedException,
+} from '@/common/exception/custom-exception/conversation.exception';
 @Injectable()
 export class LectureService {
   constructor(
@@ -34,7 +38,11 @@ export class LectureService {
   ) {}
 
   async getAllLectures(): Promise<GetLecturesResponseDto[]> {
-    const lectures = await this.lectureRepository.find();
+    const lectures = await this.lectureRepository.find({
+      order: {
+        id: 'ASC',
+      },
+    });
     if (!lectures) {
       throw new LectureNotFoundException();
     }
@@ -104,24 +112,7 @@ export class LectureService {
         throw new LectureNotFoundException();
       }
 
-      const newConversations = await Promise.all(
-        lecture.lessons.map(async (lesson) => {
-          const newConversation =
-            await this.conversationService.createConversation({
-              userId: startLectureRequestDto.userId,
-              title: lecture.title,
-              difficultyLevel: lesson.difficultyLevel,
-              situation: lesson.situation,
-              aiRole: lesson.aiRole,
-              userRole: lesson.userRole,
-              missions: lesson.missions.map((mission) => mission.mission),
-              type: CONVERSATION_TYPE.LECTURE,
-              problemId: lesson.id,
-            });
-          return newConversation;
-        }),
-      );
-
+      // 1. 먼저 conversation group 생성
       const newConversationGroup =
         await this.conversationGroupService.createConversationGroup({
           userId: startLectureRequestDto.userId,
@@ -129,11 +120,45 @@ export class LectureService {
           description: lecture.description,
           thumbnailUrl: lecture.thumbnailUrl,
           difficultyLevel: lecture.difficultyLevel,
-          conversationIds: newConversations.map(
-            (conversation) => conversation.conversationId,
-          ),
           type: CONVERSATION_GROUP_TYPE.LECTURE,
+          conversationIds: [],
         });
+
+      if (!newConversationGroup) {
+        throw new ConversationGroupSaveFailedException();
+      }
+
+      // 2. conversations 생성
+      const newConversations = await Promise.all(
+        lecture.lessons.map((lesson) =>
+          this.conversationService.createConversation({
+            userId: startLectureRequestDto.userId,
+            title: lecture.title,
+            difficultyLevel: lesson.difficultyLevel,
+            situation: lesson.situation,
+            aiRole: lesson.aiRole,
+            userRole: lesson.userRole,
+            missions: lesson.missions.map((mission) => mission.mission),
+            type: CONVERSATION_TYPE.LECTURE,
+            problemId: lesson.id,
+            thumbnailUrl: lecture.thumbnailUrl,
+          }),
+        ),
+      );
+
+      if (!newConversations) {
+        throw new ConversationSaveFailedException();
+      }
+
+      // 2. 생성된 conversations를 group에 연결
+      await Promise.all(
+        newConversations.map((conversation) =>
+          this.conversationService.updateConversationGroup(
+            conversation.conversationId,
+            newConversationGroup.groupId,
+          ),
+        ),
+      );
 
       return {
         conversationId: newConversations[0].conversationId,

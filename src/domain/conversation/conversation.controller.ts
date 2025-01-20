@@ -37,6 +37,7 @@ import {
 import { ConversationGroupService } from './services/conversation-group.service';
 import { GetUserConversationGroupResponseDto } from './dtos/get-user-conversation-group.dto';
 import { GetLectureGroupResponseDto } from './dtos/get-user-lecture-group.dto';
+import { GetConversationGroupInfoResponseDto } from './dtos/get-conversation-group-info.dto';
 
 @Controller('conversation')
 export class ConversationController {
@@ -146,11 +147,18 @@ export class ConversationController {
     );
   }
 
-  @Get('group')
+  @Get('group/all')
   async getConversationGroup(
     @User() user: UserEntity,
   ): Promise<GetUserConversationGroupResponseDto[]> {
     return this.conversationGroupService.getUserConversationGroups(user.id);
+  }
+
+  @Get('group/:groupId')
+  async getConversationGroupInfo(
+    @Param('groupId') groupId: number,
+  ): Promise<GetConversationGroupInfoResponseDto> {
+    return this.conversationGroupService.getUserConversationGroupInfo(groupId);
   }
 
   @Get('lecture-group')
@@ -158,5 +166,12 @@ export class ConversationController {
     @User() user: UserEntity,
   ): Promise<GetLectureGroupResponseDto[]> {
     return this.conversationGroupService.getUserLectureGroups(user.id);
+  }
+
+  @Post('reset/:conversationId')
+  async resetConversation(
+    @Param('conversationId') conversationId: number,
+  ): Promise<{ conversationId: number }> {
+    return this.conversationService.resetConversation(conversationId);
   }
 }

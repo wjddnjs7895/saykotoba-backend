@@ -115,4 +115,15 @@ export class UserService {
       throw new UserUpdateFailedException();
     }
   }
+
+  async getTierList(): Promise<{
+    tierList: { tier: string; threshold: number }[];
+  }> {
+    return {
+      tierList: Object.entries(TIER_THRESHOLD).map(([tier, threshold]) => ({
+        tier,
+        threshold,
+      })),
+    };
+  }
 }

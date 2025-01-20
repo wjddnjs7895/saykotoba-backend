@@ -48,4 +48,11 @@ export class UserController {
   removeUser(@Param('id') id: number) {
     return this.userService.removeUser(id);
   }
+
+  @Get('tier-list')
+  getTierList(): Promise<{
+    tierList: { tier: string; threshold: number }[];
+  }> {
+    return this.userService.getTierList();
+  }
 }

@@ -35,6 +35,7 @@ import { UnexpectedException } from '@/common/exception/custom-exception/unexpec
 import {
   DIFFICULTY_MAP,
   EXP_PER_CONVERSATION,
+  HINT_COUNT,
   SCORE_THRESHOLD,
 } from '@/common/constants/conversation.constants';
 import { GetHintResponseDto } from '../dtos/get-hint.dto';
@@ -78,7 +79,11 @@ export class ConversationService {
     return conversations.map((conversation) => ({
       conversationId: conversation.id,
       title: conversation.title,
-      createdAt: conversation.createdAt,
+      difficultyLevel: conversation.difficultyLevel,
+      thumbnailUrl: conversation.thumbnailUrl,
+      type: conversation.type,
+      isCompleted: conversation.isCompleted,
+      score: conversation.score,
     }));
   }
 
@@ -197,6 +202,7 @@ export class ConversationService {
         remainingHintCount: hintCount,
         exp: EXP_PER_CONVERSATION[createConversationDto.difficultyLevel],
         problemId: createConversationDto.problemId,
+        type: createConversationDto.type,
       });
       try {
         await this.conversationRepository.save(newConversation);
@@ -523,5 +529,60 @@ export class ConversationService {
     } catch {
       throw new MessageDeleteFailedException();
     }
+  }
+
+  async resetConversation(
+    conversationId: number,
+  ): Promise<{ conversationId: number }> {
+    const conversationInfo = await this.conversationRepository.findOne({
+      where: { id: conversationId },
+    });
+    if (!conversationInfo) {
+      throw new ConversationNotFoundException();
+    }
+    try {
+      await this.conversationRepository.update(conversationId, {
+        remainingHintCount: HINT_COUNT[conversationInfo.difficultyLevel],
+        isCompleted: false,
+        score: 0,
+      });
+    } catch {
+      throw new ConversationUpdateFailedException();
+    }
+    try {
+      const messages = await this.messageRepository.find({
+        where: { conversationId },
+        order: { createdAt: 'ASC' },
+      });
+      if (messages.length > 1) {
+        const messageIdsToDelete = messages.slice(1).map((msg) => msg.id);
+        await this.messageRepository.delete(messageIdsToDelete);
+      }
+    } catch {
+      throw new MessageDeleteFailedException();
+    }
+    try {
+      await this.missionRepository.update(
+        { conversationId },
+        { isCompleted: false },
+      );
+    } catch {
+      throw new MissionSaveFailedException();
+    }
+    try {
+      await this.feedbackRepository.delete({ conversationId });
+    } catch {
+      throw new FeedbackSaveFailedException();
+    }
+    return {
+      conversationId,
+    };
+  }
+
+  async updateConversationGroup(conversationId: number, groupId: number) {
+    return this.conversationRepository.update(
+      { id: conversationId },
+      { group: { id: groupId } },
+    );
   }
 }

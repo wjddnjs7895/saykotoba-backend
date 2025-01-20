@@ -1,5 +1,11 @@
 import { BaseEntity } from '@/common/entities/base.entity';
-import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  UpdateDateColumn,
+} from 'typeorm';
 import { ConversationEntity } from './conversation.entity';
 import { UserEntity } from '@/domain/user/entities/user.entity';
 import { CONVERSATION_GROUP_TYPE } from '@/common/constants/conversation.constants';
@@ -25,6 +31,9 @@ export class ConversationGroupEntity extends BaseEntity {
 
   @Column({ name: 'difficulty_level', nullable: true })
   difficultyLevel: number;
+
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt: Date;
 
   @OneToMany(() => ConversationEntity, (conversation) => conversation.group)
   conversations: ConversationEntity[];

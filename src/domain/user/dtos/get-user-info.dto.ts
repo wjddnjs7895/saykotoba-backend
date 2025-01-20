@@ -1,5 +1,4 @@
 import { TIER_MAP } from '@/common/constants/user.constants';
-import { Type } from 'class-transformer';
 import { IsBoolean, IsEnum, IsJSON, IsNumber, IsString } from 'class-validator';
 
 export class GetUserInfoRespondDto {
@@ -16,7 +15,6 @@ export class GetUserInfoRespondDto {
   exp: number;
 
   @IsEnum(TIER_MAP)
-  @Type(() => String)
   tier: TIER_MAP;
 
   @IsNumber()

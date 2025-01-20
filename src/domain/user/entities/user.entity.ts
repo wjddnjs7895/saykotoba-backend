@@ -76,7 +76,7 @@ export class UserEntity extends BaseEntity {
   @Column({
     type: 'enum',
     enum: TIER_MAP,
-    default: TIER_MAP.BRONZE_4,
+    default: TIER_MAP.BEGINNER_4,
     comment: 'User tier',
   })
   tier: TIER_MAP;
