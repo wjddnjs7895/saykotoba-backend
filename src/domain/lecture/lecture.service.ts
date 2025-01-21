@@ -112,7 +112,6 @@ export class LectureService {
         throw new LectureNotFoundException();
       }
 
-      // 1. 먼저 conversation group 생성
       const newConversationGroup =
         await this.conversationGroupService.createConversationGroup({
           userId: startLectureRequestDto.userId,
@@ -128,7 +127,6 @@ export class LectureService {
         throw new ConversationGroupSaveFailedException();
       }
 
-      // 2. conversations 생성
       const newConversations = await Promise.all(
         lecture.lessons.map((lesson) =>
           this.conversationService.createConversation({
@@ -150,7 +148,6 @@ export class LectureService {
         throw new ConversationSaveFailedException();
       }
 
-      // 2. 생성된 conversations를 group에 연결
       await Promise.all(
         newConversations.map((conversation) =>
           this.conversationService.updateConversationGroup(
