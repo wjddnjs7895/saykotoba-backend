@@ -1,0 +1,5 @@
+export enum CLASSROOM_STYLE {
+  CONVERSATION = 'CONVERSATION',
+  GRAMMAR = 'GRAMMAR',
+  ALL = 'ALL',
+}

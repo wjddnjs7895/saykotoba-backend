@@ -1,6 +1,7 @@
 import { MissionEntity } from '@/domain/conversation/entities/mission.entity';
 import { MessageEntity } from '@/domain/conversation/entities/message.entity';
 import { DIFFICULTY_MAP } from '@/common/constants/conversation.constants';
+import { GenerateClassroomRequestDto } from '../dtos/generate-classroom.dto';
 
 const formatMissions = (missions: MissionEntity[]): string => {
   return missions
@@ -113,4 +114,19 @@ ${formatMissions(missions)}
     Difficulty Level: ${DIFFICULTY_MAP[difficultyLevel]}
     Language: ${language}
     `,
+
+  CLASSROOM_CREATOR: (
+    generateClassroomRequestDto: GenerateClassroomRequestDto,
+  ) => `You are an expert in creating a classroom for learning Japanese with specific lectures.
+  Select the most appropriate lectures for the classroom. Checkout the lecture and followed lessons. Consider the user's requirement and include the most relevant lectures.
+  
+  Requirements:
+  - User want the Style of the classroom is: ${generateClassroomRequestDto.style}
+  - User want the Difficulty Level of the classroom is: ${generateClassroomRequestDto.difficultyLevel} (But you can select the lectures that are not in the requested difficulty level)
+  - User want the Topics of the classroom are: ${generateClassroomRequestDto.topics.join(', ')} (But you can select the lectures that are not in the requested topics. Please select the lectures that are related to the topics.)
+  - User want the Required Statement of the classroom is: ${generateClassroomRequestDto.requiredStatement}
+  - The Language of the title is: ${generateClassroomRequestDto.language}
+
+  The lecture Lists are: ${generateClassroomRequestDto.lectures.join(', ')}
+  `,
 } as const;

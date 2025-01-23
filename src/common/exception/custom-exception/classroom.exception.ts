@@ -12,3 +12,23 @@ export class ClassroomNotFoundException extends CustomBaseException {
     );
   }
 }
+
+export class ClassroomSaveFailedException extends CustomBaseException {
+  constructor() {
+    super(
+      ClassroomErrorCodeEnum.ClassroomSaveFailed,
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      ClassroomErrorMessage[ClassroomErrorCodeEnum.ClassroomSaveFailed],
+    );
+  }
+}
+
+export class ClassroomGenerateFailedException extends CustomBaseException {
+  constructor() {
+    super(
+      ClassroomErrorCodeEnum.ClassroomGenerateFailed,
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      ClassroomErrorMessage[ClassroomErrorCodeEnum.ClassroomGenerateFailed],
+    );
+  }
+}

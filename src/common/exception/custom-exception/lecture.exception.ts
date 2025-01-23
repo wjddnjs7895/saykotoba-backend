@@ -42,3 +42,23 @@ export class LessonSaveFailedException extends CustomBaseException {
     );
   }
 }
+
+export class LessonDeleteFailedException extends CustomBaseException {
+  constructor() {
+    super(
+      LectureErrorCodeEnum.LessonDeleteFailed,
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      LectureErrorMessage[LectureErrorCodeEnum.LessonDeleteFailed],
+    );
+  }
+}
+
+export class LectureDeleteFailedException extends CustomBaseException {
+  constructor() {
+    super(
+      LectureErrorCodeEnum.LectureDeleteFailed,
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      LectureErrorMessage[LectureErrorCodeEnum.LectureDeleteFailed],
+    );
+  }
+}

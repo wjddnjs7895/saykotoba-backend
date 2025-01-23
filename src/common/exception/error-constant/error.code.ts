@@ -43,10 +43,14 @@ export enum LectureErrorCodeEnum {
   LectureSaveFailed = 'LECTURE02',
   LessonNotFound = 'LECTURE03',
   LessonSaveFailed = 'LECTURE04',
+  LessonDeleteFailed = 'LECTURE05',
+  LectureDeleteFailed = 'LECTURE06',
 }
 
 export enum ClassroomErrorCodeEnum {
   ClassroomNotFound = 'CLASSROOM01',
+  ClassroomSaveFailed = 'CLASSROOM02',
+  ClassroomGenerateFailed = 'CLASSROOM03',
 }
 
 export enum UserErrorCodeEnum {

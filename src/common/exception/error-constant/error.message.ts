@@ -91,10 +91,14 @@ export const LectureErrorMessage: LectureErrorMessageType = {
   [LectureErrorCodeEnum.LectureSaveFailed]: 'Lecture save failed',
   [LectureErrorCodeEnum.LessonNotFound]: 'Lesson not found',
   [LectureErrorCodeEnum.LessonSaveFailed]: 'Lesson save failed',
+  [LectureErrorCodeEnum.LessonDeleteFailed]: 'Lesson delete failed',
+  [LectureErrorCodeEnum.LectureDeleteFailed]: 'Lecture delete failed',
 };
 
 export const ClassroomErrorMessage: ClassroomErrorMessageType = {
   [ClassroomErrorCodeEnum.ClassroomNotFound]: 'Classroom not found',
+  [ClassroomErrorCodeEnum.ClassroomSaveFailed]: 'Classroom save failed',
+  [ClassroomErrorCodeEnum.ClassroomGenerateFailed]: 'Classroom generate failed',
 };
 
 export const UserErrorMessage: UserErrorMessageType = {

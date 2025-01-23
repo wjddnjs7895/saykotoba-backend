@@ -34,6 +34,11 @@ import {
 } from './dtos/generate-hint.dto';
 import { ConversationHintTool } from './tools/conversation-hint.tool';
 import { ConversationFirstResponseTool } from './tools/conversation-first-response.tool';
+import {
+  GenerateClassroomRequestDto,
+  GenerateClassroomResponseDto,
+} from './dtos/generate-classroom.dto';
+import { ClassroomTool } from './tools/classroom.tool';
 
 @Injectable()
 export class OpenAIService {
@@ -317,6 +322,35 @@ export class OpenAIService {
         },
       ],
       tools: ConversationHintTool,
+      tool_choice: 'required',
+    });
+
+    if (!response) {
+      throw new OpenAICreateFailedException();
+    }
+
+    const toolCall = response.choices[0].message.tool_calls?.[0];
+    if (!toolCall) {
+      throw new NoToolResponseReceivedException();
+    }
+
+    const result = JSON.parse(toolCall.function.arguments);
+
+    return result;
+  }
+
+  async generateClassroom(
+    generateClassroomRequestDto: GenerateClassroomRequestDto,
+  ): Promise<GenerateClassroomResponseDto> {
+    const response = await this.openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content: PROMPTS.CLASSROOM_CREATOR(generateClassroomRequestDto),
+        },
+      ],
+      tools: ClassroomTool,
       tool_choice: 'required',
     });
 

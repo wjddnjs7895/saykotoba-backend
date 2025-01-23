@@ -1,4 +1,9 @@
-import { IsNumber, IsString } from 'class-validator/types/decorator/decorators';
+import { Type } from 'class-transformer';
+import {
+  IsArray,
+  IsNumber,
+  IsString,
+} from 'class-validator/types/decorator/decorators';
 
 export class GetLecturesResponseDto {
   @IsNumber()
@@ -21,4 +26,8 @@ export class GetLecturesResponseDto {
 
   @IsString()
   topic: string;
+
+  @IsArray({ each: true })
+  @Type(() => Number)
+  lessonIds: number[];
 }

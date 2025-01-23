@@ -65,3 +65,8 @@ export enum StoreType {
   GOOGLE_PLAY = 'google_play',
   APP_STORE = 'app_store',
 }
+
+export enum UserRole {
+  USER = 'user',
+  ADMIN = 'admin',
+}

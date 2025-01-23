@@ -1,7 +1,11 @@
 import { BaseEntity } from 'src/common/entities/base.entity';
 import { Column, Entity, OneToMany, OneToOne } from 'typeorm';
 import { SubscriptionEntity } from '../../payment/entities/subscription.entity';
-import { AuthProvider, TIER_MAP } from '@/common/constants/user.constants';
+import {
+  AuthProvider,
+  TIER_MAP,
+  UserRole,
+} from '@/common/constants/user.constants';
 import { ConversationGroupEntity } from '@/domain/conversation/entities/conversation_group.entity';
 import { Language } from '@/common/constants/app.constants';
 import { ClassroomEntity } from '@/domain/classroom/entities/classroom.entity';
@@ -105,4 +109,12 @@ export class UserEntity extends BaseEntity {
 
   @OneToMany(() => ClassroomEntity, (classroom) => classroom.user)
   classrooms: ClassroomEntity[];
+
+  @Column({
+    type: 'enum',
+    enum: UserRole,
+    default: UserRole.USER,
+    comment: 'User role',
+  })
+  role: UserRole;
 }

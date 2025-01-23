@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { LectureService } from './lecture.service';
 import { GetLectureInfoResponseDto } from './dtos/get-lecture-info.dto';
 import { GetLecturesResponseDto } from './dtos/get-lectures.dto';
@@ -6,14 +6,21 @@ import { User } from '@/common/decorators/user.decorator';
 import { UserEntity } from '../user/entities/user.entity';
 import { StartLectureResponseDto } from './dtos/start-lecture-dto';
 import { GetLessonInfoResponseDto } from './dtos/get-lesson-info.dto';
+import { Admin } from '@/common/decorators/admin.decorator';
+import {
+  CreateLectureRequestDto,
+  CreateLecturesResponseDto,
+} from './dtos/create-lectures.dto';
 
 @Controller('lecture')
 export class LectureController {
   constructor(private readonly lectureService: LectureService) {}
 
   @Get()
-  async getAllLectures(): Promise<GetLecturesResponseDto[]> {
-    return this.lectureService.getAllLectures();
+  async getAllLectures(
+    @User() user: UserEntity,
+  ): Promise<GetLecturesResponseDto[]> {
+    return this.lectureService.getAllLectures(user.language);
   }
 
   @Get(':id')
@@ -46,5 +53,19 @@ export class LectureController {
     @Param('topic') topic: string,
   ): Promise<GetLecturesResponseDto[]> {
     return this.lectureService.getLecturesByTopic(topic);
+  }
+
+  @Admin()
+  @Post('/create')
+  async createLectures(
+    @Body() createLectureDto: CreateLectureRequestDto[],
+  ): Promise<CreateLecturesResponseDto> {
+    return this.lectureService.createLectures(createLectureDto);
+  }
+
+  @Admin()
+  @Delete(':id')
+  async deleteLecture(@Param('id') id: number): Promise<void> {
+    return this.lectureService.deleteLecture(id);
   }
 }

@@ -12,8 +12,5 @@ export class ClassroomEntity extends BaseEntity {
     () => ConversationGroupEntity,
     (conversationGroup) => conversationGroup.classrooms,
   )
-  conversationGroups: {
-    conversationGroup: ConversationGroupEntity;
-    isCompleted: boolean;
-  }[];
+  conversationGroups: ConversationGroupEntity[];
 }

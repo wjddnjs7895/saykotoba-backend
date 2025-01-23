@@ -11,7 +11,9 @@ import {
   StartLectureResponseDto,
 } from './dtos/start-lecture-dto';
 import {
+  LectureDeleteFailedException,
   LectureNotFoundException,
+  LessonDeleteFailedException,
   LessonNotFoundException,
 } from '@/common/exception/custom-exception/lecture.exception';
 import { CustomBaseException } from '@/common/exception/custom.base.exception';
@@ -27,6 +29,14 @@ import {
   ConversationSaveFailedException,
 } from '@/common/exception/custom-exception/conversation.exception';
 import { S3Service } from '@/integrations/aws/services/s3/s3.service';
+import { Language } from '@/common/constants/app.constants';
+import {
+  CreateLectureRequestDto,
+  CreateLecturesResponseDto,
+} from './dtos/create-lectures.dto';
+import { TopicEntity } from './entities/topic.entity';
+import { In } from 'typeorm';
+
 @Injectable()
 export class LectureService {
   constructor(
@@ -37,10 +47,15 @@ export class LectureService {
     private readonly conversationGroupService: ConversationGroupService,
     private readonly conversationService: ConversationService,
     private readonly s3Service: S3Service,
+    @InjectRepository(TopicEntity)
+    private readonly topicRepository: Repository<TopicEntity>,
   ) {}
 
-  async getAllLectures(): Promise<GetLecturesResponseDto[]> {
+  async getAllLectures(language: Language): Promise<GetLecturesResponseDto[]> {
     const lectures = await this.lectureRepository.find({
+      where: {
+        language,
+      },
       order: {
         id: 'ASC',
       },
@@ -57,6 +72,7 @@ export class LectureService {
       difficultyLevelEnd: lecture.difficultyLevelEnd,
       description: lecture.description,
       topic: lecture.topic?.name ?? '',
+      lessonIds: lecture.lessons.map((lesson) => lesson.id),
     }));
   }
 
@@ -195,6 +211,43 @@ export class LectureService {
       difficultyLevelEnd: lecture.difficultyLevelEnd,
       description: lecture.description,
       topic: lecture.topic.name,
+      lessonIds: lecture.lessons.map((lesson) => lesson.id),
     }));
+  }
+
+  async createLectures(
+    createLectureDto: CreateLectureRequestDto[],
+  ): Promise<CreateLecturesResponseDto> {
+    const topicNames = [...new Set(createLectureDto.map((dto) => dto.topic))];
+
+    const existingTopics = await this.topicRepository.find({
+      where: { name: In(topicNames) },
+    });
+
+    const lectureEntities = createLectureDto.map((dto) => {
+      const existingTopic = existingTopics.find(
+        (topic) => topic.name === dto.topic,
+      );
+      return {
+        ...dto,
+        topic: existingTopic || { name: dto.topic },
+      };
+    });
+
+    const lectures = await this.lectureRepository.save(lectureEntities);
+    return { lectureIds: lectures.map((lecture) => lecture.id) };
+  }
+
+  async deleteLecture(lectureId: number): Promise<void> {
+    try {
+      await this.lectureRepository.delete(lectureId);
+    } catch {
+      throw new LectureDeleteFailedException();
+    }
+    try {
+      await this.lessonRepository.delete({ lecture: { id: lectureId } });
+    } catch {
+      throw new LessonDeleteFailedException();
+    }
   }
 }
