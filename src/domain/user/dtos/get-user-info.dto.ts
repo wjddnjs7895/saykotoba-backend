@@ -21,7 +21,10 @@ export class GetUserInfoRespondDto {
   solvedConversationCount: number;
 
   @IsJSON()
-  solvedProblems: number[];
+  solvedProblemIds: number[];
+
+  @IsJSON()
+  solvedConversationIds: number[];
 
   @IsString()
   subscriptionStatus: string;

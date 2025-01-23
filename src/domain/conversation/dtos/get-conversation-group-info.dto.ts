@@ -15,7 +15,10 @@ export class GetConversationGroupInfoResponseDto {
   thumbnailUrl: string;
 
   @IsNumber()
-  difficultyLevel: number;
+  difficultyLevelStart: number;
+
+  @IsNumber()
+  difficultyLevelEnd: number;
 
   @IsArray({ each: true })
   @Type(() => Number)

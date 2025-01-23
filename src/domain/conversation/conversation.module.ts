@@ -12,6 +12,7 @@ import { AwsModule } from '@/integrations/aws/aws.module';
 import { GoogleModule } from '@/integrations/google/google.module';
 import { ConversationGroupEntity } from './entities/conversation_group.entity';
 import { ConversationGroupService } from './services/conversation-group.service';
+import { ClassroomEntity } from '../classroom/entities/classroom.entity';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { ConversationGroupService } from './services/conversation-group.service'
       MissionEntity,
       FeedbackEntity,
       ConversationGroupEntity,
+      ClassroomEntity,
     ]),
     UserModule,
     OpenAIModule,

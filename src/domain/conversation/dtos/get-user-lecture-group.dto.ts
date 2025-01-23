@@ -14,5 +14,8 @@ export class GetLectureGroupResponseDto {
   thumbnailUrl: string;
 
   @IsNumber()
-  difficultyLevel: number;
+  difficultyLevelStart: number;
+
+  @IsNumber()
+  difficultyLevelEnd: number;
 }

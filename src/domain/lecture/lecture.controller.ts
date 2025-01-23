@@ -40,4 +40,11 @@ export class LectureController {
   ): Promise<GetLessonInfoResponseDto> {
     return this.lectureService.getLessonInfo(lessonId);
   }
+
+  @Get('/topic/:topic')
+  async getLecturesByTopic(
+    @Param('topic') topic: string,
+  ): Promise<GetLecturesResponseDto[]> {
+    return this.lectureService.getLecturesByTopic(topic);
+  }
 }

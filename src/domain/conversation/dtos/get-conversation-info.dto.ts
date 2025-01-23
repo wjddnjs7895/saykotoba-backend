@@ -90,4 +90,7 @@ export class GetConversationInfoResponseDto {
 
   @IsNumber()
   exp: number;
+
+  @IsString()
+  thumbnailUrl?: string;
 }

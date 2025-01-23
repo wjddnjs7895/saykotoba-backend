@@ -15,7 +15,10 @@ export class GetLectureInfoResponseDto {
   thumbnailUrl: string;
 
   @IsNumber()
-  difficultyLevel: number;
+  difficultyLevelStart: number;
+
+  @IsNumber()
+  difficultyLevelEnd: number;
 
   @IsBoolean()
   isCompleted: boolean;
@@ -28,5 +31,6 @@ export class GetLectureInfoResponseDto {
   lessons: {
     id: number;
     title: string;
+    difficultyLevel: number;
   }[];
 }

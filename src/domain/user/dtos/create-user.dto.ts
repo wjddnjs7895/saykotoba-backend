@@ -1,3 +1,4 @@
+import { AuthProvider } from '@/common/constants/user.constants';
 import {
   IsNumber,
   IsString,
@@ -6,7 +7,6 @@ import {
   IsEnum,
   IsOptional,
 } from 'class-validator';
-import { AuthProvider } from '../constants/user.constants';
 
 export class CreateUserRequestDto {
   @IsEmail()

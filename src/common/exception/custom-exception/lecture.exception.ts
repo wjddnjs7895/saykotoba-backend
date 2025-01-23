@@ -32,3 +32,13 @@ export class LessonNotFoundException extends CustomBaseException {
     );
   }
 }
+
+export class LessonSaveFailedException extends CustomBaseException {
+  constructor() {
+    super(
+      LectureErrorCodeEnum.LessonSaveFailed,
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      LectureErrorMessage[LectureErrorCodeEnum.LessonSaveFailed],
+    );
+  }
+}

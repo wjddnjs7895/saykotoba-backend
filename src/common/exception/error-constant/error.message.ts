@@ -1,5 +1,6 @@
 import {
   AuthErrorCodeEnum,
+  ClassroomErrorCodeEnum,
   ConversationErrorCodeEnum,
   GoogleErrorCodeEnum,
   LectureErrorCodeEnum,
@@ -18,6 +19,10 @@ type ConversationErrorMessageType = {
 
 type LectureErrorMessageType = {
   readonly [K in LectureErrorCodeEnum]: string;
+};
+
+type ClassroomErrorMessageType = {
+  readonly [K in ClassroomErrorCodeEnum]: string;
 };
 
 type UserErrorMessageType = {
@@ -85,6 +90,11 @@ export const LectureErrorMessage: LectureErrorMessageType = {
   [LectureErrorCodeEnum.LectureNotFound]: 'Lecture not found',
   [LectureErrorCodeEnum.LectureSaveFailed]: 'Lecture save failed',
   [LectureErrorCodeEnum.LessonNotFound]: 'Lesson not found',
+  [LectureErrorCodeEnum.LessonSaveFailed]: 'Lesson save failed',
+};
+
+export const ClassroomErrorMessage: ClassroomErrorMessageType = {
+  [ClassroomErrorCodeEnum.ClassroomNotFound]: 'Classroom not found',
 };
 
 export const UserErrorMessage: UserErrorMessageType = {

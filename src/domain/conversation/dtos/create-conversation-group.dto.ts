@@ -21,7 +21,10 @@ export class CreateConversationGroupRequestDto {
   thumbnailUrl: string;
 
   @IsNumber()
-  difficultyLevel: number;
+  difficultyLevelStart: number;
+
+  @IsNumber()
+  difficultyLevelEnd: number;
 
   @IsEnum(CONVERSATION_GROUP_TYPE)
   type: CONVERSATION_GROUP_TYPE;

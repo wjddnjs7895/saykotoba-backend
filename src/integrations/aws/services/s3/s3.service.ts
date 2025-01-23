@@ -22,6 +22,17 @@ export class S3Service {
       },
     });
   }
+  getCloudFrontUrl(s3Key: string): string {
+    if (!s3Key) return null;
+    if (s3Key.startsWith('https://')) {
+      return s3Key;
+    }
+    if (s3Key.startsWith('http://')) {
+      return s3Key.replace('http://', 'https://');
+    }
+    const cleanKey = s3Key.replace(/^\/+|\/+$/g, '');
+    return `https://${this.cloudFrontDomain}/${cleanKey}`;
+  }
 
   async imageUploadToS3(
     imageUploadRequestDto: ImageUploadRequestDto,

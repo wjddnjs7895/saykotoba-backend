@@ -26,6 +26,7 @@ import {
   ConversationGroupSaveFailedException,
   ConversationSaveFailedException,
 } from '@/common/exception/custom-exception/conversation.exception';
+import { S3Service } from '@/integrations/aws/services/s3/s3.service';
 @Injectable()
 export class LectureService {
   constructor(
@@ -35,6 +36,7 @@ export class LectureService {
     private readonly lessonRepository: Repository<LessonEntity>,
     private readonly conversationGroupService: ConversationGroupService,
     private readonly conversationService: ConversationService,
+    private readonly s3Service: S3Service,
   ) {}
 
   async getAllLectures(): Promise<GetLecturesResponseDto[]> {
@@ -42,16 +44,19 @@ export class LectureService {
       order: {
         id: 'ASC',
       },
+      relations: ['topic'],
     });
-    if (!lectures) {
+    if (!lectures || lectures.length === 0) {
       throw new LectureNotFoundException();
     }
     return lectures.map((lecture) => ({
       id: lecture.id,
       title: lecture.title,
-      thumbnailUrl: lecture.thumbnailUrl,
-      difficultyLevel: lecture.difficultyLevel,
+      thumbnailUrl: this.s3Service.getCloudFrontUrl(lecture.thumbnailUrl) ?? '',
+      difficultyLevelStart: lecture.difficultyLevelStart,
+      difficultyLevelEnd: lecture.difficultyLevelEnd,
       description: lecture.description,
+      topic: lecture.topic?.name ?? '',
     }));
   }
 
@@ -66,14 +71,16 @@ export class LectureService {
     return {
       id: lecture.id,
       title: lecture.title,
-      thumbnailUrl: lecture.thumbnailUrl,
+      thumbnailUrl: this.s3Service.getCloudFrontUrl(lecture.thumbnailUrl) ?? '',
       description: lecture.description,
-      difficultyLevel: lecture.difficultyLevel,
+      difficultyLevelStart: lecture.difficultyLevelStart,
+      difficultyLevelEnd: lecture.difficultyLevelEnd,
       isCompleted: lecture.isCompleted,
       progress: lecture.progress,
       lessons: lecture.lessons.map((lesson) => ({
         id: lesson.id,
         title: lesson.title,
+        difficultyLevel: lesson.difficultyLevel,
       })),
     };
   }
@@ -96,6 +103,7 @@ export class LectureService {
         mission: mission.mission,
       })),
       difficultyLevel: lesson.difficultyLevel,
+      exp: lesson.exp,
     };
   }
 
@@ -117,8 +125,10 @@ export class LectureService {
           userId: startLectureRequestDto.userId,
           name: lecture.title,
           description: lecture.description,
-          thumbnailUrl: lecture.thumbnailUrl,
-          difficultyLevel: lecture.difficultyLevel,
+          thumbnailUrl:
+            this.s3Service.getCloudFrontUrl(lecture.thumbnailUrl) ?? '',
+          difficultyLevelStart: lecture.difficultyLevelStart,
+          difficultyLevelEnd: lecture.difficultyLevelEnd,
           type: CONVERSATION_GROUP_TYPE.LECTURE,
           conversationIds: [],
         });
@@ -139,7 +149,8 @@ export class LectureService {
             missions: lesson.missions.map((mission) => mission.mission),
             type: CONVERSATION_TYPE.LECTURE,
             problemId: lesson.id,
-            thumbnailUrl: lecture.thumbnailUrl,
+            thumbnailUrl:
+              this.s3Service.getCloudFrontUrl(lecture.thumbnailUrl) ?? '',
           }),
         ),
       );
@@ -167,5 +178,23 @@ export class LectureService {
       }
       throw new UnexpectedException();
     }
+  }
+
+  async getLecturesByTopic(topic: string): Promise<GetLecturesResponseDto[]> {
+    const lectures = await this.lectureRepository.find({
+      where: { topic: { name: topic } },
+      order: {
+        id: 'ASC',
+      },
+    });
+    return lectures.map((lecture) => ({
+      id: lecture.id,
+      title: lecture.title,
+      thumbnailUrl: this.s3Service.getCloudFrontUrl(lecture.thumbnailUrl) ?? '',
+      difficultyLevelStart: lecture.difficultyLevelStart,
+      difficultyLevelEnd: lecture.difficultyLevelEnd,
+      description: lecture.description,
+      topic: lecture.topic.name,
+    }));
   }
 }

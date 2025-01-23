@@ -9,4 +9,5 @@ export class GetLessonInfoResponseDto {
     mission: string;
   }[];
   difficultyLevel: number;
+  exp: number;
 }

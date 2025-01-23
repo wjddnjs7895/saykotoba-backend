@@ -70,7 +70,8 @@ export class ConversationGroupService {
       name: group.name,
       description: group.description,
       thumbnailUrl: group.thumbnailUrl,
-      difficultyLevel: group.difficultyLevel,
+      difficultyLevelStart: group.difficultyLevelStart,
+      difficultyLevelEnd: group.difficultyLevelEnd,
     }));
   }
 
@@ -117,7 +118,8 @@ export class ConversationGroupService {
       title: group.name,
       description: group.description,
       thumbnailUrl: group.thumbnailUrl,
-      difficultyLevel: group.difficultyLevel,
+      difficultyLevelStart: group.difficultyLevelStart,
+      difficultyLevelEnd: group.difficultyLevelEnd,
       conversations: group.conversations.map((conversation) => ({
         id: conversation.id,
         title: conversation.title,

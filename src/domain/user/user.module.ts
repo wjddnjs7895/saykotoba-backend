@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from './entities/user.entity';
 import { SubscriptionEntity } from '../payment/entities/subscription.entity';
 import { ConversationGroupEntity } from '../conversation/entities/conversation_group.entity';
+import { ClassroomEntity } from '../classroom/entities/classroom.entity';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { ConversationGroupEntity } from '../conversation/entities/conversation_g
       UserEntity,
       SubscriptionEntity,
       ConversationGroupEntity,
+      ClassroomEntity,
     ]),
   ],
   controllers: [UserController],

@@ -203,6 +203,7 @@ export class ConversationService {
         exp: EXP_PER_CONVERSATION[createConversationDto.difficultyLevel],
         problemId: createConversationDto.problemId,
         type: createConversationDto.type,
+        thumbnailUrl: createConversationDto.thumbnailUrl,
       });
       try {
         await this.conversationRepository.save(newConversation);
@@ -427,26 +428,25 @@ export class ConversationService {
       } catch {
         throw new ConversationUpdateFailedException();
       }
-      const user = await this.userService.getUserInfo(conversationInfo.userId);
+
       if (
-        conversationInfo.problemId &&
         feedback.score >= SCORE_THRESHOLD.PASS &&
-        !user.solvedProblems.includes(conversationInfo.problemId)
+        !this.userService.isSolvedConversation({
+          userId: conversationInfo.userId,
+          conversationId: conversationInfo.id,
+        })
       ) {
-        await this.userService.updateUserExpAndCount(
-          conversationInfo.userId,
-          conversationInfo.exp,
-          conversationInfo.problemId,
-        );
-      } else if (
-        !conversationInfo.problemId &&
-        feedback.score >= SCORE_THRESHOLD.PASS
-      ) {
-        await this.userService.updateUserExpAndCount(
-          conversationInfo.userId,
-          conversationInfo.exp,
-        );
+        await this.userService.updateUserExpAndCount({
+          userId: conversationInfo.userId,
+          exp: conversationInfo.exp,
+        });
       }
+
+      await this.userService.addSolvedIds({
+        userId: conversationInfo.userId,
+        conversationId: conversationInfo.id,
+        problemId: conversationInfo.problemId,
+      });
       return feedback;
     } catch (error) {
       if (error instanceof CustomBaseException) {

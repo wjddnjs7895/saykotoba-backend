@@ -1,9 +1,10 @@
 import { BaseEntity } from 'src/common/entities/base.entity';
 import { Column, Entity, OneToMany, OneToOne } from 'typeorm';
-import { AuthProvider } from '../constants/user.constants';
 import { SubscriptionEntity } from '../../payment/entities/subscription.entity';
-import { TIER_MAP } from '@/common/constants/user.constants';
+import { AuthProvider, TIER_MAP } from '@/common/constants/user.constants';
 import { ConversationGroupEntity } from '@/domain/conversation/entities/conversation_group.entity';
+import { Language } from '@/common/constants/app.constants';
+import { ClassroomEntity } from '@/domain/classroom/entities/classroom.entity';
 
 @Entity('user')
 export class UserEntity extends BaseEntity {
@@ -65,7 +66,14 @@ export class UserEntity extends BaseEntity {
     default: [],
     comment: 'List of problem IDs that the user has solved',
   })
-  solvedProblems: number[];
+  solvedProblemIds: number[];
+
+  @Column({
+    type: 'json',
+    default: [],
+    comment: 'List of conversation IDs that the user has solved',
+  })
+  solvedConversationIds: number[];
 
   @Column({
     default: 0,
@@ -86,4 +94,15 @@ export class UserEntity extends BaseEntity {
 
   @OneToOne(() => SubscriptionEntity, (subscription) => subscription.user)
   subscription: SubscriptionEntity;
+
+  @Column({
+    type: 'enum',
+    enum: Language,
+    default: Language.EN,
+    comment: 'User language',
+  })
+  language: Language;
+
+  @OneToMany(() => ClassroomEntity, (classroom) => classroom.user)
+  classrooms: ClassroomEntity[];
 }

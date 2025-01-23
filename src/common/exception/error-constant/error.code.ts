@@ -42,6 +42,11 @@ export enum LectureErrorCodeEnum {
   LectureNotFound = 'LECTURE01',
   LectureSaveFailed = 'LECTURE02',
   LessonNotFound = 'LECTURE03',
+  LessonSaveFailed = 'LECTURE04',
+}
+
+export enum ClassroomErrorCodeEnum {
+  ClassroomNotFound = 'CLASSROOM01',
 }
 
 export enum UserErrorCodeEnum {

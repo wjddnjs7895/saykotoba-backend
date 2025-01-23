@@ -1,6 +1,6 @@
 import { IsString, IsEmail, IsOptional } from 'class-validator';
-import { AuthProvider } from '../../user/constants/user.constants';
 import { TokenResponseDto } from './token.dto';
+import { AuthProvider } from '@/common/constants/user.constants';
 
 export abstract class BaseRegisterRequestDto {
   @IsEmail()

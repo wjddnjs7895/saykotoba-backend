@@ -14,9 +14,12 @@ import {
   UserNotFoundException,
   UserUpdateFailedException,
 } from '@/common/exception/custom-exception/user.exception';
-import { TIER_MAP, TIER_THRESHOLD } from '@/common/constants/user.constants';
+import {
+  SubscriptionStatus,
+  TIER_MAP,
+  TIER_THRESHOLD,
+} from '@/common/constants/user.constants';
 import { SubscriptionEntity } from '../payment/entities/subscription.entity';
-import { SubscriptionStatus } from './constants/user.constants';
 
 @Injectable()
 export class UserService {
@@ -52,7 +55,8 @@ export class UserService {
       exp: user.exp,
       tier: user.tier,
       solvedConversationCount: user.solvedConversationCount,
-      solvedProblems: user.solvedProblems,
+      solvedProblemIds: user.solvedProblemIds,
+      solvedConversationIds: user.solvedConversationIds,
       subscriptionStatus: user.subscription.status,
     };
   }
@@ -80,17 +84,47 @@ export class UserService {
     return await this.userRepository.delete(id);
   }
 
-  async updateUserExpAndCount(id: number, exp: number, problemId?: number) {
+  async updateUserExpAndCount({
+    userId,
+    exp,
+  }: {
+    userId: number;
+    exp: number;
+  }) {
     try {
-      await this.userRepository.update(id, {
-        exp,
+      await this.userRepository.update(userId, {
+        exp: () => `exp + ${exp}`,
         solvedConversationCount: () => 'solvedConversationCount + 1',
-        ...(problemId && {
-          solvedProblems: () =>
-            `JSON_ARRAY_APPEND(solvedProblems, "$", ${problemId})`,
-        }),
       });
-      await this.updateUserTier(id);
+      await this.updateUserTier(userId);
+    } catch {
+      throw new UserUpdateFailedException();
+    }
+  }
+
+  async addSolvedIds({
+    userId,
+    conversationId,
+    problemId,
+  }: {
+    userId: number;
+    conversationId?: number;
+    problemId?: number;
+  }) {
+    const user = await this.userRepository.findOneBy({ id: userId });
+    try {
+      await this.userRepository.update(userId, {
+        ...(conversationId &&
+          !user.solvedConversationIds.includes(conversationId) && {
+            solvedConversationIds: () =>
+              `JSON_ARRAY_APPEND(solvedConversationIds, "$", ${conversationId})`,
+          }),
+        ...(problemId &&
+          !user.solvedProblemIds.includes(problemId) && {
+            solvedProblemIds: () =>
+              `JSON_ARRAY_APPEND(solvedProblemIds, "$", ${problemId})`,
+          }),
+      });
     } catch {
       throw new UserUpdateFailedException();
     }
@@ -125,5 +159,21 @@ export class UserService {
         threshold,
       })),
     };
+  }
+
+  async isSolvedConversation({
+    userId,
+    conversationId,
+    problemId,
+  }: {
+    userId: number;
+    conversationId?: number;
+    problemId?: number;
+  }) {
+    const user = await this.userRepository.findOneBy({ id: userId });
+    return (
+      user.solvedConversationIds.includes(conversationId) ||
+      user.solvedProblemIds.includes(problemId)
+    );
   }
 }

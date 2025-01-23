@@ -23,7 +23,6 @@ import {
   GoogleTokenPayloadDto,
 } from './dtos/google.dto';
 import { OAuth2Client } from 'google-auth-library';
-import { AuthProvider } from '../user/constants/user.constants';
 import {
   AppleLoginRequestDto,
   AppleLoginResponseDto,
@@ -34,6 +33,7 @@ import * as jwt from 'jsonwebtoken';
 import { AppleOAuthFailedException } from '@/common/exception/custom-exception/auth.exception';
 import { TokenService } from './token.service';
 import { AppleUtils } from './utils/apple.utils';
+import { AuthProvider } from '@/common/constants/user.constants';
 
 @Injectable()
 export class AuthService {
