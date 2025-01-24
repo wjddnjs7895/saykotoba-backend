@@ -39,4 +39,7 @@ export class CreateUserResponseDto {
 
   @IsEmail()
   email: string;
+
+  @IsString()
+  role: string;
 }

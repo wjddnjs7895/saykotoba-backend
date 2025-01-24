@@ -13,13 +13,21 @@ const formatMissions = (missions: MissionEntity[]): string => {
 };
 
 export const PROMPTS = {
-  SCENARIO_CREATOR: (
-    difficulty: string,
-    topic: string,
-    aiRole: string,
-    userRole: string,
-    language: string = 'en',
-  ) => `You are an expert in creating Japanese learning scenarios and missions.
+  SCENARIO_CREATOR: ({
+    difficulty,
+    topic,
+    aiRole,
+    userRole,
+    characteristic,
+    language,
+  }: {
+    difficulty: string;
+    topic: string;
+    aiRole: string;
+    userRole: string;
+    characteristic: string;
+    language: string;
+  }) => `You are an expert in creating Japanese learning scenarios and missions.
 
 Please create a ${difficulty} level conversation scenario about ${topic}. 
 The situations should be specific and realistic, and the missions should be clear and achievable for learners.
@@ -28,19 +36,32 @@ Available difficulty levels are: ${Object.values(DIFFICULTY_MAP).join(', ')}.
 In this scenario:
 - You (AI) will play the role of: ${aiRole}
 - The user will play the role of: ${userRole}
-
+${characteristic && `- The AI's information is: ${characteristic}. You should use this information to create a scenario that is suitable for the user.`}
 Please include these exact values in your response:
 - difficulty: "${difficulty}"
 - aiRole: "${aiRole}"
 - userRole: "${userRole}"
 - must be provided in ${language}`,
 
-  CONVERSATION_PARTNER: (
-    situation: string,
-    missions: MissionEntity[],
-    difficultyLevel: number,
-  ) => {
+  CONVERSATION_PARTNER: ({
+    situation,
+    missions,
+    difficultyLevel,
+    aiRole,
+    userRole,
+    characteristic,
+  }: {
+    situation: string;
+    missions: MissionEntity[];
+    difficultyLevel: number;
+    aiRole: string;
+    userRole: string;
+    characteristic: string;
+  }) => {
     return `You are a conversation partner in a Japanese learning scenario.
+    You are playing the role of: ${aiRole}
+    The user is playing the role of: ${userRole}
+    ${characteristic && `You should pretend to be this person: ${characteristic}.`}
     Situation: ${situation}
     Missions:
 ${formatMissions(missions)}
@@ -59,29 +80,41 @@ ${formatMissions(missions)}
     Please adjust your responses to match the appropriate difficulty level.`;
   },
 
-  FIRST_MESSAGE: (
-    situation: string,
-    missions: string[],
-    difficultyLevel: number,
-    aiRole: string,
-    userRole: string,
-  ) =>
+  FIRST_MESSAGE: ({
+    situation,
+    missions,
+    difficultyLevel,
+    aiRole,
+    userRole,
+    characteristic,
+  }: {
+    situation: string;
+    missions: string[];
+    difficultyLevel: number;
+    aiRole: string;
+    userRole: string;
+    characteristic: string;
+  }) =>
     `You are playing the role of the conversation partner in this Japanese learning scenario.
     Current Situation: ${situation}
     Learning Objectives: ${missions.join('\n')}
     Difficulty Level: ${DIFFICULTY_MAP[difficultyLevel]}
     User's Role: ${userRole}
     Your Role: ${aiRole}
-    
+    ${characteristic && `AI's Information: ${characteristic} You should pretend to be this person.`}
     Act naturally as the person in this situation (e.g., shop staff, friend, colleague) and start the conversation appropriately.
     Keep your first message brief and friendly, typically 1-2 sentences, as would be natural in this scenario.
     Remember to stay in character throughout the conversation.`,
 
-  FEEDBACK: (
-    messages: MessageEntity[],
-    difficultyLevel: number,
-    language: string = 'en',
-  ) =>
+  FEEDBACK: ({
+    messages,
+    difficultyLevel,
+    language,
+  }: {
+    messages: MessageEntity[];
+    difficultyLevel: number;
+    language: string;
+  }) =>
     `You are an expert in providing feedback on Japanese conversation scenarios.
     Here is the conversation scenario:
     ${messages
@@ -102,11 +135,15 @@ ${formatMissions(missions)}
     Please adjust your responses to match the appropriate difficulty level.
     `,
 
-  HINT_CREATOR: (
-    messages: MessageEntity[],
-    difficultyLevel: number,
-    language: string = 'en',
-  ) =>
+  HINT_CREATOR: ({
+    messages,
+    difficultyLevel,
+    language,
+  }: {
+    messages: MessageEntity[];
+    difficultyLevel: number;
+    language: string;
+  }) =>
     `You are an expert in providing suggested replies for a conversation. You must provide 3 suggested replies for the user to respond to the conversation.
     The conversation is: ${messages
       .map((message) => message.messageText + ' by ' + message.role)
@@ -115,9 +152,11 @@ ${formatMissions(missions)}
     Language: ${language}
     `,
 
-  CLASSROOM_CREATOR: (
-    generateClassroomRequestDto: GenerateClassroomRequestDto,
-  ) => `You are an expert in creating a classroom for learning Japanese with specific lectures.
+  CLASSROOM_CREATOR: ({
+    generateClassroomRequestDto,
+  }: {
+    generateClassroomRequestDto: GenerateClassroomRequestDto;
+  }) => `You are an expert in creating a classroom for learning Japanese with specific lectures.
   Select the most appropriate lectures for the classroom. Checkout the lecture and followed lessons. Consider the user's requirement and include the most relevant lectures.
   
   Requirements:

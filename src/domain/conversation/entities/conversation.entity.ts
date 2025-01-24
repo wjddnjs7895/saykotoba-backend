@@ -27,6 +27,9 @@ export class ConversationEntity extends BaseEntity {
   @Column({ name: 'ai_role' })
   aiRole: string;
 
+  @Column({ name: 'characteristic', default: '' })
+  characteristic: string;
+
   @Column({ name: 'user_role' })
   userRole: string;
 

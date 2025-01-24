@@ -6,6 +6,9 @@ export class TokenRequestDto {
 
   @IsEmail()
   email: string;
+
+  @IsString()
+  role: string;
 }
 
 export class TokenResponseDto {

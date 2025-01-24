@@ -53,6 +53,7 @@ export class AuthController {
     const tokenResponse = await this.tokenService.generateAndSaveAuthTokens({
       email: loginDto.email,
       userId: req.user.id,
+      role: req.user.role,
     });
     return tokenResponse;
   }

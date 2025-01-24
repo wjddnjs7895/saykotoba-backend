@@ -1,5 +1,6 @@
 import {
   AuthErrorCodeEnum,
+  CharacterErrorCodeEnum,
   ClassroomErrorCodeEnum,
   ConversationErrorCodeEnum,
   GoogleErrorCodeEnum,
@@ -23,6 +24,10 @@ type LectureErrorMessageType = {
 
 type ClassroomErrorMessageType = {
   readonly [K in ClassroomErrorCodeEnum]: string;
+};
+
+type CharacterErrorMessageType = {
+  readonly [K in CharacterErrorCodeEnum]: string;
 };
 
 type UserErrorMessageType = {
@@ -63,6 +68,8 @@ export const AuthErrorMessage: AuthErrorMessageType = {
   [AuthErrorCodeEnum.AppleOAuthFailed]: 'Apple OAuth failed',
   [AuthErrorCodeEnum.AppleIdTokenVerifyFailed]: 'Apple ID token verify failed',
   [AuthErrorCodeEnum.UnauthorizedToken]: 'Unauthorized token',
+
+  [AuthErrorCodeEnum.AdminUnauthorized]: 'Admin unauthorized',
 };
 
 export const ConversationErrorMessage: ConversationErrorMessageType = {
@@ -99,6 +106,11 @@ export const ClassroomErrorMessage: ClassroomErrorMessageType = {
   [ClassroomErrorCodeEnum.ClassroomNotFound]: 'Classroom not found',
   [ClassroomErrorCodeEnum.ClassroomSaveFailed]: 'Classroom save failed',
   [ClassroomErrorCodeEnum.ClassroomGenerateFailed]: 'Classroom generate failed',
+};
+
+export const CharacterErrorMessage: CharacterErrorMessageType = {
+  [CharacterErrorCodeEnum.CharacterNotFound]: 'Character not found',
+  [CharacterErrorCodeEnum.CharacterSaveFailed]: 'Character save failed',
 };
 
 export const UserErrorMessage: UserErrorMessageType = {

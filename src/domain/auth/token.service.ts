@@ -32,6 +32,7 @@ export class TokenService {
     const payload = {
       email: tokenRequestDto.email,
       sub: tokenRequestDto.userId,
+      role: tokenRequestDto.role,
       type: 'access',
     };
     return this.jwtService.sign(payload, {
@@ -128,6 +129,7 @@ export class TokenService {
       const tokenRequestDto: TokenRequestDto = {
         userId: payload.sub,
         email: payload.email,
+        role: payload.role,
       };
 
       return this.generateAndSaveAuthTokens(tokenRequestDto);

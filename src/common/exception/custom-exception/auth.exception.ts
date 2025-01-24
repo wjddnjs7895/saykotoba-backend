@@ -182,3 +182,13 @@ export class UnauthorizedTokenException extends CustomBaseException {
     );
   }
 }
+
+export class AdminUnauthorizedException extends CustomBaseException {
+  constructor() {
+    super(
+      AuthErrorCodeEnum.AdminUnauthorized,
+      HttpStatus.FORBIDDEN,
+      AuthErrorMessage[AuthErrorCodeEnum.AdminUnauthorized],
+    );
+  }
+}

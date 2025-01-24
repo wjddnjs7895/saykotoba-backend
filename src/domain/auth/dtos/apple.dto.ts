@@ -1,4 +1,10 @@
-import { IsNumber, IsObject, IsOptional, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsNumber,
+  IsObject,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { TokenResponseDto } from './token.dto';
 
 export class AppleLoginRequestDto {
@@ -13,7 +19,10 @@ export class AppleLoginRequestDto {
   };
 }
 
-export class AppleLoginResponseDto extends TokenResponseDto {}
+export class AppleLoginResponseDto extends TokenResponseDto {
+  @IsBoolean()
+  isOnboardingCompleted: boolean;
+}
 
 export class AppleTokenPayloadDto {
   @IsString()

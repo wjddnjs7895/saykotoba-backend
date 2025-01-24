@@ -27,12 +27,9 @@ class LessonDto {
   @IsString()
   restriction: string;
 
-  @IsArray({ each: true })
-  @Type(() => Number)
-  missions: {
-    id: number;
-    mission: string;
-  }[];
+  @IsArray()
+  @IsString({ each: true })
+  missions: string[];
 
   @IsNumber()
   exp: number;

@@ -3,6 +3,8 @@ import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { AdminGuard } from '@/domain/auth/guards/admin.guard';
 import { UserRole } from '@/common/constants/user.constants';
+import { AuthErrorMessage } from '../exception/error-constant/error.message';
+import { AuthErrorCodeEnum } from '../exception/error-constant/error.code';
 
 export const ADMIN_KEY = 'admin';
 export const Admin = () => {
@@ -10,6 +12,8 @@ export const Admin = () => {
     SetMetadata(ADMIN_KEY, UserRole.ADMIN),
     UseGuards(AuthGuard('jwt'), AdminGuard),
     ApiBearerAuth(),
-    ApiUnauthorizedResponse({ description: '관리자 권한이 없습니다.' }),
+    ApiUnauthorizedResponse({
+      description: AuthErrorMessage[AuthErrorCodeEnum.AdminUnauthorized],
+    }),
   );
 };

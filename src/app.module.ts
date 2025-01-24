@@ -14,6 +14,7 @@ import { AwsModule } from './integrations/aws/aws.module';
 import { GoogleModule } from './integrations/google/google.module';
 import * as fs from 'fs';
 import { LectureModule } from './domain/lecture/lecture.module';
+import { CharacterModule } from './domain/character/character.module';
 
 @Module({
   imports: [
@@ -69,6 +70,7 @@ import { LectureModule } from './domain/lecture/lecture.module';
     OpenAIModule,
     AwsModule,
     GoogleModule,
+    CharacterModule,
   ],
   controllers: [],
   providers: [

@@ -47,6 +47,7 @@ import { GetFirstMessageResponseDto } from '@/integrations/openai/dtos/get-first
 import { FeedbackEntity } from '../entities/feedback.entity';
 import { UserService } from '../../user/user.service';
 import { GoogleTTSService } from '@/integrations/google/services/google-tts.service';
+import { CharacterService } from '@/domain/character/character.service';
 
 @Injectable()
 export class ConversationService {
@@ -62,6 +63,7 @@ export class ConversationService {
     private readonly openAIService: OpenAIService,
     private readonly googleTTSService: GoogleTTSService,
     private readonly userService: UserService,
+    private readonly characterService: CharacterService,
   ) {}
 
   async getConversationsByUserId(
@@ -157,8 +159,13 @@ export class ConversationService {
   async generateScenario(
     generateScenarioDto: GenerateScenarioRequestDto,
   ): Promise<GenerateScenarioResponseDto> {
-    const scenario =
-      await this.openAIService.generateScenario(generateScenarioDto);
+    const characteristic = await this.characterService.getCharacteristicByName({
+      name: generateScenarioDto.userRole,
+    });
+    const scenario = await this.openAIService.generateScenario(
+      generateScenarioDto,
+      characteristic,
+    );
     return {
       ...scenario,
       exp: EXP_PER_CONVERSATION[generateScenarioDto.difficultyLevel],
@@ -192,6 +199,10 @@ export class ConversationService {
     try {
       const hintCount =
         DIFFICULTY_MAP.CHALLENGE - createConversationDto.difficultyLevel;
+      const characteristic =
+        await this.characterService.getCharacteristicByName({
+          name: createConversationDto.userRole,
+        });
       const newConversation = this.conversationRepository.create({
         userId: createConversationDto.userId,
         title: createConversationDto.title,
@@ -204,6 +215,7 @@ export class ConversationService {
         problemId: createConversationDto.problemId,
         type: createConversationDto.type,
         thumbnailUrl: createConversationDto.thumbnailUrl,
+        characteristic: characteristic,
       });
       try {
         await this.conversationRepository.save(newConversation);
@@ -224,7 +236,10 @@ export class ConversationService {
         throw new MissionSaveFailedException();
       }
 
-      const firstMessage = await this.getFirstMessage(createConversationDto);
+      const firstMessage = await this.getFirstMessage(
+        createConversationDto,
+        characteristic,
+      );
       try {
         await this.messageRepository.save({
           conversationId: newConversation.id,
@@ -247,8 +262,17 @@ export class ConversationService {
 
   async getFirstMessage(
     conversationInfo: CreateConversationServiceDto,
+    characteristic: string,
   ): Promise<GetFirstMessageResponseDto> {
-    return await this.openAIService.getFirstMessage(conversationInfo);
+    return await this.openAIService.getFirstMessage({
+      title: conversationInfo.title,
+      situation: conversationInfo.situation,
+      aiRole: conversationInfo.aiRole,
+      userRole: conversationInfo.userRole,
+      difficultyLevel: conversationInfo.difficultyLevel,
+      missions: conversationInfo.missions,
+      characteristic,
+    });
   }
 
   async getAndProcessConversationFromAudio(

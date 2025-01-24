@@ -20,6 +20,8 @@ import {
   TIER_THRESHOLD,
 } from '@/common/constants/user.constants';
 import { SubscriptionEntity } from '../payment/entities/subscription.entity';
+import { UpdateUserOnboardingRequestDto } from './dtos/update-user-onboarding.dto';
+import { UnexpectedException } from '@/common/exception/custom-exception/unexpected.exception';
 
 @Injectable()
 export class UserService {
@@ -39,7 +41,11 @@ export class UserService {
       user: newUser,
       status: SubscriptionStatus.NONE,
     });
-    return { userId: newUser.id, email: newUser.email };
+    return {
+      userId: newUser.id,
+      email: newUser.email,
+      role: newUser.role,
+    };
   }
 
   async getUserInfo(id: number) {
@@ -68,7 +74,7 @@ export class UserService {
   async findUserForAuth(email: string) {
     return this.userRepository.findOne({
       where: { email },
-      select: ['id', 'email', 'password', 'name', 'provider'],
+      select: ['id', 'email', 'password', 'name', 'provider', 'role'],
     });
   }
 
@@ -175,5 +181,38 @@ export class UserService {
       user.solvedConversationIds.includes(conversationId) ||
       user.solvedProblemIds.includes(problemId)
     );
+  }
+
+  async updateUserOnboarding(
+    userId: number,
+    updateUserOnboardingDto: UpdateUserOnboardingRequestDto,
+  ) {
+    try {
+      const user = await this.userRepository.findOneBy({ id: userId });
+      if (!user) throw new UserNotFoundException();
+      if (user.isOnboardingCompleted) throw new UserUpdateFailedException();
+      await this.userRepository.update(userId, {
+        isOnboardingCompleted: true,
+        interests: updateUserOnboardingDto.topics,
+      });
+    } catch (error) {
+      if (error instanceof UserNotFoundException) {
+        throw error;
+      }
+      throw new UnexpectedException();
+    }
+  }
+
+  async updateUserOnboardingStatus(userId: number) {
+    const result = await this.userRepository.update(userId, {
+      isOnboardingCompleted: true,
+    });
+    if (!result.affected) throw new UserUpdateFailedException();
+  }
+
+  async isOnboardingCompleted(userId: number): Promise<boolean> {
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (!user) throw new UserNotFoundException();
+    return user.isOnboardingCompleted;
   }
 }

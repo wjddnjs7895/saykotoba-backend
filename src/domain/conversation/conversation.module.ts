@@ -13,6 +13,7 @@ import { GoogleModule } from '@/integrations/google/google.module';
 import { ConversationGroupEntity } from './entities/conversation_group.entity';
 import { ConversationGroupService } from './services/conversation-group.service';
 import { ClassroomEntity } from '../classroom/entities/classroom.entity';
+import { CharacterModule } from '../character/character.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { ClassroomEntity } from '../classroom/entities/classroom.entity';
     OpenAIModule,
     AwsModule,
     GoogleModule,
+    CharacterModule,
   ],
   providers: [ConversationService, ConversationGroupService],
   controllers: [ConversationController],

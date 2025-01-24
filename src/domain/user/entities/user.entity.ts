@@ -107,6 +107,13 @@ export class UserEntity extends BaseEntity {
   })
   language: Language;
 
+  @Column({
+    type: 'json',
+    default: [],
+    comment: 'User interests',
+  })
+  interests: string[];
+
   @OneToMany(() => ClassroomEntity, (classroom) => classroom.user)
   classrooms: ClassroomEntity[];
 

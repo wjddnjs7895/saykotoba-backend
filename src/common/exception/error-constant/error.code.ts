@@ -19,6 +19,8 @@ export enum AuthErrorCodeEnum {
   GoogleIdTokenVerifyFailed = 'AUTH21',
   AppleOAuthFailed = 'AUTH22',
   AppleIdTokenVerifyFailed = 'AUTH23',
+
+  AdminUnauthorized = 'AUTH99',
 }
 
 export enum ConversationErrorCodeEnum {
@@ -51,6 +53,11 @@ export enum ClassroomErrorCodeEnum {
   ClassroomNotFound = 'CLASSROOM01',
   ClassroomSaveFailed = 'CLASSROOM02',
   ClassroomGenerateFailed = 'CLASSROOM03',
+}
+
+export enum CharacterErrorCodeEnum {
+  CharacterNotFound = 'CHARACTER01',
+  CharacterSaveFailed = 'CHARACTER02',
 }
 
 export enum UserErrorCodeEnum {

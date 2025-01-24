@@ -112,6 +112,7 @@ export class AuthService {
       email: registerDto.email,
       name: registerDto.name,
       provider: registerDto.provider,
+      role: 'USER',
     };
 
     if (registerDto.provider === AuthProvider.LOCAL) {
@@ -127,10 +128,16 @@ export class AuthService {
 
     const newUser = await this.userService.createUser(userData);
 
-    return this.tokenService.generateAndSaveAuthTokens({
+    const tokens = await this.tokenService.generateAndSaveAuthTokens({
       email: newUser.email,
       userId: newUser.userId,
+      role: newUser.role,
     });
+
+    return {
+      ...tokens,
+      isOnboardingCompleted: false,
+    };
   }
 
   async loginWithGoogle(
@@ -156,10 +163,18 @@ export class AuthService {
       });
     }
 
-    return this.tokenService.generateAndSaveAuthTokens({
+    const tokens = await this.tokenService.generateAndSaveAuthTokens({
       email: existingUser.email,
       userId: existingUser.id,
+      role: existingUser.role,
     });
+
+    return {
+      ...tokens,
+      isOnboardingCompleted: await this.userService.isOnboardingCompleted(
+        existingUser.id,
+      ),
+    };
   }
 
   private async verifyGoogleIdToken(
@@ -202,10 +217,18 @@ export class AuthService {
         });
       }
 
-      return this.tokenService.generateAndSaveAuthTokens({
+      const tokens = await this.tokenService.generateAndSaveAuthTokens({
         email: existingUser.email,
         userId: existingUser.id,
+        role: existingUser.role,
       });
+
+      return {
+        ...tokens,
+        isOnboardingCompleted: await this.userService.isOnboardingCompleted(
+          existingUser.id,
+        ),
+      };
     } catch {
       throw new AppleOAuthFailedException();
     }

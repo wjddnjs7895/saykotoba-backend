@@ -163,6 +163,7 @@ export class LectureService {
             aiRole: lesson.aiRole,
             userRole: lesson.userRole,
             missions: lesson.missions.map((mission) => mission.mission),
+            characteristic: '',
             type: CONVERSATION_TYPE.LECTURE,
             problemId: lesson.id,
             thumbnailUrl:
@@ -231,6 +232,16 @@ export class LectureService {
       return {
         ...dto,
         topic: existingTopic || { name: dto.topic },
+        lessons: dto.lessons.map((lesson) => {
+          const newLesson = this.lessonRepository.create({
+            ...lesson,
+            language: dto.language,
+            missions: lesson.missions.map((mission) => ({
+              mission: mission,
+            })),
+          });
+          return newLesson;
+        }),
       };
     });
 

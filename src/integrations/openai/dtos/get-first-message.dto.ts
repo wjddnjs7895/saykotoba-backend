@@ -19,6 +19,9 @@ export class GetFirstMessageDto {
 
   @IsString()
   userRole: string;
+
+  @IsString()
+  characteristic: string;
 }
 
 export class GetFirstMessageResponseDto {

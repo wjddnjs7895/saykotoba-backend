@@ -19,6 +19,7 @@ import {
 import { GetUserInfoRespondDto } from './dtos/get-user-info.dto';
 import { UserEntity } from './entities/user.entity';
 import { User } from '@/common/decorators/user.decorator';
+import { UpdateUserOnboardingRequestDto } from './dtos/update-user-onboarding.dto';
 
 @Controller('user')
 export class UserController {
@@ -54,5 +55,16 @@ export class UserController {
     tierList: { tier: string; threshold: number }[];
   }> {
     return this.userService.getTierList();
+  }
+
+  @Patch('onboarding')
+  updateUserOnboarding(
+    @User() user: UserEntity,
+    @Body() updateUserOnboardingDto: UpdateUserOnboardingRequestDto,
+  ) {
+    return this.userService.updateUserOnboarding(
+      user.id,
+      updateUserOnboardingDto,
+    );
   }
 }

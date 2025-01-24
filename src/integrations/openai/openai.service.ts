@@ -53,6 +53,7 @@ export class OpenAIService {
 
   async generateScenario(
     generateScenarioDto: GenerateScenarioRequestDto,
+    characteristic: string,
   ): Promise<GenerateScenarioResponseDto> {
     const language = 'en';
     try {
@@ -61,13 +62,14 @@ export class OpenAIService {
         messages: [
           {
             role: 'system',
-            content: PROMPTS.SCENARIO_CREATOR(
-              DIFFICULTY_MAP[generateScenarioDto.difficultyLevel],
-              generateScenarioDto.topic,
-              generateScenarioDto.aiRole,
-              generateScenarioDto.userRole,
+            content: PROMPTS.SCENARIO_CREATOR({
+              difficulty: DIFFICULTY_MAP[generateScenarioDto.difficultyLevel],
+              topic: generateScenarioDto.topic,
+              aiRole: generateScenarioDto.aiRole,
+              userRole: generateScenarioDto.userRole,
+              characteristic: characteristic,
               language,
-            ),
+            }),
           },
         ],
         tools: ConversationScenarioTool,
@@ -106,11 +108,14 @@ export class OpenAIService {
         messages: [
           {
             role: 'system',
-            content: PROMPTS.CONVERSATION_PARTNER(
-              conversationInfo.situation,
-              conversationInfo.missions,
-              conversationInfo.difficultyLevel,
-            ),
+            content: PROMPTS.CONVERSATION_PARTNER({
+              situation: conversationInfo.situation,
+              missions: conversationInfo.missions,
+              difficultyLevel: conversationInfo.difficultyLevel,
+              aiRole: conversationInfo.aiRole,
+              userRole: conversationInfo.userRole,
+              characteristic: conversationInfo.characteristic,
+            }),
           },
           ...messages.map((message) => ({
             role: message.role,
@@ -239,13 +244,14 @@ export class OpenAIService {
       messages: [
         {
           role: 'system',
-          content: PROMPTS.FIRST_MESSAGE(
-            getFirstMessageDto.situation,
-            getFirstMessageDto.missions,
-            getFirstMessageDto.difficultyLevel,
-            getFirstMessageDto.aiRole,
-            getFirstMessageDto.userRole,
-          ),
+          content: PROMPTS.FIRST_MESSAGE({
+            situation: getFirstMessageDto.situation,
+            missions: getFirstMessageDto.missions,
+            difficultyLevel: getFirstMessageDto.difficultyLevel,
+            aiRole: getFirstMessageDto.aiRole,
+            userRole: getFirstMessageDto.userRole,
+            characteristic: getFirstMessageDto.characteristic,
+          }),
         },
       ],
       tools: ConversationFirstResponseTool,
@@ -277,11 +283,11 @@ export class OpenAIService {
       messages: [
         {
           role: 'system',
-          content: PROMPTS.FEEDBACK(
-            generateFeedbackRequestDto.messages,
-            generateFeedbackRequestDto.difficulty,
-            generateFeedbackRequestDto.language,
-          ),
+          content: PROMPTS.FEEDBACK({
+            messages: generateFeedbackRequestDto.messages,
+            difficultyLevel: generateFeedbackRequestDto.difficulty,
+            language: generateFeedbackRequestDto.language,
+          }),
         },
       ],
       tools: ConversationFeedbackTool,
@@ -314,11 +320,11 @@ export class OpenAIService {
       messages: [
         {
           role: 'system',
-          content: PROMPTS.HINT_CREATOR(
-            generateHintRequestDto.messages,
-            generateHintRequestDto.difficultyLevel,
-            generateHintRequestDto.language,
-          ),
+          content: PROMPTS.HINT_CREATOR({
+            messages: generateHintRequestDto.messages,
+            difficultyLevel: generateHintRequestDto.difficultyLevel,
+            language: generateHintRequestDto.language,
+          }),
         },
       ],
       tools: ConversationHintTool,
@@ -347,7 +353,9 @@ export class OpenAIService {
       messages: [
         {
           role: 'system',
-          content: PROMPTS.CLASSROOM_CREATOR(generateClassroomRequestDto),
+          content: PROMPTS.CLASSROOM_CREATOR({
+            generateClassroomRequestDto,
+          }),
         },
       ],
       tools: ClassroomTool,
