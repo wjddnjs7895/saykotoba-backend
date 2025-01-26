@@ -45,6 +45,9 @@ export class CreateConversationRequestDto {
 
   @IsString()
   characteristic: string;
+
+  @IsNumber()
+  exp: number;
 }
 
 export interface CreateConversationServiceDto

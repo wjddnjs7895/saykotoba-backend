@@ -33,7 +33,7 @@ import * as jwt from 'jsonwebtoken';
 import { AppleOAuthFailedException } from '@/common/exception/custom-exception/auth.exception';
 import { TokenService } from './token.service';
 import { AppleUtils } from './utils/apple.utils';
-import { AuthProvider } from '@/common/constants/user.constants';
+import { AuthProvider, UserRole } from '@/common/constants/user.constants';
 
 @Injectable()
 export class AuthService {
@@ -112,7 +112,7 @@ export class AuthService {
       email: registerDto.email,
       name: registerDto.name,
       provider: registerDto.provider,
-      role: 'USER',
+      role: UserRole.USER,
     };
 
     if (registerDto.provider === AuthProvider.LOCAL) {

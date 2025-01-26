@@ -59,7 +59,7 @@ export class LectureService {
       order: {
         id: 'ASC',
       },
-      relations: ['topic'],
+      relations: ['topic', 'lessons'],
     });
     if (!lectures || lectures.length === 0) {
       throw new LectureNotFoundException();
@@ -168,6 +168,7 @@ export class LectureService {
             problemId: lesson.id,
             thumbnailUrl:
               this.s3Service.getCloudFrontUrl(lecture.thumbnailUrl) ?? '',
+            exp: lesson.exp,
           }),
         ),
       );
@@ -225,25 +226,31 @@ export class LectureService {
       where: { name: In(topicNames) },
     });
 
-    const lectureEntities = createLectureDto.map((dto) => {
-      const existingTopic = existingTopics.find(
-        (topic) => topic.name === dto.topic,
-      );
-      return {
-        ...dto,
-        topic: existingTopic || { name: dto.topic },
-        lessons: dto.lessons.map((lesson) => {
-          const newLesson = this.lessonRepository.create({
-            ...lesson,
-            language: dto.language,
-            missions: lesson.missions.map((mission) => ({
-              mission: mission,
-            })),
-          });
-          return newLesson;
-        }),
-      };
-    });
+    const lectureEntities = await Promise.all(
+      createLectureDto.map(async (dto) => {
+        const existingTopic = existingTopics.find(
+          (topic) => topic.name === dto.topic,
+        );
+        return {
+          ...dto,
+          topic: existingTopic || { name: dto.topic },
+          lessons: await Promise.all(
+            dto.lessons.map(async (lesson) => {
+              const newLesson = this.lessonRepository.create({
+                ...lesson,
+                language: dto.language,
+                missions: await Promise.all(
+                  lesson.missions.map(async (mission) => ({
+                    mission: mission,
+                  })),
+                ),
+              });
+              return await this.lessonRepository.save(newLesson);
+            }),
+          ),
+        };
+      }),
+    );
 
     const lectures = await this.lectureRepository.save(lectureEntities);
     return { lectureIds: lectures.map((lecture) => lecture.id) };

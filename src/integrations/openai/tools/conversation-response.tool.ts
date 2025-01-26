@@ -11,7 +11,7 @@ export const ConversationResponseTool = [
           response: {
             type: 'string',
             description:
-              'Natural and engaging conversation response to the user. The response should be in Japanese. Do not consider the mission too much.',
+              'Natural and engaging conversation response to the user. The response should be in Japanese. (When ai role is teacher, sometimes you can request translation by using required language if mission includes translation) Do not consider the mission too much.',
           },
           meaning: {
             type: 'string',
