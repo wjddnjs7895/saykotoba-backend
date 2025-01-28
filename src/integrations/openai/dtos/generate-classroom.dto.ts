@@ -73,7 +73,7 @@ export class GenerateClassroomRequestDto {
 
   @IsArray()
   @IsString({ each: true })
-  topics: string[];
+  interests: string[];
 
   @IsString()
   requiredStatement: string;

@@ -43,11 +43,13 @@ export class CreateConversationRequestDto {
   @IsOptional()
   problemId?: number;
 
+  @IsOptional()
   @IsString()
-  characteristic: string;
+  characteristic?: string;
 
   @IsNumber()
-  exp: number;
+  @IsOptional()
+  exp?: number;
 }
 
 export interface CreateConversationServiceDto

@@ -156,16 +156,41 @@ ${formatMissions(missions)}
     generateClassroomRequestDto,
   }: {
     generateClassroomRequestDto: GenerateClassroomRequestDto;
-  }) => `You are an expert in creating a classroom for learning Japanese with specific lectures.
-  Select the most appropriate lectures for the classroom. Checkout the lecture and followed lessons. Consider the user's requirement and include the most relevant lectures.
+  }) => `You are an expert in creating an engaging and effective classroom for learning Japanese with specific lectures.
+  Create an interesting and comprehensive learning path by selecting and organizing lectures in an engaging way.
   
   Requirements:
   - User want the Style of the classroom is: ${generateClassroomRequestDto.style}
-  - User want the Difficulty Level of the classroom is: ${generateClassroomRequestDto.difficultyLevel} (But you can select the lectures that are not in the requested difficulty level)
-  - User want the Topics of the classroom are: ${generateClassroomRequestDto.topics.join(', ')} (But you can select the lectures that are not in the requested topics. Please select the lectures that are related to the topics.)
+  - User want the Difficulty Level of the classroom is: ${generateClassroomRequestDto.difficultyLevel} (This is just the starting point. If the style includes grammar, include all grammar-related lectures from beginner to advanced level to ensure comprehensive learning)
+  - User are interested in the following topics: ${generateClassroomRequestDto.interests.join(', ')}
   - User want the Required Statement of the classroom is: ${generateClassroomRequestDto.requiredStatement}
   - The Language of the title is: ${generateClassroomRequestDto.language}
+  
+  Important Guidelines:
+  1. Engaging Learning Flow:
+     - Create an interesting mix of different lecture types
+     - Avoid grouping similar lectures together
+     - Balance serious study with fun, practical content
+     - Alternate between challenging and easier content to maintain motivation
+  
+  2. Conversation Practice:
+     - Strategically place conversation lectures throughout the path
+     - Mix conversation practice with related grammar and vocabulary
+     - Use conversation lectures to reinforce previous learning
+  
+  3. Lecture Selection and Ordering:
+     - DO NOT simply arrange lectures by ID or difficulty
+     - Create natural connections between different types of lectures
+     - Surprise learners with unexpected but relevant content
+     - Ensure each lecture builds upon or complements previous ones
+  
+  4. Balance and Variety:
+     - Mix theoretical and practical lectures
+     - Alternate between different learning approaches
+     - Create "mini-themes" that combine related topics
+     - Include occasional "fun" lectures to maintain engagement
 
   The lecture Lists are: ${generateClassroomRequestDto.lectures.join(', ')}
+  Please select and organize lectures to create an engaging and effective learning path that keeps students motivated and interested.
   `,
 } as const;

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { UserService } from '../user/user.service';
+import { UserService } from '../user/services/user.service';
 import { LocalLoginRequestDto } from './dtos/local.dto';
 import { RegisterRequestDto, RegisterResponseDto } from './dtos/register.dto';
 import * as bcrypt from 'bcrypt';
@@ -34,6 +34,7 @@ import { AppleOAuthFailedException } from '@/common/exception/custom-exception/a
 import { TokenService } from './token.service';
 import { AppleUtils } from './utils/apple.utils';
 import { AuthProvider, UserRole } from '@/common/constants/user.constants';
+import { OnboardingService } from '../user/services/onboarding.service';
 
 @Injectable()
 export class AuthService {
@@ -46,6 +47,7 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly tokenService: TokenService,
     private readonly configService: ConfigService,
+    private readonly onboardingService: OnboardingService,
   ) {
     this.jwksClient = new JwksClient({
       jwksUri: 'https://appleid.apple.com/auth/keys',
@@ -171,7 +173,7 @@ export class AuthService {
 
     return {
       ...tokens,
-      isOnboardingCompleted: await this.userService.isOnboardingCompleted(
+      isOnboardingCompleted: await this.onboardingService.isOnboardingCompleted(
         existingUser.id,
       ),
     };
@@ -225,9 +227,8 @@ export class AuthService {
 
       return {
         ...tokens,
-        isOnboardingCompleted: await this.userService.isOnboardingCompleted(
-          existingUser.id,
-        ),
+        isOnboardingCompleted:
+          await this.onboardingService.isOnboardingCompleted(existingUser.id),
       };
     } catch {
       throw new AppleOAuthFailedException();

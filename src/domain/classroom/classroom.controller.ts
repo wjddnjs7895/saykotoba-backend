@@ -3,10 +3,18 @@ import { ClassroomService } from './classroom.service';
 import { CreateClassroomRequestDto } from './dtos/create-classroom.dto';
 import { User } from '@/common/decorators/user.decorator';
 import { UserEntity } from '../user/entities/user.entity';
+import { GetClassroomResponseDto } from './dtos/get-classroom.dto';
 
 @Controller('classroom')
 export class ClassroomController {
   constructor(private readonly classroomService: ClassroomService) {}
+
+  @Get('current')
+  async getCurrentClassroom(
+    @User() user: UserEntity,
+  ): Promise<GetClassroomResponseDto> {
+    return this.classroomService.getCurrentClassroom({ userId: user.id });
+  }
 
   @Get(':classroomId')
   async getClassroom(@Param('classroomId') classroomId: number) {

@@ -4,7 +4,7 @@ export const ClassroomTool = [
     function: {
       name: 'createClassroom',
       description:
-        'Generate a classroom with specific lectures. IMPORTANT: You must strictly include only the lectureIds that is included in the request.',
+        'Generate an engaging classroom with specific lectures. Create an interesting learning path by mixing different types of lectures in an engaging way. IMPORTANT: Lectures should NOT be arranged simply by ID or difficulty - create natural connections and maintain student interest through variety.',
       parameters: {
         type: 'object',
         properties: {
@@ -17,7 +17,8 @@ export const ClassroomTool = [
             type: 'array',
             items: {
               type: 'number',
-              description: 'Lecture IDs to be included in the classroom',
+              description:
+                'Lecture IDs to be included in the classroom. REQUIREMENTS: 1) Create an engaging mix of different lecture types 2) DO NOT arrange simply by ID or difficulty 3) Include conversation practice throughout the path 4) Balance serious study with fun content 5) Create natural connections between lectures 6) Include occasional surprises to maintain interest',
             },
             minItems: 30,
             maxItems: 100,

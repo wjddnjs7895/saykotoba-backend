@@ -1,5 +1,12 @@
 import { BaseEntity } from 'src/common/entities/base.entity';
-import { Column, Entity, OneToMany, OneToOne } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToMany,
+  OneToMany,
+  OneToOne,
+  JoinTable,
+} from 'typeorm';
 import { SubscriptionEntity } from '../../payment/entities/subscription.entity';
 import {
   AuthProvider,
@@ -9,6 +16,7 @@ import {
 import { ConversationGroupEntity } from '@/domain/conversation/entities/conversation_group.entity';
 import { Language } from '@/common/constants/app.constants';
 import { ClassroomEntity } from '@/domain/classroom/entities/classroom.entity';
+import { InterestEntity } from './interest.entity';
 
 @Entity('user')
 export class UserEntity extends BaseEntity {
@@ -107,12 +115,19 @@ export class UserEntity extends BaseEntity {
   })
   language: Language;
 
-  @Column({
-    type: 'json',
-    default: [],
-    comment: 'User interests',
+  @ManyToMany(() => InterestEntity, (interest) => interest.users)
+  @JoinTable({
+    name: 'user_interests',
+    joinColumn: {
+      name: 'user_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'interest_id',
+      referencedColumnName: 'id',
+    },
   })
-  interests: string[];
+  interests: InterestEntity[];
 
   @OneToMany(() => ClassroomEntity, (classroom) => classroom.user)
   classrooms: ClassroomEntity[];

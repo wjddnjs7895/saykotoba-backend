@@ -33,6 +33,7 @@ import {
 import { CustomBaseException } from '@/common/exception/custom.base.exception';
 import { UnexpectedException } from '@/common/exception/custom-exception/unexpected.exception';
 import {
+  CONVERSATION_TYPE,
   DIFFICULTY_MAP,
   EXP_PER_CONVERSATION,
   HINT_COUNT,
@@ -45,7 +46,7 @@ import {
 } from '../dtos/get-audio-from-text.dto';
 import { GetFirstMessageResponseDto } from '@/integrations/openai/dtos/get-first-message.dto';
 import { FeedbackEntity } from '../entities/feedback.entity';
-import { UserService } from '../../user/user.service';
+import { UserService } from '../../user/services/user.service';
 import { GoogleTTSService } from '@/integrations/google/services/google-tts.service';
 import { CharacterService } from '@/domain/character/character.service';
 
@@ -213,7 +214,7 @@ export class ConversationService {
         remainingHintCount: hintCount,
         exp: EXP_PER_CONVERSATION[createConversationDto.difficultyLevel],
         problemId: createConversationDto.problemId,
-        type: createConversationDto.type,
+        type: createConversationDto.type || CONVERSATION_TYPE.CUSTOM,
         thumbnailUrl: createConversationDto.thumbnailUrl,
         characteristic: characteristic,
       });

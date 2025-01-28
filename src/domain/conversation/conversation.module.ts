@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { ConversationService } from './services/conversation.service';
 import { ConversationController } from './conversation.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -14,6 +14,7 @@ import { ConversationGroupEntity } from './entities/conversation_group.entity';
 import { ConversationGroupService } from './services/conversation-group.service';
 import { ClassroomEntity } from '../classroom/entities/classroom.entity';
 import { CharacterModule } from '../character/character.module';
+import { ClassroomModule } from '../classroom/classroom.module';
 
 @Module({
   imports: [
@@ -25,11 +26,12 @@ import { CharacterModule } from '../character/character.module';
       ConversationGroupEntity,
       ClassroomEntity,
     ]),
-    UserModule,
+    forwardRef(() => UserModule),
     OpenAIModule,
     AwsModule,
     GoogleModule,
     CharacterModule,
+    forwardRef(() => ClassroomModule),
   ],
   providers: [ConversationService, ConversationGroupService],
   controllers: [ConversationController],

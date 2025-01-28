@@ -1,23 +1,29 @@
-import { IsArray, IsEnum, IsNumber, IsString } from 'class-validator';
-import { CLASSROOM_STYLE } from '@/common/constants/classroom.constants';
+import {
+  IsArray,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { Language } from '@/common/constants/app.constants';
 
 export class CreateClassroomRequestDto {
   @IsNumber()
   difficultyLevel: number;
 
-  @IsEnum(CLASSROOM_STYLE)
-  style: CLASSROOM_STYLE;
+  @IsNumber()
+  style: number;
 
   @IsArray()
-  @IsString({ each: true })
-  topics: string[];
+  @IsNumber({}, { each: true })
+  interestIds: number[];
 
   @IsEnum(Language)
   language: Language;
 
+  @IsOptional()
   @IsString()
-  requiredStatement: string;
+  requiredStatement?: string;
 }
 
 export class CreateClassroomServiceDto extends CreateClassroomRequestDto {

@@ -7,7 +7,7 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import { UserService } from './user.service';
+import { UserService } from './services/user.service';
 import {
   CreateUserRequestDto,
   CreateUserResponseDto,
@@ -20,10 +20,15 @@ import { GetUserInfoRespondDto } from './dtos/get-user-info.dto';
 import { UserEntity } from './entities/user.entity';
 import { User } from '@/common/decorators/user.decorator';
 import { UpdateUserOnboardingRequestDto } from './dtos/update-user-onboarding.dto';
+import { OnboardingService } from './services/onboarding.service';
+import { GetInterestListResponseDto } from './dtos/get-interest.dto';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly onboardingService: OnboardingService,
+  ) {}
 
   @Post()
   createUser(
@@ -57,14 +62,19 @@ export class UserController {
     return this.userService.getTierList();
   }
 
-  @Patch('onboarding')
+  @Post('onboarding')
   updateUserOnboarding(
     @User() user: UserEntity,
     @Body() updateUserOnboardingDto: UpdateUserOnboardingRequestDto,
   ) {
-    return this.userService.updateUserOnboarding(
+    return this.onboardingService.updateUserOnboarding(
       user.id,
       updateUserOnboardingDto,
     );
+  }
+
+  @Get('interest-list')
+  getInterestList(): Promise<GetInterestListResponseDto> {
+    return this.onboardingService.getInterestList();
   }
 }

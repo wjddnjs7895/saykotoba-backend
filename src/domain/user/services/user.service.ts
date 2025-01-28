@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserEntity } from './entities/user.entity';
+import { UserEntity } from '../entities/user.entity';
 import { Repository } from 'typeorm/repository/Repository';
 import {
   CreateUserRequestDto,
   CreateUserResponseDto,
-} from './dtos/create-user.dto';
+} from '../dtos/create-user.dto';
 import {
   UpdateUserRequestDto,
   UpdateUserResponseDto,
-} from './dtos/update-user.dto';
+} from '../dtos/update-user.dto';
 import {
   UserNotFoundException,
   UserUpdateFailedException,
@@ -19,9 +19,7 @@ import {
   TIER_MAP,
   TIER_THRESHOLD,
 } from '@/common/constants/user.constants';
-import { SubscriptionEntity } from '../payment/entities/subscription.entity';
-import { UpdateUserOnboardingRequestDto } from './dtos/update-user-onboarding.dto';
-import { UnexpectedException } from '@/common/exception/custom-exception/unexpected.exception';
+import { SubscriptionEntity } from '../../payment/entities/subscription.entity';
 
 @Injectable()
 export class UserService {
@@ -119,18 +117,19 @@ export class UserService {
   }) {
     const user = await this.userRepository.findOneBy({ id: userId });
     try {
-      await this.userRepository.update(userId, {
-        ...(conversationId &&
-          !user.solvedConversationIds.includes(conversationId) && {
-            solvedConversationIds: () =>
-              `JSON_ARRAY_APPEND(solvedConversationIds, "$", ${conversationId})`,
-          }),
-        ...(problemId &&
-          !user.solvedProblemIds.includes(problemId) && {
-            solvedProblemIds: () =>
-              `JSON_ARRAY_APPEND(solvedProblemIds, "$", ${problemId})`,
-          }),
-      });
+      if (
+        conversationId &&
+        !user.solvedConversationIds.includes(conversationId)
+      ) {
+        user.solvedConversationIds = [
+          ...user.solvedConversationIds,
+          conversationId,
+        ];
+      }
+      if (problemId && !user.solvedProblemIds.includes(problemId)) {
+        user.solvedProblemIds = [...user.solvedProblemIds, problemId];
+      }
+      await this.userRepository.save(user);
     } catch {
       throw new UserUpdateFailedException();
     }
@@ -181,38 +180,5 @@ export class UserService {
       user.solvedConversationIds.includes(conversationId) ||
       user.solvedProblemIds.includes(problemId)
     );
-  }
-
-  async updateUserOnboarding(
-    userId: number,
-    updateUserOnboardingDto: UpdateUserOnboardingRequestDto,
-  ) {
-    try {
-      const user = await this.userRepository.findOneBy({ id: userId });
-      if (!user) throw new UserNotFoundException();
-      if (user.isOnboardingCompleted) throw new UserUpdateFailedException();
-      await this.userRepository.update(userId, {
-        isOnboardingCompleted: true,
-        interests: updateUserOnboardingDto.topics,
-      });
-    } catch (error) {
-      if (error instanceof UserNotFoundException) {
-        throw error;
-      }
-      throw new UnexpectedException();
-    }
-  }
-
-  async updateUserOnboardingStatus(userId: number) {
-    const result = await this.userRepository.update(userId, {
-      isOnboardingCompleted: true,
-    });
-    if (!result.affected) throw new UserUpdateFailedException();
-  }
-
-  async isOnboardingCompleted(userId: number): Promise<boolean> {
-    const user = await this.userRepository.findOneBy({ id: userId });
-    if (!user) throw new UserNotFoundException();
-    return user.isOnboardingCompleted;
   }
 }
