@@ -40,6 +40,9 @@ export class LessonEntity extends BaseEntity {
   @Column({ name: 'exp', default: 0 })
   exp: number;
 
+  @Column({ name: 'thumbnail_url', default: '' })
+  thumbnailUrl: string;
+
   @ManyToOne(() => LectureEntity, (lecture) => lecture.lessons)
   lecture: LectureEntity;
 }

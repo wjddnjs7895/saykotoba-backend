@@ -4,7 +4,7 @@ import { GetLectureInfoResponseDto } from './dtos/get-lecture-info.dto';
 import { GetLecturesResponseDto } from './dtos/get-lectures.dto';
 import { User } from '@/common/decorators/user.decorator';
 import { UserEntity } from '../user/entities/user.entity';
-import { StartLectureResponseDto } from './dtos/start-lecture-dto';
+import { StartLectureResponseDto } from './dtos/start-lecture.dto';
 import { GetLessonInfoResponseDto } from './dtos/get-lesson-info.dto';
 import { Admin } from '@/common/decorators/admin.decorator';
 import {

@@ -32,5 +32,6 @@ export class GetLectureInfoResponseDto {
     id: number;
     title: string;
     difficultyLevel: number;
+    thumbnailUrl: string;
   }[];
 }

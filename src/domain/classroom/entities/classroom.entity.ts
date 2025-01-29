@@ -1,5 +1,5 @@
 import { BaseEntity } from '@/common/entities/base.entity';
-import { ConversationGroupEntity } from '@/domain/conversation/entities/conversation_group.entity';
+import { LectureEntity } from '@/domain/lecture/entities/lecture.entity';
 import { UserEntity } from '@/domain/user/entities/user.entity';
 import { Entity, ManyToMany, ManyToOne, JoinTable, Column } from 'typeorm';
 
@@ -8,22 +8,19 @@ export class ClassroomEntity extends BaseEntity {
   @ManyToOne(() => UserEntity, (user) => user.classrooms)
   user: UserEntity;
 
-  @ManyToMany(
-    () => ConversationGroupEntity,
-    (conversationGroup) => conversationGroup.classrooms,
-  )
+  @ManyToMany(() => LectureEntity, (lecture) => lecture.classrooms)
   @JoinTable({
-    name: 'classroom_conversation_group',
+    name: 'classroom_lecture',
     joinColumn: {
       name: 'classroom_id',
       referencedColumnName: 'id',
     },
     inverseJoinColumn: {
-      name: 'conversation_group_id',
+      name: 'lecture_id',
       referencedColumnName: 'id',
     },
   })
-  conversationGroups: ConversationGroupEntity[];
+  lectures: LectureEntity[];
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedAt: Date;

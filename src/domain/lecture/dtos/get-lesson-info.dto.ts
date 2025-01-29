@@ -10,4 +10,5 @@ export class GetLessonInfoResponseDto {
   }[];
   difficultyLevel: number;
   exp: number;
+  thumbnailUrl: string;
 }

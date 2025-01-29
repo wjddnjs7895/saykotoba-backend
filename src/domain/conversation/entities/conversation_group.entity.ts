@@ -2,7 +2,6 @@ import { BaseEntity } from '@/common/entities/base.entity';
 import {
   Column,
   Entity,
-  ManyToMany,
   ManyToOne,
   OneToMany,
   UpdateDateColumn,
@@ -10,7 +9,6 @@ import {
 import { ConversationEntity } from './conversation.entity';
 import { UserEntity } from '@/domain/user/entities/user.entity';
 import { CONVERSATION_GROUP_TYPE } from '@/common/constants/conversation.constants';
-import { ClassroomEntity } from '@/domain/classroom/entities/classroom.entity';
 
 @Entity('conversation_group')
 export class ConversationGroupEntity extends BaseEntity {
@@ -45,10 +43,4 @@ export class ConversationGroupEntity extends BaseEntity {
 
   @ManyToOne(() => UserEntity, (user) => user.conversationGroups)
   user: UserEntity;
-
-  @ManyToMany(
-    () => ClassroomEntity,
-    (classroom) => classroom.conversationGroups,
-  )
-  classrooms: ClassroomEntity[];
 }

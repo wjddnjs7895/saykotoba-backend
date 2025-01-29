@@ -2,50 +2,24 @@ import { Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
-  IsDate,
   IsNumber,
   IsString,
   ValidateNested,
 } from 'class-validator';
 
-export class ConversationGroupDto {
-  @IsNumber()
-  id: number;
-
-  @IsString()
-  name: string;
-
-  @IsString()
-  description: string;
-
-  @IsString()
-  thumbnailUrl: string;
-
-  @IsNumber()
-  difficultyLevelStart: number;
-
-  @IsNumber()
-  difficultyLevelEnd: number;
-
-  @IsDate()
-  updatedAt: Date;
-
-  @IsArray()
-  conversations: ConversationDto[];
-
-  @IsBoolean()
-  isCompleted: boolean;
-}
-
-export class ConversationDto {
+export class LectureDto {
   @IsNumber()
   id: number;
   @IsString()
   title: string;
   @IsString()
-  situation: string;
+  description: string;
+  @IsString()
+  thumbnailUrl: string;
   @IsNumber()
-  difficultyLevel: number;
+  difficultyLevelStart: number;
+  @IsNumber()
+  difficultyLevelEnd: number;
   @IsBoolean()
   isCompleted: boolean;
 }
@@ -53,6 +27,6 @@ export class ConversationDto {
 export class GetClassroomResponseDto {
   @IsArray()
   @ValidateNested()
-  @Type(() => ConversationGroupDto)
-  conversationGroups: ConversationGroupDto[];
+  @Type(() => LectureDto)
+  lectures: LectureDto[];
 }

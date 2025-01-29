@@ -9,7 +9,7 @@ import { ConversationService } from '../conversation/services/conversation.servi
 import {
   StartLectureRequestDto,
   StartLectureResponseDto,
-} from './dtos/start-lecture-dto';
+} from './dtos/start-lecture.dto';
 import {
   LectureDeleteFailedException,
   LectureNotFoundException,
@@ -36,6 +36,10 @@ import {
 } from './dtos/create-lectures.dto';
 import { TopicEntity } from './entities/topic.entity';
 import { In } from 'typeorm';
+import {
+  StartLessonRequestDto,
+  StartLessonResponseDto,
+} from './dtos/start-lesson.dto';
 
 @Injectable()
 export class LectureService {
@@ -97,6 +101,7 @@ export class LectureService {
         id: lesson.id,
         title: lesson.title,
         difficultyLevel: lesson.difficultyLevel,
+        thumbnailUrl: this.s3Service.getCloudFrontUrl(lesson.thumbnailUrl),
       })),
     };
   }
@@ -120,6 +125,7 @@ export class LectureService {
       })),
       difficultyLevel: lesson.difficultyLevel,
       exp: lesson.exp,
+      thumbnailUrl: this.s3Service.getCloudFrontUrl(lesson.thumbnailUrl),
     };
   }
 
@@ -141,8 +147,7 @@ export class LectureService {
           userId: startLectureRequestDto.userId,
           name: lecture.title,
           description: lecture.description,
-          thumbnailUrl:
-            this.s3Service.getCloudFrontUrl(lecture.thumbnailUrl) ?? '',
+          thumbnailUrl: lecture.thumbnailUrl ?? '',
           difficultyLevelStart: lecture.difficultyLevelStart,
           difficultyLevelEnd: lecture.difficultyLevelEnd,
           type: CONVERSATION_GROUP_TYPE.LECTURE,
@@ -166,8 +171,7 @@ export class LectureService {
             characteristic: '',
             type: CONVERSATION_TYPE.LECTURE,
             problemId: lesson.id,
-            thumbnailUrl:
-              this.s3Service.getCloudFrontUrl(lecture.thumbnailUrl) ?? '',
+            thumbnailUrl: lecture.thumbnailUrl ?? '',
             exp: lesson.exp,
           }),
         ),
@@ -189,6 +193,49 @@ export class LectureService {
       return {
         conversationId: newConversations[0].conversationId,
         conversationGroupId: newConversationGroup.groupId,
+      };
+    } catch (error) {
+      if (error instanceof CustomBaseException) {
+        throw error;
+      }
+      throw new UnexpectedException();
+    }
+  }
+
+  async startLesson(
+    startLessonRequestDto: StartLessonRequestDto,
+  ): Promise<StartLessonResponseDto> {
+    try {
+      const lesson = await this.lessonRepository.findOne({
+        where: { id: startLessonRequestDto.lessonId },
+      });
+
+      if (!lesson) {
+        throw new LessonNotFoundException();
+      }
+
+      const newConversation = await this.conversationService.createConversation(
+        {
+          userId: startLessonRequestDto.userId,
+          title: lesson.title,
+          difficultyLevel: lesson.difficultyLevel,
+          situation: lesson.situation,
+          aiRole: lesson.aiRole,
+          userRole: lesson.userRole,
+          missions: lesson.missions.map((mission) => mission.mission),
+          characteristic: '',
+          type: CONVERSATION_TYPE.LECTURE,
+          problemId: lesson.id,
+          thumbnailUrl: lesson.thumbnailUrl,
+          exp: lesson.exp,
+        },
+      );
+
+      if (!newConversation) {
+        throw new ConversationSaveFailedException();
+      }
+      return {
+        conversationId: newConversation.conversationId,
       };
     } catch (error) {
       if (error instanceof CustomBaseException) {

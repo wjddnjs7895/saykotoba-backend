@@ -10,8 +10,6 @@ import { GetClassroomResponseDto } from './dtos/get-classroom.dto';
 import { UserService } from '../user/services/user.service';
 import { CreateClassroomServiceDto } from './dtos/create-classroom.dto';
 import { LectureService } from '../lecture/lecture.service';
-import { ConversationGroupService } from '../conversation/services/conversation-group.service';
-import { CONVERSATION_GROUP_TYPE } from '@/common/constants/conversation.constants';
 import { OpenAIService } from '@/integrations/openai/openai.service';
 import { CustomBaseException } from '@/common/exception/custom.base.exception';
 import { UnexpectedException } from '@/common/exception/custom-exception/unexpected.exception';
@@ -25,7 +23,6 @@ export class ClassroomService {
     private readonly classroomRepository: Repository<ClassroomEntity>,
     private readonly userService: UserService,
     private readonly lectureService: LectureService,
-    private readonly conversationGroupService: ConversationGroupService,
     private readonly openaiService: OpenAIService,
     @Inject(forwardRef(() => OnboardingService))
     private readonly onboardingService: OnboardingService,
@@ -34,11 +31,7 @@ export class ClassroomService {
   async getClassroom(classroomId: number): Promise<GetClassroomResponseDto> {
     const classroom = await this.classroomRepository.findOne({
       where: { id: classroomId },
-      relations: [
-        'user',
-        'conversationGroups',
-        'conversationGroups.conversations',
-      ],
+      relations: ['user', 'lectures'],
     });
 
     if (!classroom) {
@@ -46,36 +39,30 @@ export class ClassroomService {
     }
 
     const result = new GetClassroomResponseDto();
-    result.conversationGroups = await Promise.all(
-      classroom.conversationGroups.map(async (group) => ({
-        id: group.id,
-        name: group.name,
-        description: group.description,
-        thumbnailUrl: group.thumbnailUrl,
-        difficultyLevelStart: group.difficultyLevelStart,
-        difficultyLevelEnd: group.difficultyLevelEnd,
-        updatedAt: group.updatedAt,
+    result.lectures = await Promise.all(
+      classroom.lectures.map(async (lecture) => ({
+        id: lecture.id,
+        title: lecture.title,
+        description: lecture.description,
+        thumbnailUrl: lecture.thumbnailUrl,
+        difficultyLevelStart: lecture.difficultyLevelStart,
+        difficultyLevelEnd: lecture.difficultyLevelEnd,
+        updatedAt: lecture.updatedAt,
         conversations: await Promise.all(
-          group.conversations.map(async (conversation) => ({
-            id: conversation.id,
-            title: conversation.title,
-            situation: conversation.situation,
-            difficultyLevel: conversation.difficultyLevel,
+          lecture.lessons.map(async (lesson) => ({
+            id: lesson.id,
+            title: lesson.title,
+            situation: lesson.situation,
+            difficultyLevel: lesson.difficultyLevel,
             isCompleted: await this.userService.isSolvedConversation({
               userId: classroom.user.id,
-              problemId: conversation.problemId,
+              problemId: lesson.id,
             }),
           })),
         ),
         isCompleted: false,
       })),
     );
-
-    result.conversationGroups = result.conversationGroups.map((group) => ({
-      ...group,
-      isCompleted: group.conversations.every((conv) => conv.isCompleted),
-    }));
-
     return result;
   }
 
@@ -118,28 +105,11 @@ export class ClassroomService {
       const validLectureIds = aiSelectResult.lectureIds.filter((lectureId) =>
         lectures.some((l) => l.id === lectureId),
       );
-      console.log(aiSelectResult);
-      console.log(validLectureIds);
-      const conversationGroups = await Promise.all(
-        validLectureIds.map(async (lectureId) => {
-          const lecture = lectures.find((l) => l.id === lectureId);
-          return await this.conversationGroupService.createConversationGroup({
-            userId: createClassroomDto.userId,
-            name: lecture.title,
-            description: lecture.description,
-            thumbnailUrl: lecture.thumbnailUrl,
-            difficultyLevelStart: lecture.difficultyLevelStart,
-            difficultyLevelEnd: lecture.difficultyLevelEnd,
-            type: CONVERSATION_GROUP_TYPE.LECTURE,
-            conversationIds: lecture.lessonIds,
-          });
-        }),
-      );
 
       const classroom = await this.classroomRepository.save({
         user: { id: createClassroomDto.userId },
-        conversationGroups: conversationGroups.map((group) => ({
-          id: group.groupId,
+        lectures: validLectureIds.map((lectureId) => ({
+          id: lectureId,
         })),
       });
 
@@ -163,11 +133,7 @@ export class ClassroomService {
   }): Promise<GetClassroomResponseDto> {
     const [classroom] = await this.classroomRepository.find({
       where: { user: { id: userId } },
-      relations: [
-        'user',
-        'conversationGroups',
-        'conversationGroups.conversations',
-      ],
+      relations: ['user', 'lectures'],
       order: {
         updatedAt: 'DESC',
       },
@@ -179,35 +145,18 @@ export class ClassroomService {
     }
 
     const result = new GetClassroomResponseDto();
-    result.conversationGroups = await Promise.all(
-      classroom.conversationGroups.map(async (group) => ({
-        id: group.id,
-        name: group.name,
-        description: group.description,
-        thumbnailUrl: group.thumbnailUrl,
-        difficultyLevelStart: group.difficultyLevelStart,
-        difficultyLevelEnd: group.difficultyLevelEnd,
-        updatedAt: group.updatedAt,
-        conversations: await Promise.all(
-          group.conversations.map(async (conversation) => ({
-            id: conversation.id,
-            title: conversation.title,
-            situation: conversation.situation,
-            difficultyLevel: conversation.difficultyLevel,
-            isCompleted: await this.userService.isSolvedConversation({
-              userId: classroom.user.id,
-              problemId: conversation.problemId,
-            }),
-          })),
-        ),
+    result.lectures = await Promise.all(
+      classroom.lectures.map(async (lecture) => ({
+        id: lecture.id,
+        title: lecture.title,
+        description: lecture.description,
+        thumbnailUrl: lecture.thumbnailUrl,
+        difficultyLevelStart: lecture.difficultyLevelStart,
+        difficultyLevelEnd: lecture.difficultyLevelEnd,
+        updatedAt: lecture.updatedAt,
         isCompleted: false,
       })),
     );
-
-    result.conversationGroups = result.conversationGroups.map((group) => ({
-      ...group,
-      isCompleted: group.conversations.every((conv) => conv.isCompleted),
-    }));
 
     return result;
   }

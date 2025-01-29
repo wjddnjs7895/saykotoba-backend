@@ -2,6 +2,7 @@ import { BaseEntity } from '@/common/entities/base.entity';
 import {
   Column,
   Entity,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   UpdateDateColumn,
@@ -9,6 +10,7 @@ import {
 import { LessonEntity } from './lesson.entity';
 import { TopicEntity } from './topic.entity';
 import { Language } from '@/common/constants/app.constants';
+import { ClassroomEntity } from '@/domain/classroom/entities/classroom.entity';
 
 @Entity('lecture')
 export class LectureEntity extends BaseEntity {
@@ -49,4 +51,7 @@ export class LectureEntity extends BaseEntity {
 
   @ManyToOne(() => TopicEntity, (topic) => topic.lectures)
   topic: TopicEntity;
+
+  @ManyToMany(() => ClassroomEntity, (classroom) => classroom.lectures)
+  classrooms: ClassroomEntity[];
 }
