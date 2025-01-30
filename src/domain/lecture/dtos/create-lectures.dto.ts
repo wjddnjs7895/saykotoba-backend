@@ -59,8 +59,9 @@ export class CreateLectureRequestDto {
   @Type(() => LessonDto)
   lessons: LessonDto[];
 
+  @IsArray({ each: true })
   @IsString()
-  topic: string;
+  topics: string[];
 }
 
 export class CreateLecturesResponseDto {

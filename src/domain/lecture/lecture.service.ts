@@ -63,7 +63,7 @@ export class LectureService {
       order: {
         id: 'ASC',
       },
-      relations: ['topic', 'lessons'],
+      relations: ['topics', 'lessons'],
     });
     if (!lectures || lectures.length === 0) {
       throw new LectureNotFoundException();
@@ -75,8 +75,13 @@ export class LectureService {
       difficultyLevelStart: lecture.difficultyLevelStart,
       difficultyLevelEnd: lecture.difficultyLevelEnd,
       description: lecture.description,
-      topic: lecture.topic?.name ?? '',
-      lessonIds: lecture.lessons.map((lesson) => lesson.id),
+      topics: lecture.topics.map((topic) => topic.name),
+      lessons: lecture.lessons.map((lesson) => ({
+        id: lesson.id,
+        title: lesson.title,
+        situation: lesson.situation,
+        difficultyLevel: lesson.difficultyLevel,
+      })),
     }));
   }
 
@@ -247,7 +252,12 @@ export class LectureService {
 
   async getLecturesByTopic(topic: string): Promise<GetLecturesResponseDto[]> {
     const lectures = await this.lectureRepository.find({
-      where: { topic: { name: topic } },
+      where: {
+        topics: {
+          name: topic,
+        },
+      },
+      relations: ['topics', 'lessons'],
       order: {
         id: 'ASC',
       },
@@ -259,15 +269,22 @@ export class LectureService {
       difficultyLevelStart: lecture.difficultyLevelStart,
       difficultyLevelEnd: lecture.difficultyLevelEnd,
       description: lecture.description,
-      topic: lecture.topic.name,
-      lessonIds: lecture.lessons.map((lesson) => lesson.id),
+      topics: lecture.topics.map((topic) => topic.name),
+      lessons: lecture.lessons.map((lesson) => ({
+        id: lesson.id,
+        title: lesson.title,
+        situation: lesson.situation,
+        difficultyLevel: lesson.difficultyLevel,
+      })),
     }));
   }
 
   async createLectures(
     createLectureDto: CreateLectureRequestDto[],
   ): Promise<CreateLecturesResponseDto> {
-    const topicNames = [...new Set(createLectureDto.map((dto) => dto.topic))];
+    const topicNames = [
+      ...new Set(createLectureDto.flatMap((dto) => dto.topics)),
+    ];
 
     const existingTopics = await this.topicRepository.find({
       where: { name: In(topicNames) },
@@ -275,12 +292,16 @@ export class LectureService {
 
     const lectureEntities = await Promise.all(
       createLectureDto.map(async (dto) => {
-        const existingTopic = existingTopics.find(
-          (topic) => topic.name === dto.topic,
-        );
+        const lectureTopics = dto.topics.map((topicName) => {
+          const existingTopic = existingTopics.find(
+            (topic) => topic.name === topicName,
+          );
+          return existingTopic || { name: topicName };
+        });
+
         return {
           ...dto,
-          topic: existingTopic || { name: dto.topic },
+          topics: lectureTopics,
           lessons: await Promise.all(
             dto.lessons.map(async (lesson) => {
               const newLesson = this.lessonRepository.create({

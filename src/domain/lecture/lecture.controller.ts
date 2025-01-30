@@ -11,6 +11,7 @@ import {
   CreateLectureRequestDto,
   CreateLecturesResponseDto,
 } from './dtos/create-lectures.dto';
+import { StartLessonResponseDto } from './dtos/start-lesson.dto';
 
 @Controller('lecture')
 export class LectureController {
@@ -38,6 +39,17 @@ export class LectureController {
     return this.lectureService.startLecture({
       lectureId: id,
       userId: user.id,
+    });
+  }
+
+  @Post('/start/lesson/:id')
+  async startLesson(
+    @Param('id') id: number,
+    @User() user: UserEntity,
+  ): Promise<StartLessonResponseDto> {
+    return this.lectureService.startLesson({
+      userId: user.id,
+      lessonId: id,
     });
   }
 

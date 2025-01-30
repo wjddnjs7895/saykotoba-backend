@@ -2,15 +2,15 @@ import { BaseEntity } from '@/common/entities/base.entity';
 import {
   Column,
   Entity,
-  ManyToMany,
-  ManyToOne,
   OneToMany,
   UpdateDateColumn,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { LessonEntity } from './lesson.entity';
 import { TopicEntity } from './topic.entity';
 import { Language } from '@/common/constants/app.constants';
-import { ClassroomEntity } from '@/domain/classroom/entities/classroom.entity';
+import { ClassroomLectureEntity } from '@/domain/classroom/entities/classroom-lecture.entity';
 
 @Entity('lecture')
 export class LectureEntity extends BaseEntity {
@@ -49,9 +49,23 @@ export class LectureEntity extends BaseEntity {
   @OneToMany(() => LessonEntity, (lesson) => lesson.lecture)
   lessons: LessonEntity[];
 
-  @ManyToOne(() => TopicEntity, (topic) => topic.lectures)
-  topic: TopicEntity;
+  @ManyToMany(() => TopicEntity)
+  @JoinTable({
+    name: 'lecture_topic',
+    joinColumn: {
+      name: 'lecture_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'topic_id',
+      referencedColumnName: 'id',
+    },
+  })
+  topics: TopicEntity[];
 
-  @ManyToMany(() => ClassroomEntity, (classroom) => classroom.lectures)
-  classrooms: ClassroomEntity[];
+  @OneToMany(
+    () => ClassroomLectureEntity,
+    (classroomLecture) => classroomLecture.lecture,
+  )
+  classroomLectures: ClassroomLectureEntity[];
 }

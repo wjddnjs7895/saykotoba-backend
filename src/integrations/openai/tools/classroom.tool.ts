@@ -18,9 +18,9 @@ export const ClassroomTool = [
             items: {
               type: 'number',
               description:
-                'Lecture IDs to be included in the classroom. REQUIREMENTS: 1) Create an engaging mix of different lecture types 2) DO NOT arrange simply by ID or difficulty 3) Include conversation practice throughout the path 4) Balance serious study with fun content 5) Create natural connections between lectures 6) Include occasional surprises to maintain interest',
+                'Lecture IDs to be included in the classroom. You should select lecture Ids from the lecture ID lists.',
             },
-            minItems: 30,
+            minItems: 15,
             maxItems: 100,
           },
         },

@@ -24,10 +24,16 @@ export class GetLecturesResponseDto {
   @IsString()
   description: string;
 
+  @IsArray({ each: true })
   @IsString()
-  topic: string;
+  topics: string[];
 
   @IsArray({ each: true })
   @Type(() => Number)
-  lessonIds: number[];
+  lessons: {
+    id: number;
+    title: string;
+    situation: string;
+    difficultyLevel: number;
+  }[];
 }

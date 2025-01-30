@@ -91,6 +91,7 @@ export const ConversationErrorMessage: ConversationErrorMessageType = {
     'Conversation group not found',
   [ConversationErrorCodeEnum.ConversationGroupSaveFailed]:
     'Conversation group save failed',
+  [ConversationErrorCodeEnum.AudioGenerationFailed]: 'Audio generation failed',
 };
 
 export const LectureErrorMessage: LectureErrorMessageType = {

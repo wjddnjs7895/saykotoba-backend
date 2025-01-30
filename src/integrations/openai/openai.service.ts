@@ -348,14 +348,20 @@ export class OpenAIService {
   async generateClassroom(
     generateClassroomRequestDto: GenerateClassroomRequestDto,
   ): Promise<GenerateClassroomResponseDto> {
+    const lectureIds = generateClassroomRequestDto.lectures.map(
+      (lecture) => lecture.id,
+    );
+    const prompt = PROMPTS.CLASSROOM_CREATOR({
+      generateClassroomRequestDto,
+      lectureIds,
+    });
+
     const response = await this.openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'gpt-4o',
       messages: [
         {
           role: 'system',
-          content: PROMPTS.CLASSROOM_CREATOR({
-            generateClassroomRequestDto,
-          }),
+          content: prompt,
         },
       ],
       tools: ClassroomTool,

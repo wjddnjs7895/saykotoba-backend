@@ -1,26 +1,24 @@
 import { BaseEntity } from '@/common/entities/base.entity';
-import { LectureEntity } from '@/domain/lecture/entities/lecture.entity';
 import { UserEntity } from '@/domain/user/entities/user.entity';
-import { Entity, ManyToMany, ManyToOne, JoinTable, Column } from 'typeorm';
+import { Entity, ManyToOne, OneToMany, Column } from 'typeorm';
+import { ClassroomLectureEntity } from './classroom-lecture.entity';
 
 @Entity({ name: 'classroom' })
 export class ClassroomEntity extends BaseEntity {
   @ManyToOne(() => UserEntity, (user) => user.classrooms)
   user: UserEntity;
 
-  @ManyToMany(() => LectureEntity, (lecture) => lecture.classrooms)
-  @JoinTable({
-    name: 'classroom_lecture',
-    joinColumn: {
-      name: 'classroom_id',
-      referencedColumnName: 'id',
-    },
-    inverseJoinColumn: {
-      name: 'lecture_id',
-      referencedColumnName: 'id',
-    },
-  })
-  lectures: LectureEntity[];
+  @OneToMany(
+    () => ClassroomLectureEntity,
+    (classroomLecture) => classroomLecture.classroom,
+  )
+  classroomLectures: ClassroomLectureEntity[];
+
+  @Column({ type: 'integer', default: 0 })
+  recentLectureOrder: number;
+
+  @Column({ type: 'integer', default: 0 })
+  recentLessonOrder: number;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedAt: Date;

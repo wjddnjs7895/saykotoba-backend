@@ -38,6 +38,7 @@ export enum ConversationErrorCodeEnum {
   MissionNotCompleted = 'CONV12',
   ConversationGroupNotFound = 'CONV13',
   ConversationGroupSaveFailed = 'CONV14',
+  AudioGenerationFailed = 'CONV15',
 }
 
 export enum LectureErrorCodeEnum {

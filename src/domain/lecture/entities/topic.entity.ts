@@ -1,5 +1,5 @@
 import { BaseEntity } from '@/common/entities/base.entity';
-import { Column, Entity, OneToMany } from 'typeorm';
+import { Column, Entity, ManyToMany } from 'typeorm';
 import { LectureEntity } from './lecture.entity';
 import { Language } from '@/common/constants/app.constants';
 
@@ -8,7 +8,7 @@ export class TopicEntity extends BaseEntity {
   @Column({ name: 'name', default: '' })
   name: string;
 
-  @OneToMany(() => LectureEntity, (lecture) => lecture.topic)
+  @ManyToMany(() => LectureEntity, (lecture) => lecture.topics)
   lectures: LectureEntity[];
 
   @Column({

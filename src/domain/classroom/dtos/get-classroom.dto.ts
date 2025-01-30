@@ -25,8 +25,14 @@ export class LectureDto {
 }
 
 export class GetClassroomResponseDto {
+  @IsNumber()
+  classroomId: number;
   @IsArray()
   @ValidateNested()
   @Type(() => LectureDto)
   lectures: LectureDto[];
+  @IsNumber()
+  recentLectureOrder: number;
+  @IsNumber()
+  recentLessonOrder: number;
 }

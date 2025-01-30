@@ -18,6 +18,7 @@ import { AddConversationToGroupRequestDto } from '../dtos/add-conversation-to-gr
 import { ConversationEntity } from '../entities/conversation.entity';
 import { CONVERSATION_GROUP_TYPE } from '@/common/constants/conversation.constants';
 import { GetConversationGroupInfoResponseDto } from '../dtos/get-conversation-group-info.dto';
+import { S3Service } from '@/integrations/aws/services/s3/s3.service';
 
 @Injectable()
 export class ConversationGroupService {
@@ -26,6 +27,7 @@ export class ConversationGroupService {
     private readonly conversationGroupRepository: Repository<ConversationGroupEntity>,
     @InjectRepository(ConversationEntity)
     private readonly conversationRepository: Repository<ConversationEntity>,
+    private readonly s3Service: S3Service,
   ) {}
 
   async getUserConversationGroups(
@@ -45,7 +47,7 @@ export class ConversationGroupService {
         id: group.id,
         name: group.name,
         description: group.description,
-        thumbnailUrl: group.thumbnailUrl,
+        thumbnailUrl: this.s3Service.getCloudFrontUrl(group.thumbnailUrl),
       }));
     } catch (error) {
       if (error instanceof CustomBaseException) {
@@ -69,7 +71,7 @@ export class ConversationGroupService {
       id: group.id,
       name: group.name,
       description: group.description,
-      thumbnailUrl: group.thumbnailUrl,
+      thumbnailUrl: this.s3Service.getCloudFrontUrl(group.thumbnailUrl),
       difficultyLevelStart: group.difficultyLevelStart,
       difficultyLevelEnd: group.difficultyLevelEnd,
     }));
@@ -117,7 +119,7 @@ export class ConversationGroupService {
       id: group.id,
       title: group.name,
       description: group.description,
-      thumbnailUrl: group.thumbnailUrl,
+      thumbnailUrl: this.s3Service.getCloudFrontUrl(group.thumbnailUrl),
       difficultyLevelStart: group.difficultyLevelStart,
       difficultyLevelEnd: group.difficultyLevelEnd,
       conversations: group.conversations.map((conversation) => ({

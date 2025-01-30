@@ -154,16 +154,16 @@ ${formatMissions(missions)}
 
   CLASSROOM_CREATOR: ({
     generateClassroomRequestDto,
+    lectureIds,
   }: {
     generateClassroomRequestDto: GenerateClassroomRequestDto;
+    lectureIds: number[];
   }) => `You are an expert in creating an engaging and effective classroom for learning Japanese with specific lectures.
   Create an interesting and comprehensive learning path by selecting and organizing lectures in an engaging way.
   
   Requirements:
-  - User want the Style of the classroom is: ${generateClassroomRequestDto.style}
-  - User want the Difficulty Level of the classroom is: ${generateClassroomRequestDto.difficultyLevel} (This is just the starting point. If the style includes grammar, include all grammar-related lectures from beginner to advanced level to ensure comprehensive learning)
+  - User want the Difficulty Level of the classroom is: ${generateClassroomRequestDto.difficultyLevel} 
   - User are interested in the following topics: ${generateClassroomRequestDto.interests.join(', ')}
-  - User want the Required Statement of the classroom is: ${generateClassroomRequestDto.requiredStatement}
   - The Language of the title is: ${generateClassroomRequestDto.language}
   
   Important Guidelines:
@@ -191,6 +191,7 @@ ${formatMissions(missions)}
      - Include occasional "fun" lectures to maintain engagement
 
   The lecture Lists are: ${generateClassroomRequestDto.lectures.join(', ')}
+  The lecture Ids are: ${lectureIds.join(', ')}. You should select lecture Ids from the lecture ID lists considering the above guidelines.
   Please select and organize lectures to create an engaging and effective learning path that keeps students motivated and interested.
   `,
 } as const;

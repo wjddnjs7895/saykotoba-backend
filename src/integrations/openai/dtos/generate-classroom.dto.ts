@@ -1,5 +1,4 @@
 import { Language } from '@/common/constants/app.constants';
-import { CLASSROOM_STYLE } from '@/common/constants/classroom.constants';
 import { Type } from 'class-transformer';
 import {
   IsArray,
@@ -67,9 +66,6 @@ class Lecture {
 export class GenerateClassroomRequestDto {
   @IsNumber()
   difficultyLevel: number;
-
-  @IsEnum(CLASSROOM_STYLE)
-  style: CLASSROOM_STYLE;
 
   @IsArray()
   @IsString({ each: true })

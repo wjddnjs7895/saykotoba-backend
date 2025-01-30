@@ -18,6 +18,7 @@ import { GetConversationListResponseDto } from '../dtos/get-conversation-list.dt
 import { GetConversationInfoResponseDto } from '../dtos/get-conversation-info.dto';
 import { ChatResponseDto } from '../dtos/chat-response.dto';
 import {
+  AudioGenerationFailedException,
   ConversationNotFoundException,
   ConversationSaveFailedException,
   ConversationUpdateFailedException,
@@ -49,6 +50,7 @@ import { FeedbackEntity } from '../entities/feedback.entity';
 import { UserService } from '../../user/services/user.service';
 import { GoogleTTSService } from '@/integrations/google/services/google-tts.service';
 import { CharacterService } from '@/domain/character/character.service';
+import { S3Service } from '@/integrations/aws/services/s3/s3.service';
 
 @Injectable()
 export class ConversationService {
@@ -65,6 +67,7 @@ export class ConversationService {
     private readonly googleTTSService: GoogleTTSService,
     private readonly userService: UserService,
     private readonly characterService: CharacterService,
+    private readonly s3Service: S3Service,
   ) {}
 
   async getConversationsByUserId(
@@ -83,7 +86,7 @@ export class ConversationService {
       conversationId: conversation.id,
       title: conversation.title,
       difficultyLevel: conversation.difficultyLevel,
-      thumbnailUrl: conversation.thumbnailUrl,
+      thumbnailUrl: this.s3Service.getCloudFrontUrl(conversation.thumbnailUrl),
       type: conversation.type,
       isCompleted: conversation.isCompleted,
       score: conversation.score,
@@ -190,7 +193,12 @@ export class ConversationService {
       throw new ConversationNotFoundException();
     }
 
-    const response = conversationInfo;
+    const response = {
+      ...conversationInfo,
+      thumbnailUrl: this.s3Service.getCloudFrontUrl(
+        conversationInfo.thumbnailUrl,
+      ),
+    };
     return response;
   }
 
@@ -324,18 +332,26 @@ export class ConversationService {
         throw new MessageSaveFailedException();
       }
 
-      const updatedMissions = await this.updateMissionStatus(
-        conversationId,
-        aiResponse.missionResults,
-      );
+      try {
+        const updatedMissions = await this.updateMissionStatus(
+          conversationId,
+          aiResponse.missionResults,
+        );
 
-      response.missions = updatedMissions;
+        response.missions = updatedMissions;
+      } catch {
+        throw new MissionSaveFailedException();
+      }
 
-      const { audioUrl } = await this.getAudioFromText({
-        text: aiResponse.text,
-        speakingRate,
-      });
-      response.audioUrl = audioUrl;
+      try {
+        const { audioUrl } = await this.getAudioFromText({
+          text: aiResponse.text,
+          speakingRate,
+        });
+        response.audioUrl = audioUrl;
+      } catch {
+        throw new AudioGenerationFailedException();
+      }
       return response;
     } catch (error) {
       if (error instanceof CustomBaseException) {

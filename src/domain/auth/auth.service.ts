@@ -35,6 +35,7 @@ import { TokenService } from './token.service';
 import { AppleUtils } from './utils/apple.utils';
 import { AuthProvider, UserRole } from '@/common/constants/user.constants';
 import { OnboardingService } from '../user/services/onboarding.service';
+import { verify } from 'jsonwebtoken';
 
 @Injectable()
 export class AuthService {
@@ -235,11 +236,10 @@ export class AuthService {
     }
   }
 
-  private async verifyAppleToken(
-    idToken: string,
-  ): Promise<AppleTokenPayloadDto> {
+  private async verifyAppleToken(token: string): Promise<AppleTokenPayloadDto> {
     try {
-      const decodedToken = jwt.decode(idToken, { complete: true });
+      console.log('Verifying token:', token);
+      const decodedToken = jwt.decode(token, { complete: true });
       if (!decodedToken) {
         throw new AppleIdTokenVerifyFailedException();
       }
@@ -248,24 +248,22 @@ export class AuthService {
         decodedToken.header.kid,
       );
 
-      const audience =
-        process.env.NODE_ENV === 'development'
-          ? 'host.exp.Exponent'
-          : this.configService.get('APPLE_CLIENT_ID');
+      const publicKey = signingKey.getPublicKey();
 
-      const payload = jwt.verify(idToken, signingKey.getPublicKey(), {
+      const validAudiences = ['host.exp.Exponent', 'com.joeygarden.saykotoba'];
+      const result = await verify(token, publicKey, {
         algorithms: ['RS256'],
-        issuer: 'https://appleid.apple.com',
-        audience,
+        audience: validAudiences,
       });
-      console.log('payload', payload);
-      const typedPayload = payload as AppleTokenPayloadDto;
+
+      const typedPayload = result as AppleTokenPayloadDto;
       if (!typedPayload.sub || !typedPayload.email) {
         throw new AppleIdTokenVerifyFailedException();
       }
 
       return typedPayload;
-    } catch {
+    } catch (error) {
+      console.error('Apple token verification error:', error);
       throw new AppleIdTokenVerifyFailedException();
     }
   }

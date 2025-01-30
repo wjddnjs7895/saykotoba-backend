@@ -150,3 +150,13 @@ export class ConversationGroupSaveFailedException extends CustomBaseException {
     );
   }
 }
+
+export class AudioGenerationFailedException extends CustomBaseException {
+  constructor() {
+    super(
+      ConversationErrorCodeEnum.AudioGenerationFailed,
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      ConversationErrorMessage[ConversationErrorCodeEnum.AudioGenerationFailed],
+    );
+  }
+}
