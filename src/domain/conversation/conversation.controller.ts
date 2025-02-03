@@ -24,7 +24,6 @@ import { GetConversationListResponseDto } from './dtos/get-conversation-list.dto
 import { UserEntity } from '../user/entities/user.entity';
 import { GetConversationInfoResponseDto } from './dtos/get-conversation-info.dto';
 import { ChatResponseDto } from './dtos/chat-response.dto';
-import { GetHintResponseDto } from './dtos/get-hint.dto';
 import {
   GetAudioFromTextRequestDto,
   GetAudioFromTextResponseDto,
@@ -38,6 +37,7 @@ import { ConversationGroupService } from './services/conversation-group.service'
 import { GetUserConversationGroupResponseDto } from './dtos/get-user-conversation-group.dto';
 import { GetLectureGroupResponseDto } from './dtos/get-user-lecture-group.dto';
 import { GetConversationGroupInfoResponseDto } from './dtos/get-conversation-group-info.dto';
+import { GenerateHintResponseDto } from './dtos/generate-hint.dto';
 
 @Controller('conversation')
 export class ConversationController {
@@ -124,11 +124,11 @@ export class ConversationController {
     );
   }
 
-  @Get('hint/:conversationId')
-  async getHint(
+  @Post('hint/:conversationId')
+  async generateHint(
     @Param('conversationId') conversationId: number,
-  ): Promise<GetHintResponseDto> {
-    return this.conversationService.getHintAndCount(conversationId);
+  ): Promise<GenerateHintResponseDto> {
+    return this.conversationService.generateHintAndCount(conversationId);
   }
 
   @Delete('undo/:conversationId')

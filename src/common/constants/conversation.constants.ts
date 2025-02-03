@@ -8,7 +8,7 @@ export enum DIFFICULTY_MAP {
 }
 
 export const SCORE_THRESHOLD = {
-  PASS: 90,
+  PASS: 80,
 };
 
 export const EXP_PER_CONVERSATION: Record<DIFFICULTY_MAP, number> = {

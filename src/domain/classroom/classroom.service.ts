@@ -97,8 +97,12 @@ export class ClassroomService {
         user: { id: createClassroomDto.userId },
       });
 
+      const orderedValidLectureIds = lectures
+        .filter((lecture) => validLectureIds.includes(lecture.id))
+        .map((lecture) => lecture.id);
+
       await this.classroomLectureRepository.save(
-        validLectureIds.map((lectureId, index) => ({
+        orderedValidLectureIds.map((lectureId, index) => ({
           classroomId: classroom.id,
           lectureId: lectureId,
           order: index,

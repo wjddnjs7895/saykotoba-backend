@@ -18,7 +18,7 @@ export class HintDto {
   meaning: string;
 }
 
-export class GetHintResponseDto {
+export class GenerateHintResponseDto {
   @IsArray()
   @IsNotEmpty()
   @ValidateNested({ each: true })

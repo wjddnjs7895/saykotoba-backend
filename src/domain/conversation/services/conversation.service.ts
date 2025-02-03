@@ -40,7 +40,6 @@ import {
   HINT_COUNT,
   SCORE_THRESHOLD,
 } from '@/common/constants/conversation.constants';
-import { GetHintResponseDto } from '../dtos/get-hint.dto';
 import {
   GetAudioFromTextRequestDto,
   GetAudioFromTextResponseDto,
@@ -51,6 +50,7 @@ import { UserService } from '../../user/services/user.service';
 import { GoogleTTSService } from '@/integrations/google/services/google-tts.service';
 import { CharacterService } from '@/domain/character/character.service';
 import { S3Service } from '@/integrations/aws/services/s3/s3.service';
+import { GenerateHintResponseDto } from '../dtos/generate-hint.dto';
 
 @Injectable()
 export class ConversationService {
@@ -220,7 +220,9 @@ export class ConversationService {
         aiRole: createConversationDto.aiRole,
         userRole: createConversationDto.userRole,
         remainingHintCount: hintCount,
-        exp: EXP_PER_CONVERSATION[createConversationDto.difficultyLevel],
+        exp:
+          createConversationDto.exp ||
+          EXP_PER_CONVERSATION[createConversationDto.difficultyLevel],
         problemId: createConversationDto.problemId,
         type: createConversationDto.type || CONVERSATION_TYPE.CUSTOM,
         thumbnailUrl: createConversationDto.thumbnailUrl,
@@ -497,7 +499,9 @@ export class ConversationService {
     }
   }
 
-  async getHintAndCount(conversationId: number): Promise<GetHintResponseDto> {
+  async generateHintAndCount(
+    conversationId: number,
+  ): Promise<GenerateHintResponseDto> {
     try {
       const language = 'en';
       const conversationInfo = await this.conversationRepository.findOne({
