@@ -6,6 +6,7 @@ import {
   GoogleErrorCodeEnum,
   LectureErrorCodeEnum,
   OpenAIErrorCodeEnum,
+  SubscriptionErrorCodeEnum,
   UnexpectedErrorCodeEnum,
   UserErrorCodeEnum,
 } from './error.code';
@@ -40,6 +41,10 @@ type UnexpectedErrorMessageType = {
 
 type GoogleErrorMessageType = {
   readonly [K in GoogleErrorCodeEnum]: string;
+};
+
+type SubscriptionErrorMessageType = {
+  readonly [K in SubscriptionErrorCodeEnum]: string;
 };
 
 type OpenAIErrorMessageType = {
@@ -127,6 +132,18 @@ export const OpenAIErrorMessage: OpenAIErrorMessageType = {
 
 export const GoogleErrorMessage: GoogleErrorMessageType = {
   [GoogleErrorCodeEnum.GoogleTTSFailed]: 'Google TTS failed',
+};
+
+export const SubscriptionErrorMessage: SubscriptionErrorMessageType = {
+  [SubscriptionErrorCodeEnum.SubscriptionNotFound]: 'Subscription not found',
+  [SubscriptionErrorCodeEnum.SubscriptionSaveFailed]:
+    'Subscription save failed',
+  [SubscriptionErrorCodeEnum.SubscriptionUpdateFailed]:
+    'Subscription update failed',
+  [SubscriptionErrorCodeEnum.SubscriptionDeleteFailed]:
+    'Subscription delete failed',
+  [SubscriptionErrorCodeEnum.UnauthorizedSubscription]:
+    'Unauthorized subscription',
 };
 
 export const UnexpectedErrorMessage: UnexpectedErrorMessageType = {

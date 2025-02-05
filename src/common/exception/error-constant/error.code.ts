@@ -42,23 +42,23 @@ export enum ConversationErrorCodeEnum {
 }
 
 export enum LectureErrorCodeEnum {
-  LectureNotFound = 'LECTURE01',
-  LectureSaveFailed = 'LECTURE02',
-  LessonNotFound = 'LECTURE03',
-  LessonSaveFailed = 'LECTURE04',
-  LessonDeleteFailed = 'LECTURE05',
-  LectureDeleteFailed = 'LECTURE06',
+  LectureNotFound = 'LECT01',
+  LectureSaveFailed = 'LECT02',
+  LessonNotFound = 'LECT03',
+  LessonSaveFailed = 'LECT04',
+  LessonDeleteFailed = 'LECT05',
+  LectureDeleteFailed = 'LECT06',
 }
 
 export enum ClassroomErrorCodeEnum {
-  ClassroomNotFound = 'CLASSROOM01',
-  ClassroomSaveFailed = 'CLASSROOM02',
-  ClassroomGenerateFailed = 'CLASSROOM03',
+  ClassroomNotFound = 'CLRM01',
+  ClassroomSaveFailed = 'CLRM02',
+  ClassroomGenerateFailed = 'CLRM03',
 }
 
 export enum CharacterErrorCodeEnum {
-  CharacterNotFound = 'CHARACTER01',
-  CharacterSaveFailed = 'CHARACTER02',
+  CharacterNotFound = 'CHRT01',
+  CharacterSaveFailed = 'CHRT02',
 }
 
 export enum UserErrorCodeEnum {
@@ -67,15 +67,23 @@ export enum UserErrorCodeEnum {
 }
 
 export enum OpenAIErrorCodeEnum {
-  NoToolResponseReceived = 'OPENAI01',
-  OpenAICreateFailed = 'OPENAI02',
-  BufferToFileFailed = 'OPENAI03',
+  NoToolResponseReceived = 'OPAI01',
+  OpenAICreateFailed = 'OPAI02',
+  BufferToFileFailed = 'OPAI03',
 }
 
 export enum GoogleErrorCodeEnum {
-  GoogleTTSFailed = 'GOOGLE01',
+  GoogleTTSFailed = 'GGLE01',
+}
+
+export enum SubscriptionErrorCodeEnum {
+  UnauthorizedSubscription = 'SUBS01',
+  SubscriptionNotFound = 'SUBS02',
+  SubscriptionSaveFailed = 'SUBS03',
+  SubscriptionUpdateFailed = 'SUBS04',
+  SubscriptionDeleteFailed = 'SUBS05',
 }
 
 export enum UnexpectedErrorCodeEnum {
-  Unexpected = 'UNEXP99',
+  Unexpected = 'UNEX99',
 }
