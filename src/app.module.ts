@@ -54,12 +54,12 @@ import { CharacterModule } from './domain/character/character.module';
         logging: configService.get('NODE_ENV') !== 'production',
         autoLoadEntities: true,
         namingStrategy: new SnakeNamingStrategy(),
-        // ssl: {
-        //   ca: fs.readFileSync('config/ssl/global-bundle.pem'),
-        // },
-        // extra: {
-        //   ssl: { rejectUnauthorized: false },
-        // },
+        ssl: {
+          ca: fs.readFileSync('config/ssl/global-bundle.pem'),
+        },
+        extra: {
+          ssl: { rejectUnauthorized: false },
+        },
       }),
       inject: [ConfigService],
     }),
