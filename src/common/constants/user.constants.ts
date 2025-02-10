@@ -1,0 +1,72 @@
+export const TIER_THRESHOLD: Record<keyof typeof TIER_MAP, number> = {
+  BEGINNER_4: 100,
+  BEGINNER_3: 250,
+  BEGINNER_2: 450,
+  BEGINNER_1: 700,
+  ELEMENTARY_4: 1100,
+  ELEMENTARY_3: 1700,
+  ELEMENTARY_2: 2500,
+  ELEMENTARY_1: 3500,
+  INTERMEDIATE_4: 4500,
+  INTERMEDIATE_3: 6000,
+  INTERMEDIATE_2: 8000,
+  INTERMEDIATE_1: 11000,
+  UPPER_INTERMEDIATE_4: 14000,
+  UPPER_INTERMEDIATE_3: 18000,
+  UPPER_INTERMEDIATE_2: 24000,
+  UPPER_INTERMEDIATE_1: 32000,
+  ADVANCED_4: 45000,
+  ADVANCED_3: 65000,
+  ADVANCED_2: 100000,
+  ADVANCED_1: 150000,
+  CHALLENGER: 900000000,
+};
+
+export enum TIER_MAP {
+  BEGINNER_4,
+  BEGINNER_3,
+  BEGINNER_2,
+  BEGINNER_1,
+  ELEMENTARY_4,
+  ELEMENTARY_3,
+  ELEMENTARY_2,
+  ELEMENTARY_1,
+  INTERMEDIATE_4,
+  INTERMEDIATE_3,
+  INTERMEDIATE_2,
+  INTERMEDIATE_1,
+  UPPER_INTERMEDIATE_4,
+  UPPER_INTERMEDIATE_3,
+  UPPER_INTERMEDIATE_2,
+  UPPER_INTERMEDIATE_1,
+  ADVANCED_4,
+  ADVANCED_3,
+  ADVANCED_2,
+  ADVANCED_1,
+  CHALLENGER,
+}
+
+export enum AuthProvider {
+  LOCAL = 'local',
+  GOOGLE = 'google',
+  APPLE = 'apple',
+}
+
+export enum SubscriptionStatus {
+  NONE = 'none',
+  TRIAL = 'trial',
+  ACTIVE = 'active',
+  GRACE_PERIOD = 'grace',
+  EXPIRED = 'expired',
+  CANCELLED = 'cancelled',
+}
+
+export enum StoreType {
+  GOOGLE_PLAY = 'google_play',
+  APP_STORE = 'app_store',
+}
+
+export enum UserRole {
+  USER = 'user',
+  ADMIN = 'admin',
+}

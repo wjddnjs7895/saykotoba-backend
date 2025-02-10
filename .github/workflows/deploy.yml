@@ -1,0 +1,148 @@
+name: CI/CD using github actions & docker
+
+on:
+  push:
+    branches:
+      - main # main 브랜치에 push될 때 실행
+  workflow_dispatch: # 수동 실행 옵션 추가
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 배포 시작 알림
+      - name: Notify deployment start
+        run: |
+          echo "배포 시작: $(date)"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      # 테스트 캐시 설정
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache yarn dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ${{ steps.yarn-cache-dir-path.outputs.dir }}
+            node_modules
+            dist
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Build application
+        run: yarn build
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      # Docker 이미지 빌드 및 푸시
+      - name: Build and push Docker image
+        run: |
+          # 이미지 태그에 타임스탬프 추가
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          DOCKER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:$TIMESTAMP
+          DOCKER_LATEST=${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:latest
+
+          # 이미지 빌드
+          docker build -t $DOCKER_IMAGE -t $DOCKER_LATEST .
+
+          # Docker Hub에 푸시
+          docker push $DOCKER_IMAGE
+          docker push $DOCKER_LATEST
+
+      - name: Deploy to EC2
+        run: |
+          ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
+            cd ~/saykotoba-backend
+            git pull origin main
+            
+            # 환경 변수 백업
+            sudo cp /config/env/.env.prod /config/env/.env.prod.backup
+            
+            # 새로운 환경 변수 적용
+            echo '${{ secrets.ENV_PROD }}' | sudo tee /config/env/.env.prod > /dev/null
+            
+            # 최신 이미지 풀
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:latest
+            
+            # Docker 이미지 정리
+            docker system prune -af
+            
+            # 컨테이너 재시작
+            docker-compose down
+            docker-compose up -d --build
+            
+            # 배포 확인
+            docker ps
+            docker logs backend
+          EOF
+
+      # 배포 상태 확인
+      - name: Health check
+        run: |
+          sleep 10  # 서비스가 완전히 시작될 때까지 대기
+          curl --fail http://${{ secrets.EC2_HOST }}:8080/health || exit 1
+
+      # 디스크 공간 확인
+      - name: Check disk space
+        run: |
+          ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "df -h"
+
+      # Docker 로그 및 상태 확인
+      - name: Check Docker status
+        if: always() # 이전 단계가 실패해도 실행
+        run: |
+          ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
+            echo "===== Docker 컨테이너 상태 ====="
+            docker ps
+            echo "===== Docker 시스템 정보 ====="
+            docker system df
+            echo "===== 최근 로그 ====="
+            docker logs --tail 50 backend
+          EOF
+
+      # 캐시 정리
+      - name: Cleanup
+        if: always()
+        run: |
+          yarn cache clean
+          docker system prune -af
+
+      # 슬랙 알림
+      - name: Notify deployment result
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

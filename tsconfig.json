@@ -10,6 +10,17 @@
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
+    "paths": {
+      "@/*": ["src/*"],
+      "@common/*": ["src/common/*"],
+      "@auth/*": ["src/domain/auth/*"],
+      "@user/*": ["src/domain/user/*"],
+      "@exception/*": ["src/common/exception/*"],
+      "@conversation/*": ["src/domain/conversation/*"],
+      "@openai/*": ["src/integrations/openai/*"],
+      "@aws/*": ["src/integrations/aws/*"],
+      "@google/*": ["src/integrations/google/*"]
+    },
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": false,
