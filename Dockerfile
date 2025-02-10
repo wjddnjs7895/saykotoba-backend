@@ -4,7 +4,8 @@ FROM node:20
 # Step 2: 작업 디렉토리 설정
 WORKDIR /app
 
-# PM2를 전역으로 설치
+# PM2 설치 및 PATH 설정
+ENV PATH /usr/local/share/.config/yarn/global/node_modules/.bin:$PATH
 RUN yarn global add pm2
 
 # Step 3: package.json과 package-lock.json 복사

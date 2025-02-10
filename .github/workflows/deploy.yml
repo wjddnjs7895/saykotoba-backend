@@ -77,6 +77,9 @@ jobs:
 
       # 서버에 배포 실행
       - name: Deploy to EC2
+        env:
+          ENV_PROD: ${{ secrets.ENV_PROD }}
+        environment: production
         run: |
           ssh -v -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'ENDSSH'
           # 디버깅을 위한 디렉토리 확인
@@ -85,8 +88,9 @@ jobs:
 
           cd /home/$USER/saykotoba-backend
 
-          # 환경 변수 파일 생성 (echo 한 번에 처리)
-          echo "${{ secrets.ENV_PROD }}" > config/env/.env.prod
+          # 환경 변수 파일 생성
+          mkdir -p config/env
+          printf '%s' "$ENV_PROD" > config/env/.env.prod
 
           # docker-compose 실행 전 환경 변수 확인
           echo "Checking environment variables..."
