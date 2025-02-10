@@ -79,7 +79,6 @@ jobs:
       - name: Deploy to EC2
         env:
           ENV_PROD: ${{ secrets.ENV_PROD }}
-        environment: production
         run: |
           ssh -v -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'ENDSSH'
           # 디버깅을 위한 디렉토리 확인
