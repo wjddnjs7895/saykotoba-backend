@@ -81,12 +81,12 @@ jobs:
           ssh -v -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'ENDSSH'
           # 디버깅을 위한 디렉토리 확인
           echo "Checking directories..."
-          ls -la ~/saykotoba-backend/config/
-          ls -la ~/saykotoba-backend/config/env/
-          ls -la ~/saykotoba-backend/config/ssl/
+          ls -la /home/$USER/saykotoba-backend/config/
+          ls -la /home/$USER/saykotoba-backend/config/env/
+          ls -la /home/$USER/saykotoba-backend/config/ssl/
 
-          # 이후 원래 코드 실행
-          if [ ! -d "~/saykotoba-backend/config/env" ] || [ ! -d "~/saykotoba-backend/config/ssl" ]; then
+          # 절대 경로로 디렉토리 체크
+          if [ ! -d "/home/$USER/saykotoba-backend/config/env" ] || [ ! -d "/home/$USER/saykotoba-backend/config/ssl" ]; then
             echo "Required directories not found!"
             exit 1
           fi
