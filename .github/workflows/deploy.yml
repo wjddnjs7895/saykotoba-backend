@@ -10,7 +10,6 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: production
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -69,25 +68,10 @@ jobs:
             ps aux --sort=-%mem | head -5
           EOF
       - name: Deploy to EC2
-        env:
-          ENV_PROD: ${{ secrets.ENV_PROD }}
         run: |
           ssh -v -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'ENDSSH'
 
-          # 원격 서버에서 실행되는 스크립트입니다.
-
-          echo "Checking directories..."
-
-          ls -la /home/$USER/saykotoba-backend/config/
-
           cd /home/$USER/saykotoba-backend
-
-          # 환경 변수 파일 생성
-          mkdir -p config/env
-          echo "${ENV_PROD}" > config/env/.env.prod
-
-          echo "Checking environment variables..."
-          cat config/env/.env.prod
 
           # 최신 이미지 풀 및 컨테이너 재시작
           docker pull ${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:latest
