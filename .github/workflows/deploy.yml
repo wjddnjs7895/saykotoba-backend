@@ -82,35 +82,37 @@ jobs:
           # 디버깅을 위한 디렉토리 확인
           echo "Checking directories..."
           ls -la /home/$USER/saykotoba-backend/config/
-          ls -la /home/$USER/saykotoba-backend/config/env/
-          ls -la /home/$USER/saykotoba-backend/config/ssl/
-
-          # 절대 경로로 디렉토리 체크
-          if [ ! -d "/home/$USER/saykotoba-backend/config/env" ] || [ ! -d "/home/$USER/saykotoba-backend/config/ssl" ]; then
-            echo "Required directories not found!"
-            exit 1
-          fi
 
           cd /home/$USER/saykotoba-backend
 
-          # docker-compose.yml 존재 확인
-          if [ ! -f "docker-compose.yml" ]; then
-            echo "docker-compose.yml not found!"
-            exit 1
-          fi
-
-          # 환경 변수 업데이트
+          # 환경 변수 파일 생성 (echo 한 번에 처리)
           echo "${{ secrets.ENV_PROD }}" > config/env/.env.prod
+
+          # docker-compose 실행 전 환경 변수 확인
+          echo "Checking environment variables..."
+          cat config/env/.env.prod
 
           # 최신 이미지 풀 및 컨테이너 재시작
           docker pull ${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:latest
-          docker-compose down
+
+          # 기존 컨테이너 정리
+          docker-compose down --remove-orphans
+
+          # 컨테이너 시작 전 로그
+          echo "Starting container..."
           docker-compose up -d
 
-          # 배포 상태 확인
-          echo "Checking deployment status..."
+          # 컨테이너 로그 확인
+          echo "Container logs:"
+          docker logs backend --tail 50
+
+          # 컨테이너 상태 확인
+          echo "Container status:"
           docker ps
-          sleep 10
+
+          # 헬스체크 전 대기 시간 증가
+          echo "Waiting for application to start..."
+          sleep 30
 
           # 헬스체크
           if ! curl -f http://localhost:8080/health; then
@@ -118,9 +120,6 @@ jobs:
             docker logs backend
             exit 1
           fi
-
-          # 로그 확인
-          docker logs backend || true
           ENDSSH
 
       # 원격 서버의 헬스체크

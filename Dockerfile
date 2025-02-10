@@ -4,6 +4,9 @@ FROM node:20
 # Step 2: 작업 디렉토리 설정
 WORKDIR /app
 
+# PM2를 전역으로 설치
+RUN yarn global add pm2
+
 # Step 3: package.json과 package-lock.json 복사
 COPY package*.json ./
 
@@ -14,7 +17,7 @@ RUN yarn install
 COPY . .
 
 # Step 6: 포트 설정
-EXPOSE 3000
+EXPOSE 8080
 
 # Step 7: 애플리케이션 실행
 CMD ["yarn", "pm2:start"]
