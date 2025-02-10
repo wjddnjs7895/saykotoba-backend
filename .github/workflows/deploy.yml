@@ -1,10 +1,10 @@
-name: CI/CD using github actions & docker
+name: CI/CD using GitHub Actions & Docker
 
 on:
   push:
     branches:
-      - main # main 브랜치에 push될 때 실행
-  workflow_dispatch: # 수동 실행 옵션 추가
+      - main
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -18,62 +18,43 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # SSH 키 설정을 가장 먼저 수행
+      # SSH 키 설정
       - name: Set up SSH Key
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          if ! ssh-keyscan -H ${{ secrets.EC2_HOST }} 2>/dev/null >> ~/.ssh/known_hosts; then
-            echo "Failed to scan SSH host keys"
-            exit 1
-          fi
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} 2>/dev/null >> ~/.ssh/known_hosts
           ls -la ~/.ssh/id_rsa || echo "SSH key file not found"
-          cat ~/.ssh/id_rsa | wc -l || echo "SSH key might be empty"
 
       - name: Test SSH Connection
-        run: |
-          ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "echo 'SSH connection successful'"
+        run: ssh -q -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "echo 'SSH connection successful'"
 
       # 배포 시작 알림
       - name: Notify deployment start
-        run: |
-          echo "배포 시작: $(date)"
+        run: echo "🚀 배포 시작: $(date)"
 
+      # Node.js & 캐시 설정
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
           cache: 'yarn'
 
-      # 테스트 캐시 설정
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
-
-      - name: Cache yarn dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ${{ steps.yarn-cache-dir-path.outputs.dir }}
-            node_modules
-            dist
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-
       - name: Install dependencies
-        run: yarn install
+        run: yarn install --frozen-lockfile
 
       - name: Build application
         run: yarn build
 
+      # Docker Hub 로그인
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # Docker 이미지 빌드 및 푸시
       - name: Build and push Docker image
         run: |
           TIMESTAMP=$(date +%Y%m%d_%H%M%S)
@@ -84,110 +65,85 @@ jobs:
           docker push $DOCKER_IMAGE
           docker push $DOCKER_LATEST
 
+      # EC2 상태 점검
       - name: Check EC2 Status
-        run: |
-          ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
-            echo "=== CPU Usage ==="
-            top -bn1 | grep "Cpu(s)" || true
-            echo "=== Memory Usage ==="
-            free -m || true
-            echo "=== Process List ==="
-            ps aux | sort -rn -k 3 | head -5 || true
-          EOF
+        run: ssh -q -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
+          echo "=== CPU Usage ==="
+          top -bn1 | grep "Cpu(s)"
+          echo "=== Memory Usage ==="
+          free -m
+          echo "=== Process List ==="
+          ps aux --sort=-%mem | head -5
+        EOF
 
-      - name: Pre-deployment Resource Check
-        run: |
-          ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
-            CPU_USAGE=\$(top -bn1 | grep "Cpu(s)" | awk '{print \$2}' | cut -d. -f1)
-            MEM_USAGE=\$(free | grep Mem | awk '{print \$3/\$2 * 100.0}' | cut -d. -f1)
-            
-            if [ "\$CPU_USAGE" -gt 80 ] || [ "\$MEM_USAGE" -gt 80 ]; then
-              echo "System resources are too high: CPU \${CPU_USAGE}%, Memory \${MEM_USAGE}%"
-              echo "Attempting cleanup..."
-              
-              # Docker 정리
-              docker system prune -af
-              
-              # 시스템 캐시 정리
-              sudo sync && sudo sysctl -w vm.drop_caches=3
-              
-              # 재확인
-              CPU_USAGE=\$(top -bn1 | grep "Cpu(s)" | awk '{print \$2}' | cut -d. -f1)
-              if [ "\$CPU_USAGE" -gt 80 ]; then
-                echo "System still under heavy load after cleanup"
-                exit 1
-              fi
-            fi
-          EOF
-
+      # 서버에 배포 실행
       - name: Deploy to EC2
-        run: |
-          ssh -v -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'ENDSSH'
-            # 프로젝트 디렉토리와 config 구조 확인
-            if [ ! -d "~/saykotoba-backend/config/env" ] || [ ! -d "~/saykotoba-backend/config/ssl" ]; then
-              echo "Required directories not found!"
-              exit 1
-            fi
+        run: ssh -q -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
+          set -e
 
-            cd ~/saykotoba-backend
+          echo "🔄 배포 중..."
+          cd ~/saykotoba-backend || { echo "디렉토리 없음"; exit 1; }
 
-            # docker-compose.yml 존재 확인
-            if [ ! -f "docker-compose.yml" ]; then
-              echo "docker-compose.yml not found!"
-              exit 1
-            fi
-            
-            # 환경 변수 업데이트
-            echo "${{ secrets.ENV_PROD }}" > config/env/.env.prod
-            
-            # 최신 이미지 풀 및 컨테이너 재시작
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:latest
-            docker-compose down
-            docker-compose up -d
-            
-            # 배포 상태 확인
-            echo "Checking deployment status..."
-            docker ps
-            sleep 10
-            
-            # 헬스체크
-            if ! curl -f http://localhost:8080/health; then
-              echo "Health check failed!"
-              docker logs backend
-              exit 1
-            fi
-            
-            # 로그 확인
-            docker logs backend || true
-ENDSSH
+          # 환경 변수 적용
+          echo "${{ secrets.ENV_PROD }}" > config/env/.env.prod
 
+          # 최신 Docker 이미지 가져오기 및 재시작
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:latest
+          docker-compose down
+          docker-compose up -d
+
+          echo "🩺 헬스체크 실행..."
+          for i in {1..10}; do
+            sleep 5
+            if curl -f http://localhost:8080/health; then
+              echo "✅ 헬스체크 통과!"
+              exit 0
+            fi
+            echo "⏳ 재시도 중..."
+          done
+
+          echo "🚨 헬스체크 실패! 서버 로그 확인 필요"
+          docker logs $(docker ps --format '{{.Names}}' | grep backend || echo "backend")
+          exit 1
+        EOF
+
+      # 원격 서버의 헬스체크
       - name: Health check
         run: |
-          sleep 10
-          curl --fail http://${{ secrets.EC2_HOST }}:8080/health || exit 1
+          sleep 5
+          for i in {1..5}; do
+            if curl --fail http://${{ secrets.EC2_HOST }}:8080/health; then
+              echo "✅ 서버 정상 동작"
+              exit 0
+            fi
+            echo "⏳ 헬스체크 재시도 ($i/5)..."
+            sleep 5
+          done
+          echo "🚨 최종 헬스체크 실패!"
+          exit 1
 
+      # 디스크 용량 점검
       - name: Check disk space
-        run: |
-          ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "df -h"
+        run: ssh -q ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "df -h"
 
+      # Docker 상태 점검
       - name: Check Docker status
         if: always()
-        run: |
-          ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
-            echo "===== Docker 컨테이너 상태 ====="
-            docker ps
-            echo "===== Docker 시스템 정보 ====="
-            docker system df
-            echo "===== 최근 로그 ====="
-            docker logs --tail 50 backend
-          EOF
+        run: ssh -q ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
+          echo "===== Docker 컨테이너 상태 ====="
+          docker ps
+          echo "===== Docker 시스템 정보 ====="
+          docker system df
+        EOF
 
+      # 불필요한 캐시 정리
       - name: Cleanup
         if: always()
         run: |
           yarn cache clean
-          docker system prune -af
+          docker system prune -af || true
 
+      # 배포 결과 슬랙 알림
       - name: Notify deployment result
         if: always()
         uses: 8398a7/action-slack@v3
