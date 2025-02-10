@@ -87,46 +87,36 @@ jobs:
 
       - name: Deploy to EC2
         run: |
-          # SSH 연결 유지를 위한 옵션 추가
-          ssh -o "ServerAliveInterval=60" -o "ServerAliveCountMax=10" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+          ssh -o "ServerAliveInterval=60" -o "ServerAliveCountMax=10" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
             cd ~/saykotoba-backend
             
-            # git pull 전에 변경사항 제거 (충돌 방지)
             git reset --hard
             git pull origin main
             
-            # docker-compose.yml 파일 존재 확인
             if [ ! -f "docker-compose.yml" ]; then
               echo "docker-compose.yml not found!"
               exit 1
             fi
             
-            # 환경 변수 백업
             sudo cp /config/env/.env.prod /config/env/.env.prod.backup || true
             
-            # 새로운 환경 변수 적용
-            echo '${{ secrets.ENV_PROD }}' | sudo tee /config/env/.env.prod > /dev/null
+            echo "${{ secrets.ENV_PROD }}" | sudo tee /config/env/.env.prod > /dev/null
             
-            # 최신 이미지 풀
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:latest
             
-            # Docker 이미지 정리
             docker system prune -af
             
-            # 기존 컨테이너 확인 및 중지
             if [ "\$(docker ps -q -f name=backend)" ]; then
               docker-compose down
             fi
             
-            # 컨테이너 시작
             docker-compose up -d
             
-            # 배포 확인
             echo "Checking deployment status..."
             docker ps
-            sleep 5  # 컨테이너 시작 대기
+            sleep 5
             docker logs backend || true
-EOF
+          EOF
 
       # 배포 상태 확인
       - name: Health check
