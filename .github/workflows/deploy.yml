@@ -122,7 +122,7 @@ jobs:
 
       - name: Deploy to EC2
         run: |
-          ssh -v -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
+          ssh -v -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'ENDSSH'
             # 프로젝트 디렉토리와 config 구조 생성
             mkdir -p ~/saykotoba-backend/config/env
             mkdir -p ~/saykotoba-backend/config/ssl
@@ -130,7 +130,7 @@ jobs:
 
             # docker-compose.yml이 없다면 생성
             if [ ! -f "docker-compose.yml" ]; then
-              cat > docker-compose.yml << 'COMPOSE'
+              cat > docker-compose.yml << 'ENDCOMPOSE'
               version: '3.8'
               
               services:
@@ -149,7 +149,7 @@ jobs:
                     interval: 30s
                     timeout: 10s
                     retries: 3
-              COMPOSE
+              ENDCOMPOSE
             fi
             
             # 환경 변수 업데이트
@@ -174,7 +174,7 @@ jobs:
             
             # 로그 확인
             docker logs backend || true
-          EOF
+          ENDSSH
 
       - name: Health check
         run: |
