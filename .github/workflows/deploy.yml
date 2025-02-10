@@ -18,6 +18,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # SSH 키 설정을 가장 먼저 수행
+      - name: Set up SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          if ! ssh-keyscan -H ${{ secrets.EC2_HOST }} 2>/dev/null >> ~/.ssh/known_hosts; then
+            echo "Failed to scan SSH host keys"
+            exit 1
+          fi
+          ls -la ~/.ssh/id_rsa || echo "SSH key file not found"
+          cat ~/.ssh/id_rsa | wc -l || echo "SSH key might be empty"
+
+      - name: Test SSH Connection
+        run: |
+          ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "echo 'SSH connection successful'"
+
       # 배포 시작 알림
       - name: Notify deployment start
         run: |
@@ -102,18 +119,6 @@ jobs:
               fi
             fi
           EOF
-
-      - name: Set up SSH Key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          if ! ssh-keyscan -H ${{ secrets.EC2_HOST }} 2>/dev/null >> ~/.ssh/known_hosts; then
-            echo "Failed to scan SSH host keys"
-            exit 1
-          fi
-          ls -la ~/.ssh/id_rsa || echo "SSH key file not found"
-          cat ~/.ssh/id_rsa | wc -l || echo "SSH key might be empty"
 
       - name: Deploy to EC2
         run: |
