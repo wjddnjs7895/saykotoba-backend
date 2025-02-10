@@ -26,20 +26,6 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME}
 
-  nginx:
-    image: nginx:latest
-    container_name: nginx
-    restart: always
-    ports:
-      - '80:80'
-      - '443:443' # HTTPS를 위한 포트 추가
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./certbot/conf:/etc/letsencrypt:ro # SSL 인증서 경로
-      - ./certbot/www:/var/www/certbot:ro # SSL 인증 챌린지용
-    depends_on:
-      - backend
-
 networks:
   saykotoba-network:
     driver: bridge

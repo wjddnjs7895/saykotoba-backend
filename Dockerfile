@@ -1,23 +1,20 @@
-# docker의 이미지를 정의, 해당 프로젝트에서 node 16 버전을 사용
-FROM node:16
+# Step 1: 베이스 이미지 선택
+FROM node:20
 
-# /app 이라는 폴더에서 프로젝트를 실행할 예정이므로 mkdir 명령어로 폴더를 생성
-RUN mkdir -p /app
-
-# /app 이라는 폴더에서 프로젝트를 실행
+# Step 2: 작업 디렉토리 설정
 WORKDIR /app
 
-# Dockerfile이 위치한 폴더의 모든 내용을 /app으로 복사
+# Step 3: package.json과 package-lock.json 복사
+COPY package*.json ./
+
+# Step 4: 패키지 설치
+RUN yarn install
+
+# Step 5: 애플리케이션 코드 복사
 COPY . .
 
-# 프로젝트에서 사용한 패키지를 package.json 을 통하여 모두 설치
-RUN npm install
+# Step 6: 포트 설정
+EXPOSE 3000
 
-# 프로젝트를 빌드
-RUN npm run build
-
-# 프로젝트에서 5000번 포트를 사용한다는 의미
-EXPOSE 5000
-
-# 빌드 이후에 dist라는 폴더에 main.js가 생성되므로 해당 파일을 실행
-CMD [ "node", "dist/main.js" ]
+# Step 7: 애플리케이션 실행
+CMD ["yarn", "pm2:start"]
