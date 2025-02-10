@@ -123,33 +123,18 @@ jobs:
       - name: Deploy to EC2
         run: |
           ssh -v -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'ENDSSH'
-            # 프로젝트 디렉토리와 config 구조 생성
-            mkdir -p ~/saykotoba-backend/config/env
-            mkdir -p ~/saykotoba-backend/config/ssl
+            # 프로젝트 디렉토리와 config 구조 확인
+            if [ ! -d "~/saykotoba-backend/config/env" ] || [ ! -d "~/saykotoba-backend/config/ssl" ]; then
+              echo "Required directories not found!"
+              exit 1
+            fi
+
             cd ~/saykotoba-backend
 
-            # docker-compose.yml이 없다면 생성
+            # docker-compose.yml 존재 확인
             if [ ! -f "docker-compose.yml" ]; then
-              cat > docker-compose.yml << 'ENDCOMPOSE'
-              version: '3.8'
-              
-              services:
-                backend:
-                  image: ${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:latest
-                  container_name: backend
-                  restart: always
-                  ports:
-                    - "8080:8080"
-                  volumes:
-                    - ./config:/app/config  # NestJS config 구조 유지
-                  environment:
-                    - NODE_ENV=production
-                  healthcheck:
-                    test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-                    interval: 30s
-                    timeout: 10s
-                    retries: 3
-              ENDCOMPOSE
+              echo "docker-compose.yml not found!"
+              exit 1
             fi
             
             # 환경 변수 업데이트
@@ -163,7 +148,7 @@ jobs:
             # 배포 상태 확인
             echo "Checking deployment status..."
             docker ps
-            sleep 10  # 컨테이너 시작 대기 시간 증가
+            sleep 10
             
             # 헬스체크
             if ! curl -f http://localhost:8080/health; then
@@ -174,7 +159,7 @@ jobs:
             
             # 로그 확인
             docker logs backend || true
-          ENDSSH
+ENDSSH
 
       - name: Health check
         run: |
