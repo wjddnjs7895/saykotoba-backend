@@ -1,4 +1,20 @@
+# 버전 관리 관련
 .git
-Dockerfile
+.gitignore
+
+# 의존성 폴더 (컨테이너 내부에서 설치)
 node_modules
+
 config
+
+# 로그 파일 및 디버그 정보
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# 캐시 폴더 (선택 사항)
+.cache
+
+# 빌드 결과물 (빌드 과정에서 생성되거나 별도로 관리하는 경우)
+# 예시: 만약 컨테이너 내부에서 빌드를 진행한다면, 로컬 빌드 산출물은 제외
+dist
