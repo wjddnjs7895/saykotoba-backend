@@ -1,4 +1,4 @@
-name: CI/CD using GitHub Actions & Docker
+name: CI/CD using github actions & docker
 
 on:
   push:
@@ -22,17 +22,16 @@ jobs:
       - name: Set up SSH Key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" | tr -d '\r' | tee ~/.ssh/id_rsa > /dev/null
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} 2>/dev/null >> ~/.ssh/known_hosts
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
           ls -la ~/.ssh/id_rsa || echo "SSH key file not found"
-
       - name: Test SSH Connection
         run: ssh -q -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "echo 'SSH connection successful'"
 
       # 배포 시작 알림
       - name: Notify deployment start
-        run: echo "🚀 배포 시작: $(date)"
+        run: echo "🚀 배포 시작 - $(date)"
 
       # Node.js & 캐시 설정
       - name: Set up Node.js
@@ -42,7 +41,7 @@ jobs:
           cache: 'yarn'
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install
 
       - name: Build application
         run: yarn build
@@ -60,67 +59,69 @@ jobs:
           TIMESTAMP=$(date +%Y%m%d_%H%M%S)
           DOCKER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:$TIMESTAMP
           DOCKER_LATEST=${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:latest
-
           docker build -t $DOCKER_IMAGE -t $DOCKER_LATEST .
           docker push $DOCKER_IMAGE
           docker push $DOCKER_LATEST
 
       # EC2 상태 점검
       - name: Check EC2 Status
-        run: ssh -q -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
-          echo "=== CPU Usage ==="
-          top -bn1 | grep "Cpu(s)"
-          echo "=== Memory Usage ==="
-          free -m
-          echo "=== Process List ==="
-          ps aux --sort=-%mem | head -5
-        EOF
+        run: |
+          ssh -q -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            echo "=== CPU Usage ==="
+            top -bn1 | grep "Cpu(s)"
+            echo "=== Memory Usage ==="
+            free -m
+            echo "=== Process List ==="
+            ps aux --sort=-%mem | head -5
+          EOF
 
       # 서버에 배포 실행
       - name: Deploy to EC2
-        run: ssh -q -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
-          set -e
+        run: |
+          ssh -v -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'ENDSSH'
+          # 프로젝트 디렉토리와 config 구조 확인
+          if [ ! -d "~/saykotoba-backend/config/env" ] || [ ! -d "~/saykotoba-backend/config/ssl" ]; then
+            echo "Required directories not found!"
+            exit 1
+          fi
 
-          echo "🔄 배포 중..."
-          cd ~/saykotoba-backend || { echo "디렉토리 없음"; exit 1; }
+          cd ~/saykotoba-backend
 
-          # 환경 변수 적용
+          # docker-compose.yml 존재 확인
+          if [ ! -f "docker-compose.yml" ]; then
+            echo "docker-compose.yml not found!"
+            exit 1
+          fi
+
+          # 환경 변수 업데이트
           echo "${{ secrets.ENV_PROD }}" > config/env/.env.prod
 
-          # 최신 Docker 이미지 가져오기 및 재시작
+          # 최신 이미지 풀 및 컨테이너 재시작
           docker pull ${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:latest
           docker-compose down
           docker-compose up -d
 
-          echo "🩺 헬스체크 실행..."
-          for i in {1..10}; do
-            sleep 5
-            if curl -f http://localhost:8080/health; then
-              echo "✅ 헬스체크 통과!"
-              exit 0
-            fi
-            echo "⏳ 재시도 중..."
-          done
+          # 배포 상태 확인
+          echo "Checking deployment status..."
+          docker ps
+          sleep 10
 
-          echo "🚨 헬스체크 실패! 서버 로그 확인 필요"
-          docker logs $(docker ps --format '{{.Names}}' | grep backend || echo "backend")
-          exit 1
-        EOF
+          # 헬스체크
+          if ! curl -f http://localhost:8080/health; then
+            echo "Health check failed!"
+            docker logs backend
+            exit 1
+          fi
+
+          # 로그 확인
+          docker logs backend || true
+          ENDSSH
 
       # 원격 서버의 헬스체크
       - name: Health check
         run: |
-          sleep 5
-          for i in {1..5}; do
-            if curl --fail http://${{ secrets.EC2_HOST }}:8080/health; then
-              echo "✅ 서버 정상 동작"
-              exit 0
-            fi
-            echo "⏳ 헬스체크 재시도 ($i/5)..."
-            sleep 5
-          done
-          echo "🚨 최종 헬스체크 실패!"
-          exit 1
+          sleep 10
+          curl --fail http://${{ secrets.EC2_HOST }}:8080/health || exit 1
 
       # 디스크 용량 점검
       - name: Check disk space
@@ -129,12 +130,13 @@ jobs:
       # Docker 상태 점검
       - name: Check Docker status
         if: always()
-        run: ssh -q ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
-          echo "===== Docker 컨테이너 상태 ====="
-          docker ps
-          echo "===== Docker 시스템 정보 ====="
-          docker system df
-        EOF
+        run: |
+          ssh -q ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            echo "===== Docker 컨테이너 상태 ====="
+            docker ps
+            echo "===== Docker 시스템 정보 ====="
+            docker system df
+          EOF
 
       # 불필요한 캐시 정리
       - name: Cleanup
