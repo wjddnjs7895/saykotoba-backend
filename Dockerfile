@@ -17,6 +17,8 @@ RUN yarn install
 # Step 6: 애플리케이션 코드 복사
 COPY . .
 
+RUN yarn build
+
 # Step 7: 포트 노출
 EXPOSE 8080
 
