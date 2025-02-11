@@ -2,14 +2,14 @@ version: '3.8'
 
 services:
   backend:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: saykotoba-backend:latest
+    image: ${DOCKERHUB_USERNAME}/saykotoba-backend:latest
     container_name: backend
-    restart: always
     ports:
       - '8080:8080'
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+    restart: always
     volumes:
       - /home/${USER}/saykotoba-backend/config/env/.env.prod:/app/config/env/.env.prod:ro
     env_file:
