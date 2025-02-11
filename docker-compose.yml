@@ -10,21 +10,12 @@ services:
     restart: always
     ports:
       - '8080:8080'
+    volumes:
+      - /home/${USER}/saykotoba-backend/config/env/.env.prod:/app/config/env/.env.prod:ro
     env_file:
-      - ./config/env/.env.prod
-    environment:
-      - NODE_ENV=production
-      # AWS 관련 설정
-      - AWS_REGION=${AWS_REGION}
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
-      # RDS PostgreSQL 설정
-      - DB_HOST=${DB_HOST}
-      - DB_PORT=${DB_PORT}
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_NAME=${DB_NAME}
+      - /home/${USER}/saykotoba-backend/config/env/.env.prod
+    networks:
+      - saykotoba-network
 
 networks:
   saykotoba-network:
