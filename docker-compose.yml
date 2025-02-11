@@ -11,7 +11,7 @@ services:
       - PORT=8080
     restart: always
     volumes:
-      - /home/${USER}/saykotoba-backend/config/env/.env.prod:/app/config/env/.env.prod:ro
+      - /home/${USER}/saykotoba-backend/config:/app/config:ro
     env_file:
       - /home/${USER}/saykotoba-backend/config/env/.env.prod
     networks:

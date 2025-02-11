@@ -62,12 +62,6 @@ jobs:
             echo "Container status:"
             docker ps
             echo "Waiting for application to start..."
-            sleep 30
-            if ! curl -f http://localhost:8080/health; then
-              echo "Health check failed!"
-              docker logs backend
-              exit 1
-            fi
           ENDSSH
       - name: Health check
         run: |
