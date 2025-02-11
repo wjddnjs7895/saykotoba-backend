@@ -8,7 +8,7 @@ module.exports = {
       watch: false, // 코드 변경 시 자동 재시작 (Docker 환경에서는 false 추천)
       env: {
         NODE_ENV: 'production',
-        PORT: 3000,
+        PORT: 8080,
       },
     },
   ],
