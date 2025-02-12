@@ -34,7 +34,7 @@ jobs:
           TIMESTAMP=$(date +%Y%m%d_%H%M%S)
           DOCKER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:$TIMESTAMP
           DOCKER_LATEST=${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:latest
-          docker build -t $DOCKER_IMAGE -t $DOCKER_LATEST .
+          docker build --no-cache -t $DOCKER_IMAGE -t $DOCKER_LATEST .
           docker push $DOCKER_IMAGE
           docker push $DOCKER_LATEST
       - name: Check EC2 Status
