@@ -15,6 +15,7 @@ import { GoogleModule } from './integrations/google/google.module';
 import * as fs from 'fs';
 import { LectureModule } from './domain/lecture/lecture.module';
 import { CharacterModule } from './domain/character/character.module';
+import { SystemModule } from './domain/system/system.module';
 
 @Module({
   imports: [
@@ -91,6 +92,7 @@ import { CharacterModule } from './domain/character/character.module';
     AwsModule,
     GoogleModule,
     CharacterModule,
+    SystemModule,
   ],
   controllers: [],
   providers: [

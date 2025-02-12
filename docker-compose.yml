@@ -43,6 +43,3 @@ services:
 networks:
   saykotoba-network:
     driver: bridge
-
-volumes:
-  db-data:

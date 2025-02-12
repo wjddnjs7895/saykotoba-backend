@@ -23,7 +23,8 @@ async function bootstrap() {
     .addTag('API')
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, documentFactory);
+  SwaggerModule.setup('swagger', app, documentFactory);
+  app.setGlobalPrefix('api');
   await app.listen(8080);
 }
 bootstrap();
