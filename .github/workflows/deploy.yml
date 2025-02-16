@@ -75,39 +75,39 @@ jobs:
 
           if [[ "$BRANCH_NAME" == "main" ]]; then
             # 프로덕션 배포
-            ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOFPROD'
-            cd /home/$USER/saykotoba-backend
+            ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} '
+              cd /home/$USER/saykotoba-backend
 
-            # 현재 실행 중인 컨테이너 확인
-            IS_GREEN=$(docker ps | grep "api-green" | grep "Up")
+              # 현재 실행 중인 컨테이너 확인
+              IS_GREEN=$(docker ps | grep "api-green" | grep "Up")
 
-            if [ -z "$IS_GREEN" ]; then
-              echo "=== BLUE -> GREEN 전환 ==="
-              # Green 배포
-              echo "1. Green 이미지 업데이트"
-              docker pull ${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:latest
-              echo "2. Green 컨테이너 실행"
-              docker-compose up -d api-green
-            else
-              echo "=== GREEN -> BLUE 전환 ==="
-              # Blue 배포
-              echo "1. Blue 이미지 업데이트"
-              docker pull ${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:latest
-              echo "2. Blue 컨테이너 실행"
-              docker-compose up -d api-blue
-            fi
-            EOFPROD
+              if [ -z "$IS_GREEN" ]; then
+                echo "=== BLUE -> GREEN 전환 ==="
+                # Green 배포
+                echo "1. Green 이미지 업데이트"
+                docker pull '${{ secrets.DOCKERHUB_USERNAME }}'/saykotoba-backend:latest
+                echo "2. Green 컨테이너 실행"
+                docker-compose up -d api-green
+              else
+                echo "=== GREEN -> BLUE 전환 ==="
+                # Blue 배포
+                echo "1. Blue 이미지 업데이트"
+                docker pull '${{ secrets.DOCKERHUB_USERNAME }}'/saykotoba-backend:latest
+                echo "2. Blue 컨테이너 실행"
+                docker-compose up -d api-blue
+              fi
+            '
           else
             # 개발 서버 배포
-            ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOFDEV'
-            cd /home/$USER/saykotoba-backend
-            echo "=== DEV 서버 배포 ==="
-            echo "1. 개발 서버 이미지 업데이트"
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:dev
-            echo "2. 개발 서버 재시작"
-            docker-compose stop api-dev
-            docker-compose up -d api-dev
-            EOFDEV
+            ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} '
+              cd /home/$USER/saykotoba-backend
+              echo "=== DEV 서버 배포 ==="
+              echo "1. 개발 서버 이미지 업데이트"
+              docker pull '${{ secrets.DOCKERHUB_USERNAME }}'/saykotoba-backend:dev
+              echo "2. 개발 서버 재시작"
+              docker-compose stop api-dev
+              docker-compose up -d api-dev
+            '
           fi
       - name: Check deployment status
         if: always()
