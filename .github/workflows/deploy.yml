@@ -112,13 +112,16 @@ jobs:
         if: always()
         run: |
           BRANCH_NAME=${GITHUB_REF#refs/heads/}
-          if [[ "$BRANCH_NAME" == "main" ]]; then
-            echo "프로덕션 서버 상태 확인"
-            docker ps | grep "api-"
-          else
-            echo "개발 서버 상태 확인"
-            docker ps | grep "api-dev"
-          fi
+          echo "EC2 서버의 컨테이너 상태 확인"
+          ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} '
+            if [[ "$BRANCH_NAME" == "main" ]]; then
+              echo "프로덕션 서버 상태 확인"
+              docker ps | grep "api-"
+            else
+              echo "개발 서버 상태 확인"
+              docker ps | grep "api-dev"
+            fi
+          '
       - name: Check Docker status
         if: always()
         run: |
