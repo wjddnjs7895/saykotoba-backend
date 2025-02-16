@@ -75,7 +75,7 @@ jobs:
           if [[ "$BRANCH_NAME" == "main" ]]; then
             ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} '
               export DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
-              cd /home/\$USER/saykotoba-backend
+              cd /home/${{ secrets.EC2_USER }}/saykotoba-backend
               # 현재 실행 중인 컨테이너 확인
               IS_GREEN=$(docker ps | grep "api-green" | grep "Up")
 
@@ -99,7 +99,7 @@ jobs:
             # 개발 서버 배포
             ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} '
               export DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
-              cd /home/\$USER/saykotoba-backend
+              cd /home/${{ secrets.EC2_USER }}/saykotoba-backend
               echo "=== DEV 서버 배포 ==="
               echo "1. 개발 서버 이미지 업데이트"
               docker pull '${{ secrets.DOCKERHUB_USERNAME }}'/saykotoba-backend:dev
