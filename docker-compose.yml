@@ -1,9 +1,7 @@
 services:
-  backend:
+  api-blue:
     image: ${DOCKERHUB_USERNAME}/saykotoba-backend:latest
-    container_name: backend
-    ports:
-      - '8080:8080'
+    container_name: api-blue
     environment:
       - NODE_ENV=production
       - PORT=8080
@@ -15,6 +13,33 @@ services:
     networks:
       - saykotoba-network
 
+  api-green:
+    image: ${DOCKERHUB_USERNAME}/saykotoba-backend:latest
+    container_name: api-green
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+    restart: always
+    volumes:
+      - /home/${USER}/saykotoba-backend/config:/app/config:ro
+    env_file:
+      - /home/${USER}/saykotoba-backend/config/env/.env.prod
+    networks:
+      - saykotoba-network
+
+  api-dev:
+    image: ${DOCKERHUB_USERNAME}/saykotoba-backend:latest
+    container_name: api-dev
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+    restart: always
+    volumes:
+      - /home/${USER}/saykotoba-backend/config:/app/config:ro
+    env_file:
+      - /home/${USER}/saykotoba-backend/config/env/.env.prod
+    networks:
+      - saykotoba-network
   nginx:
     image: nginx:latest
     container_name: nginx
