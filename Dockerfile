@@ -1,34 +1,39 @@
-# Step 1: 베이스 이미지 선택
-FROM node:20
-
-# Step 2: 작업 디렉토리 설정
+# ------------------------
+# 빌드 스테이지 (builder)
+# ------------------------
+FROM node:20 AS builder
 WORKDIR /app
-
-# Step 3: Yarn 전역 설치 경로 환경 변수 설정 및 PM2 전역 설치
+  
+COPY package.json yarn.lock ./
+RUN yarn install
+  
+COPY . .
+RUN yarn build  # dist 폴더 생성
+  
+# ------------------------
+# 실행 스테이지 (production)
+# ------------------------
+FROM node:20
+WORKDIR /app
+  
+# pm2 글로벌 설치
 ENV PATH /usr/local/share/.config/yarn/global/node_modules/.bin:$PATH
 RUN yarn global add pm2
-
-# Step 4: package.json 및 yarn.lock 파일 복사
-COPY package.json yarn.lock* ./
-
-# Step 5: 의존성 설치
-RUN yarn install
-
-# Step 6: 애플리케이션 코드 복사
-COPY . .
-
-RUN yarn build
-
-# Step 7: 포트 노출
+  
+# 최종적으로 필요한 파일만 복사
+COPY package.json yarn.lock ./
+RUN yarn install --production
+  
+# 빌드 결과물(dist)만 복사
+COPY --from=builder /app/dist ./dist
+  
 EXPOSE 8080
-
-# NODE_ENV 인자 받기
+  
 ARG NODE_ENV=production
 ENV NODE_ENV=$NODE_ENV
-
-# 환경에 따른 실행 명령어 분리
+  
 CMD if [ "$NODE_ENV" = "production" ]; then \
       yarn pm2:prod:start; \
     else \
       yarn pm2:dev:start; \
-    fi
+     fi  
