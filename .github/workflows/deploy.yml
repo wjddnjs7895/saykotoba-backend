@@ -47,16 +47,22 @@ jobs:
       - name: Build and push Docker image
         run: |
           TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-          if [[ ${{ github.ref }} == 'refs/heads/main' ]]; then
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          echo "Building for branch: $BRANCH_NAME"
+
+          if [ "$BRANCH_NAME" = "main" ]; then
             echo "프로덕션 빌드 시작"
             NODE_ENV=production
             DOCKER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:$TIMESTAMP
             DOCKER_LATEST=${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:latest
-          else
+          elif [ "$BRANCH_NAME" = "develop" ]; then
             echo "개발 서버 빌드 시작"
             NODE_ENV=development
             DOCKER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:dev-$TIMESTAMP
             DOCKER_LATEST=${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:dev
+          else
+            echo "Unknown branch: $BRANCH_NAME"
+            exit 1
           fi
           # NODE_ENV 환경변수 전달
           docker build --no-cache --build-arg NODE_ENV=$NODE_ENV -t $DOCKER_IMAGE -t $DOCKER_LATEST .
