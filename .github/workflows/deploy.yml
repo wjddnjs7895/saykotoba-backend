@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main # 프로덕션 배포
-      - dev # 개발 서버 배포
+      - develop # 개발 서버 배포
   workflow_dispatch:
 
 permissions:
