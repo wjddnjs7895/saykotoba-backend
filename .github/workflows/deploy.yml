@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - develop
   workflow_dispatch: null
 permissions:
   contents: read
@@ -13,17 +14,27 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+      - name: Debug Info
+        run: |
+          echo "GITHUB_REF: $GITHUB_REF"
+          echo "Current Branch: ${GITHUB_REF#refs/heads/}"
       - name: Set up SSH Key
         run: |
           mkdir -p ~/.ssh
+
           echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" | tr -d '\r' | tee ~/.ssh/id_rsa > /dev/null
+
           chmod 600 ~/.ssh/id_rsa
+
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+
           ls -la ~/.ssh/id_rsa || echo "SSH key file not found"
       - name: Test SSH Connection
-        run: ssh -q -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "echo 'SSH connection successful'"
+        run: |
+          ssh -q -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{
+          secrets.EC2_HOST }} "echo 'SSH connection successful'"
       - name: Notify deployment start
-        run: echo "🚀 배포 시작 - $(date)"
+        run: echo "배포 시작 - $(date)"
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
@@ -32,43 +43,85 @@ jobs:
       - name: Build and push Docker image
         run: |
           TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-          DOCKER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:$TIMESTAMP
-          DOCKER_LATEST=${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:latest
-          docker build --no-cache -t $DOCKER_IMAGE -t $DOCKER_LATEST .
+
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+
+          echo "Building for branch: $BRANCH_NAME"
+
+
+          if [ "$BRANCH_NAME" = "main" ]; then
+            echo "프로덕션 빌드 시작"
+            NODE_ENV=production
+            DOCKER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:$TIMESTAMP
+            DOCKER_LATEST=${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:latest
+          elif [ "$BRANCH_NAME" = "develop" ]; then
+            echo "개발 서버 빌드 시작"
+            NODE_ENV=development
+            DOCKER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:dev-$TIMESTAMP
+            DOCKER_LATEST=${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:dev
+          else
+            echo "Unknown branch: $BRANCH_NAME"
+            exit 1
+          fi
+
+          docker build --no-cache --build-arg NODE_ENV=$NODE_ENV -t $DOCKER_IMAGE -t $DOCKER_LATEST .
+
           docker push $DOCKER_IMAGE
+
           docker push $DOCKER_LATEST
-      - name: Check EC2 Status
-        run: |
-          ssh -q -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-            echo "=== CPU Usage ==="
-            top -bn1 | grep "Cpu(s)"
-            echo "=== Memory Usage ==="
-            free -m
-            echo "=== Process List ==="
-            ps aux --sort=-%mem | head -5
-          EOF
       - name: Deploy to EC2
         run: |
-          ssh -v -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'ENDSSH'
-            cd /home/$USER/saykotoba-backend
-            export DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
-            # 최신 이미지 풀 및 컨테이너 재시작
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:latest
-            docker-compose down --remove-orphans
-            echo "Starting container..."
-            docker-compose up -d --force-recreate
-            echo "Container logs:"
-            docker logs backend --tail 50
-            echo "Container status:"
-            docker ps
-            echo "Waiting for application to start..."
-          ENDSSH
-      - name: Health check
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          if [[ "$BRANCH_NAME" == "main" ]]; then
+            ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} '
+              export DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
+              cd /home/${{ secrets.EC2_USER }}/saykotoba-backend
+              # 현재 실행 중인 컨테이너 확인
+              IS_GREEN=$(docker ps | grep "api-green" | grep "Up")
+
+              if [ -z "$IS_GREEN" ]; then
+                echo "=== BLUE -> GREEN 전환 ==="
+                # Green 배포
+                echo "1. Green 이미지 업데이트"
+                docker pull '${{ secrets.DOCKERHUB_USERNAME }}'/saykotoba-backend:latest
+                echo "2. Green 컨테이너 실행"
+                docker-compose up -d api-green
+              else
+                echo "=== GREEN -> BLUE 전환 ==="
+                # Blue 배포
+                echo "1. Blue 이미지 업데이트"
+                docker pull '${{ secrets.DOCKERHUB_USERNAME }}'/saykotoba-backend:latest
+                echo "2. Blue 컨테이너 실행"
+                docker-compose up -d api-blue
+              fi
+            '
+          else
+            # 개발 서버 배포
+            ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} '
+              export DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
+              cd /home/${{ secrets.EC2_USER }}/saykotoba-backend
+              echo "=== DEV 서버 배포 ==="
+              echo "1. 개발 서버 이미지 업데이트"
+              docker pull '${{ secrets.DOCKERHUB_USERNAME }}'/saykotoba-backend:dev
+              echo "2. 개발 서버 재시작"
+              docker-compose stop api-dev
+              docker-compose up -d api-dev
+            '
+          fi
+      - name: Check deployment status
+        if: always()
         run: |
-          sleep 10
-          curl --fail http://${{ secrets.EC2_HOST }}:8080/swagger || exit 1
-      - name: Check disk space
-        run: ssh -q ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "df -h"
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          echo "EC2 서버의 컨테이너 상태 확인"
+          ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} '
+            if [[ "$BRANCH_NAME" == "main" ]]; then
+              echo "프로덕션 서버 상태 확인"
+              docker ps | grep "api-"
+            else
+              echo "개발 서버 상태 확인"
+              docker ps | grep "api-dev"
+            fi
+          '
       - name: Check Docker status
         if: always()
         run: |
@@ -78,14 +131,14 @@ jobs:
             echo "===== Docker 시스템 정보 ====="
             docker system df
           EOF
-      - name: Cleanup
-        if: always()
-        run: docker system prune -af || true
       - name: Notify deployment result
         if: always()
         uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
           fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+          text: |
+            환경: ${{ github.ref == 'refs/heads/main' && '프로덕션' || '개발' }}
+            배포 결과: ${{ job.status }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
