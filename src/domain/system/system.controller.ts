@@ -8,7 +8,7 @@ export class SystemController {
   constructor(private readonly systemService: SystemService) {}
 
   @Public()
-  @Post('check')
+  @Post('check-version')
   checkVersion(@Body() versionCheckDto: VersionCheckRequestDto) {
     return this.systemService.checkVersion(versionCheckDto);
   }
