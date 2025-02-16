@@ -28,16 +28,16 @@ services:
       - saykotoba-network
 
   api-dev:
-    image: ${DOCKERHUB_USERNAME}/saykotoba-backend:latest
+    image: ${DOCKERHUB_USERNAME}/saykotoba-backend:dev
     container_name: api-dev
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
       - PORT=8080
     restart: always
     volumes:
       - /home/${USER}/saykotoba-backend/config:/app/config:ro
     env_file:
-      - /home/${USER}/saykotoba-backend/config/env/.env.prod
+      - /home/${USER}/saykotoba-backend/config/env/.env.dev
     networks:
       - saykotoba-network
   nginx:

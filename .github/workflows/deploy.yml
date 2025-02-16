@@ -2,7 +2,9 @@
 name: CI/CD using github actions & docker
 on:
   push:
-    branches: [main]
+    branches:
+      - main # 프로덕션 배포
+      - dev # 개발 서버 배포
   workflow_dispatch:
 
 permissions:
@@ -33,86 +35,129 @@ jobs:
       - name: Build and push Docker image
         run: |
           TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-          DOCKER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:$TIMESTAMP
-          DOCKER_LATEST=${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:latest
+          if [[ ${{ github.ref }} == 'refs/heads/main' ]]; then
+            # 프로덕션 이미지
+            DOCKER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:$TIMESTAMP
+            DOCKER_LATEST=${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:latest
+          else
+            # 개발 서버 이미지
+            DOCKER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:dev-$TIMESTAMP
+            DOCKER_LATEST=${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:dev
+          fi
           docker build --no-cache -t $DOCKER_IMAGE -t $DOCKER_LATEST .
           docker push $DOCKER_IMAGE
           docker push $DOCKER_LATEST
-      - name: Deploy to EC2 with Blue-Green
+      - name: Deploy to EC2
         run: |
-          ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'ENDSSH'
-            cd /home/$USER/saykotoba-backend
-            
-            # 현재 실행 중인 컨테이너 확인
-            IS_GREEN=$(docker ps | grep "api-green" | grep "Up")
-            
-            if [ -z "$IS_GREEN" ]; then
-              echo "=== BLUE -> GREEN 전환 ==="
+          if [[ ${{ github.ref }} == 'refs/heads/main' ]]; then
+            # 프로덕션 Blue-Green 배포
+            ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'ENDSSH'
+              cd /home/$USER/saykotoba-backend
               
-              # Green 배포
-              echo "1. Green 이미지 업데이트"
-              docker pull ${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:latest
+              # 현재 실행 중인 컨테이너 확인
+              IS_GREEN=$(docker ps | grep "api-green" | grep "Up")
               
-              echo "2. Green 컨테이너 실행"
-              docker-compose up -d api-green
+              if [ -z "$IS_GREEN" ]; then
+                echo "=== BLUE -> GREEN 전환 ==="
+                
+                # Green 배포
+                echo "1. Green 이미지 업데이트"
+                docker pull ${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:latest
+                
+                echo "2. Green 컨테이너 실행"
+                docker-compose up -d api-green
+                
+                echo "3. Health Check - Green"
+                for i in {1..10}; do
+                  sleep 3
+                  if curl -s http://localhost:8080/swagger > /dev/null; then
+                    echo "Green 헬스 체크 성공"
+                    break
+                  fi
+                  if [ $i -eq 10 ]; then
+                    echo "Green 헬스 체크 실패"
+                    exit 1
+                  fi
+                done
+                
+                echo "4. Nginx 설정 업데이트 - Green으로 전환"
+                sed -i 's/api-blue/api-green/g' /home/$USER/saykotoba-backend/config/nginx.conf
+                docker-compose exec nginx nginx -s reload
+                
+                echo "5. Blue 컨테이너 중지"
+                docker-compose stop api-blue
+                
+              else
+                echo "=== GREEN -> BLUE 전환 ==="
+                
+                # Blue 배포
+                echo "1. Blue 이미지 업데이트"
+                docker pull ${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:latest
+                
+                echo "2. Blue 컨테이너 실행"
+                docker-compose up -d api-blue
+                
+                echo "3. Health Check - Blue"
+                for i in {1..10}; do
+                  sleep 3
+                  if curl -s http://localhost:8080/swagger > /dev/null; then
+                    echo "Blue 헬스 체크 성공"
+                    break
+                  fi
+                  if [ $i -eq 10 ]; then
+                    echo "Blue 헬스 체크 실패"
+                    exit 1
+                  fi
+                done
+                
+                echo "4. Nginx 설정 업데이트 - Blue로 전환"
+                sed -i 's/api-green/api-blue/g' /home/$USER/saykotoba-backend/config/nginx.conf
+                docker-compose exec nginx nginx -s reload
+                
+                echo "5. Green 컨테이너 중지"
+                docker-compose stop api-green
+              fi
               
-              echo "3. Health Check - Green"
+              echo "6. 컨테이너 상태 확인"
+              docker ps
+              
+              echo "7. 사용하지 않는 이미지 정리"
+              docker system prune -af
+            ENDSSH
+          else
+            # 개발 서버 배포
+            ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'ENDSSH'
+              cd /home/$USER/saykotoba-backend
+              
+              echo "=== DEV 서버 배포 ==="
+              
+              echo "1. 개발 서버 이미지 업데이트"
+              docker pull ${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:dev
+              
+              echo "2. 개발 서버 재시작"
+              docker-compose stop api-dev
+              docker-compose up -d api-dev
+              
+              echo "3. Health Check - DEV"
               for i in {1..10}; do
                 sleep 3
-                if curl -s http://localhost:8080/swagger > /dev/null; then
-                  echo "Green 헬스 체크 성공"
+                if curl -s http://dev.saykotoba.com/swagger > /dev/null; then
+                  echo "개발 서버 헬스 체크 성공"
                   break
                 fi
                 if [ $i -eq 10 ]; then
-                  echo "Green 헬스 체크 실패"
+                  echo "개발 서버 헬스 체크 실패"
                   exit 1
                 fi
               done
               
-              echo "4. Nginx 설정 업데이트 - Green으로 전환"
-              sed -i 's/api-blue/api-green/g' /home/$USER/saykotoba-backend/config/nginx.conf
-              docker-compose exec nginx nginx -s reload
+              echo "4. 컨테이너 상태 확인"
+              docker ps
               
-              echo "5. Blue 컨테이너 중지"
-              docker-compose stop api-blue
-              
-            else
-              echo "=== GREEN -> BLUE 전환 ==="
-              
-              # Blue 배포
-              echo "1. Blue 이미지 업데이트"
-              docker pull ${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:latest
-              
-              echo "2. Blue 컨테이너 실행"
-              docker-compose up -d api-blue
-              
-              echo "3. Health Check - Blue"
-              for i in {1..10}; do
-                sleep 3
-                if curl -s http://localhost:8080/swagger > /dev/null; then
-                  echo "Blue 헬스 체크 성공"
-                  break
-                fi
-                if [ $i -eq 10 ]; then
-                  echo "Blue 헬스 체크 실패"
-                  exit 1
-                fi
-              done
-              
-              echo "4. Nginx 설정 업데이트 - Blue로 전환"
-              sed -i 's/api-green/api-blue/g' /home/$USER/saykotoba-backend/config/nginx.conf
-              docker-compose exec nginx nginx -s reload
-              
-              echo "5. Green 컨테이너 중지"
-              docker-compose stop api-green
-            fi
-            
-            echo "6. 컨테이너 상태 확인"
-            docker ps
-            
-            echo "7. 사용하지 않는 이미지 정리"
-            docker system prune -af
-          ENDSSH
+              echo "5. 사용하지 않는 이미지 정리"
+              docker system prune -af
+            ENDSSH
+          fi
       - name: Health check
         run: |
           sleep 10
