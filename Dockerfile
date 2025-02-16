@@ -24,8 +24,9 @@ RUN yarn global add pm2
 COPY package.json yarn.lock ./
 RUN yarn install --production
   
-# 빌드 결과물(dist)만 복사
+# 빌드 결과물(dist)과 ecosystem.config.js 복사
 COPY --from=builder /app/dist ./dist
+COPY ecosystem.config.js ./
   
 EXPOSE 8080
   
@@ -36,4 +37,4 @@ CMD if [ "$NODE_ENV" = "production" ]; then \
       yarn pm2:prod:start; \
     else \
       yarn pm2:dev:start; \
-     fi  
+    fi  
