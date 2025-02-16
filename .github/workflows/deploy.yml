@@ -75,13 +75,13 @@ jobs:
 
           if [[ "$BRANCH_NAME" == "main" ]]; then
             # 프로덕션 배포
-            ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOFPROD
+            ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOFPROD'
               cd /home/$USER/saykotoba-backend
 
               # 현재 실행 중인 컨테이너 확인
-              IS_GREEN=\$(docker ps | grep "api-green" | grep "Up")
+              IS_GREEN=$(docker ps | grep "api-green" | grep "Up")
 
-              if [ -z "\$IS_GREEN" ]; then
+              if [ -z "$IS_GREEN" ]; then
                 echo "=== BLUE -> GREEN 전환 ==="
 
                 # Green 배포
@@ -149,9 +149,8 @@ jobs:
             EOFPROD
           else
             # 개발 서버 배포
-            ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOFDEV
+            ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOFDEV'
               cd /home/$USER/saykotoba-backend
-
               echo "=== DEV 서버 배포 ==="
 
               echo "1. 개발 서버 이미지 업데이트"
