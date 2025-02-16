@@ -75,7 +75,7 @@ jobs:
 
           if [[ "$BRANCH_NAME" == "main" ]]; then
             # 프로덕션 배포
-            ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'ENDSSH'
+            ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
               cd /home/$USER/saykotoba-backend
 
               # 현재 실행 중인 컨테이너 확인
@@ -146,10 +146,10 @@ jobs:
 
               echo "7. 사용하지 않는 이미지 정리"
               docker system prune -af
-            ENDSSH
+            EOF
           else
             # 개발 서버 배포
-            ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'ENDSSH'
+            ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
               cd /home/$USER/saykotoba-backend
 
               echo "=== DEV 서버 배포 ==="
@@ -179,7 +179,7 @@ jobs:
 
               echo "5. 사용하지 않는 이미지 정리"
               docker system prune -af
-            ENDSSH
+            EOF
           fi
       - name: Check deployment status
         if: always()
