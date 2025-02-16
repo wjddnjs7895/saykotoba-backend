@@ -29,6 +29,12 @@ jobs:
           echo "Setting up SSH key..."
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/github-actions
+          echo "Key file contents:"
+          cat ~/.ssh/github-actions | wc -l
+          echo "First line of key:"
+          head -n 1 ~/.ssh/github-actions
+          echo "Last line of key:"
+          tail -n 1 ~/.ssh/github-actions
           chmod 600 ~/.ssh/github-actions
           echo "SSH key permissions set"
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
