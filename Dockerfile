@@ -22,5 +22,13 @@ RUN yarn build
 # Step 7: 포트 노출
 EXPOSE 8080
 
-# Step 8: 애플리케이션 실행
-CMD ["yarn", "pm2:start"]
+# NODE_ENV 인자 받기
+ARG NODE_ENV=production
+ENV NODE_ENV=$NODE_ENV
+
+# 환경에 따른 실행 명령어 분리
+CMD if [ "$NODE_ENV" = "production" ]; then \
+      yarn pm2:prod:start; \
+    else \
+      yarn pm2:dev:start; \
+    fi
