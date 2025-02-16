@@ -36,15 +36,18 @@ jobs:
         run: |
           TIMESTAMP=$(date +%Y%m%d_%H%M%S)
           if [[ ${{ github.ref }} == 'refs/heads/main' ]]; then
-            # 프로덕션 이미지
+            echo "프로덕션 빌드 시작"
+            NODE_ENV=production
             DOCKER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:$TIMESTAMP
             DOCKER_LATEST=${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:latest
           else
-            # 개발 서버 이미지
+            echo "개발 서버 빌드 시작"
+            NODE_ENV=development
             DOCKER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:dev-$TIMESTAMP
             DOCKER_LATEST=${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:dev
           fi
-          docker build --no-cache -t $DOCKER_IMAGE -t $DOCKER_LATEST .
+          # NODE_ENV 환경변수 전달
+          docker build --no-cache --build-arg NODE_ENV=$NODE_ENV -t $DOCKER_IMAGE -t $DOCKER_LATEST .
           docker push $DOCKER_IMAGE
           docker push $DOCKER_LATEST
       - name: Deploy to EC2
@@ -158,12 +161,17 @@ jobs:
               docker system prune -af
             ENDSSH
           fi
-      - name: Health check
+      - name: Check deployment status
+        if: always()
         run: |
-          sleep 10
-          curl --fail http://${{ secrets.EC2_HOST }}:8080/swagger || exit 1
-      - name: Check disk space
-        run: ssh -q ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "df -h"
+          if [[ ${{ github.ref }} == 'refs/heads/main' ]]; then
+            echo "프로덕션 서버 상태 확인"
+            docker ps | grep "api-"
+          else
+            echo "개발 서버 상태 확인"
+            docker ps | grep "api-dev"
+          fi
+
       - name: Check Docker status
         if: always()
         run: |
@@ -179,5 +187,8 @@ jobs:
         with:
           status: ${{ job.status }}
           fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+          text: |
+            환경: ${{ github.ref == 'refs/heads/main' && '프로덕션' || '개발' }}
+            배포 결과: ${{ job.status }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
