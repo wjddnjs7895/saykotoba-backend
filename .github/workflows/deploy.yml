@@ -1,5 +1,5 @@
----
 name: CI/CD using github actions & docker
+
 on:
   push:
     branches:
@@ -16,12 +16,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+
       - name: Debug Info
         run: |
           echo "GITHUB_REF: $GITHUB_REF"
-          echo "GITHUB_HEAD_REF: $GITHUB_HEAD_REF"
-          echo "GITHUB_BASE_REF: $GITHUB_BASE_REF"
           echo "Current Branch: ${GITHUB_REF#refs/heads/}"
+
       - name: Set up SSH Key
         run: |
           mkdir -p ~/.ssh
@@ -29,15 +29,20 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
           ls -la ~/.ssh/id_rsa || echo "SSH key file not found"
+
       - name: Test SSH Connection
-        run: ssh -q -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "echo 'SSH connection successful'"
+        run: |
+          ssh -q -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "echo 'SSH connection successful'"
+
       - name: Notify deployment start
         run: echo "🚀 배포 시작 - $(date)"
+
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Build and push Docker image
         run: |
           TIMESTAMP=$(date +%Y%m%d_%H%M%S)
@@ -62,26 +67,28 @@ jobs:
           docker build --no-cache --build-arg NODE_ENV=$NODE_ENV -t $DOCKER_IMAGE -t $DOCKER_LATEST .
           docker push $DOCKER_IMAGE
           docker push $DOCKER_LATEST
+
       - name: Deploy to EC2
         run: |
-          if [[ ${{ github.ref }} == 'refs/heads/main' ]]; then
-            # 프로덕션 Blue-Green 배포
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          if [[ "$BRANCH_NAME" == "main" ]]; then
+            # 프로덕션 배포
             ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'ENDSSH'
               cd /home/$USER/saykotoba-backend
-              
+
               # 현재 실행 중인 컨테이너 확인
               IS_GREEN=$(docker ps | grep "api-green" | grep "Up")
-              
+
               if [ -z "$IS_GREEN" ]; then
                 echo "=== BLUE -> GREEN 전환 ==="
-                
+
                 # Green 배포
                 echo "1. Green 이미지 업데이트"
                 docker pull ${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:latest
-                
+
                 echo "2. Green 컨테이너 실행"
                 docker-compose up -d api-green
-                
+
                 echo "3. Health Check - Green"
                 for i in {1..10}; do
                   sleep 3
@@ -94,24 +101,23 @@ jobs:
                     exit 1
                   fi
                 done
-                
+
                 echo "4. Nginx 설정 업데이트 - Green으로 전환"
                 sed -i 's/api-blue/api-green/g' /home/$USER/saykotoba-backend/config/nginx.conf
                 docker-compose exec nginx nginx -s reload
-                
+
                 echo "5. Blue 컨테이너 중지"
                 docker-compose stop api-blue
-                
               else
                 echo "=== GREEN -> BLUE 전환 ==="
-                
+
                 # Blue 배포
                 echo "1. Blue 이미지 업데이트"
                 docker pull ${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:latest
-                
+
                 echo "2. Blue 컨테이너 실행"
                 docker-compose up -d api-blue
-                
+
                 echo "3. Health Check - Blue"
                 for i in {1..10}; do
                   sleep 3
@@ -124,18 +130,18 @@ jobs:
                     exit 1
                   fi
                 done
-                
+
                 echo "4. Nginx 설정 업데이트 - Blue로 전환"
                 sed -i 's/api-green/api-blue/g' /home/$USER/saykotoba-backend/config/nginx.conf
                 docker-compose exec nginx nginx -s reload
-                
+
                 echo "5. Green 컨테이너 중지"
                 docker-compose stop api-green
               fi
-              
+
               echo "6. 컨테이너 상태 확인"
               docker ps
-              
+
               echo "7. 사용하지 않는 이미지 정리"
               docker system prune -af
             ENDSSH
@@ -143,16 +149,16 @@ jobs:
             # 개발 서버 배포
             ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'ENDSSH'
               cd /home/$USER/saykotoba-backend
-              
+
               echo "=== DEV 서버 배포 ==="
-              
+
               echo "1. 개발 서버 이미지 업데이트"
               docker pull ${{ secrets.DOCKERHUB_USERNAME }}/saykotoba-backend:dev
-              
+
               echo "2. 개발 서버 재시작"
               docker-compose stop api-dev
               docker-compose up -d api-dev
-              
+
               echo "3. Health Check - DEV"
               for i in {1..10}; do
                 sleep 3
@@ -165,18 +171,20 @@ jobs:
                   exit 1
                 fi
               done
-              
+
               echo "4. 컨테이너 상태 확인"
               docker ps
-              
+
               echo "5. 사용하지 않는 이미지 정리"
               docker system prune -af
             ENDSSH
           fi
+
       - name: Check deployment status
         if: always()
         run: |
-          if [[ ${{ github.ref }} == 'refs/heads/main' ]]; then
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          if [[ "$BRANCH_NAME" == "main" ]]; then
             echo "프로덕션 서버 상태 확인"
             docker ps | grep "api-"
           else
@@ -193,6 +201,7 @@ jobs:
             echo "===== Docker 시스템 정보 ====="
             docker system df
           EOF
+
       - name: Notify deployment result
         if: always()
         uses: 8398a7/action-slack@v3
