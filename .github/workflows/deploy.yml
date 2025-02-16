@@ -23,25 +23,14 @@ jobs:
           echo "GITHUB_BASE_REF: $GITHUB_BASE_REF"
           echo "Current Branch: ${GITHUB_REF#refs/heads/}"
       - name: Set up SSH Key
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
         run: |
-          echo "Setting up SSH key..."
           mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/github-actions
-          echo "Key file contents:"
-          cat ~/.ssh/github-actions | wc -l
-          echo "First line of key:"
-          head -n 1 ~/.ssh/github-actions
-          echo "Last line of key:"
-          tail -n 1 ~/.ssh/github-actions
-          chmod 600 ~/.ssh/github-actions
-          echo "SSH key permissions set"
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-          echo "Host key added to known_hosts"
-          ls -la ~/.ssh/
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" | tr -d '\r' | tee ~/.ssh/id_rsa > /dev/null
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+          ls -la ~/.ssh/id_rsa || echo "SSH key file not found"
       - name: Test SSH Connection
-        run: ssh -i ~/.ssh/github-actions -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "echo 'SSH connection successful'"
+        run: ssh -q -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "echo 'SSH connection successful'"
       - name: Notify deployment start
         run: echo "🚀 배포 시작 - $(date)"
       - name: Login to Docker Hub
