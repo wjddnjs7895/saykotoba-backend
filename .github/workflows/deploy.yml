@@ -75,13 +75,13 @@ jobs:
 
           if [[ "$BRANCH_NAME" == "main" ]]; then
             # 프로덕션 배포
-            ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOFPROD
               cd /home/$USER/saykotoba-backend
 
               # 현재 실행 중인 컨테이너 확인
-              IS_GREEN=$(docker ps | grep "api-green" | grep "Up")
+              IS_GREEN=\$(docker ps | grep "api-green" | grep "Up")
 
-              if [ -z "$IS_GREEN" ]; then
+              if [ -z "\$IS_GREEN" ]; then
                 echo "=== BLUE -> GREEN 전환 ==="
 
                 # Green 배포
@@ -146,10 +146,10 @@ jobs:
 
               echo "7. 사용하지 않는 이미지 정리"
               docker system prune -af
-            EOF
+            EOFPROD
           else
             # 개발 서버 배포
-            ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOFDEV
               cd /home/$USER/saykotoba-backend
 
               echo "=== DEV 서버 배포 ==="
@@ -179,7 +179,7 @@ jobs:
 
               echo "5. 사용하지 않는 이미지 정리"
               docker system prune -af
-            EOF
+            EOFDEV
           fi
       - name: Check deployment status
         if: always()
