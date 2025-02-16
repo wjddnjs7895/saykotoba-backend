@@ -73,7 +73,7 @@ jobs:
         run: |
           BRANCH_NAME=${GITHUB_REF#refs/heads/}
           if [[ "$BRANCH_NAME" == "main" ]]; then
-            ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "
+            ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} '
               export DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
               cd /home/\$USER/saykotoba-backend
               # 현재 실행 중인 컨테이너 확인
@@ -94,10 +94,10 @@ jobs:
                 echo "2. Blue 컨테이너 실행"
                 docker-compose up -d api-blue
               fi
-            "
+            '
           else
             # 개발 서버 배포
-            ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "
+            ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} '
               export DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
               cd /home/\$USER/saykotoba-backend
               echo "=== DEV 서버 배포 ==="
