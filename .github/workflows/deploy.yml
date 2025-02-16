@@ -1,53 +1,53 @@
+---
 name: CI/CD using github actions & docker
-
 on:
   push:
     branches:
-      - main # 프로덕션 배포
-      - develop # 개발 서버 배포
-  workflow_dispatch:
-
+      - main
+      - develop
+  workflow_dispatch: null
 permissions:
   contents: read
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-
       - name: Debug Info
         run: |
           echo "GITHUB_REF: $GITHUB_REF"
           echo "Current Branch: ${GITHUB_REF#refs/heads/}"
-
       - name: Set up SSH Key
-        run: |
+        run: >
           mkdir -p ~/.ssh
+
           echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" | tr -d '\r' | tee ~/.ssh/id_rsa > /dev/null
+
           chmod 600 ~/.ssh/id_rsa
+
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+
           ls -la ~/.ssh/id_rsa || echo "SSH key file not found"
-
       - name: Test SSH Connection
-        run: |
-          ssh -q -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "echo 'SSH connection successful'"
-
+        run: >
+          ssh -q -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{
+          secrets.EC2_HOST }} "echo 'SSH connection successful'"
       - name: Notify deployment start
         run: echo "🚀 배포 시작 - $(date)"
-
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
       - name: Build and push Docker image
-        run: |
+        run: >
           TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+
           BRANCH_NAME=${GITHUB_REF#refs/heads/}
+
           echo "Building for branch: $BRANCH_NAME"
+
 
           if [ "$BRANCH_NAME" = "main" ]; then
             echo "프로덕션 빌드 시작"
@@ -63,14 +63,18 @@ jobs:
             echo "Unknown branch: $BRANCH_NAME"
             exit 1
           fi
-          # NODE_ENV 환경변수 전달
-          docker build --no-cache --build-arg NODE_ENV=$NODE_ENV -t $DOCKER_IMAGE -t $DOCKER_LATEST .
-          docker push $DOCKER_IMAGE
-          docker push $DOCKER_LATEST
 
+          # NODE_ENV 환경변수 전달
+
+          docker build --no-cache --build-arg NODE_ENV=$NODE_ENV -t $DOCKER_IMAGE -t $DOCKER_LATEST .
+
+          docker push $DOCKER_IMAGE
+
+          docker push $DOCKER_LATEST
       - name: Deploy to EC2
-        run: |
+        run: >
           BRANCH_NAME=${GITHUB_REF#refs/heads/}
+
           if [[ "$BRANCH_NAME" == "main" ]]; then
             # 프로덕션 배포
             ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'ENDSSH'
@@ -179,7 +183,6 @@ jobs:
               docker system prune -af
             ENDSSH
           fi
-
       - name: Check deployment status
         if: always()
         run: |
@@ -191,7 +194,6 @@ jobs:
             echo "개발 서버 상태 확인"
             docker ps | grep "api-dev"
           fi
-
       - name: Check Docker status
         if: always()
         run: |
@@ -201,7 +203,6 @@ jobs:
             echo "===== Docker 시스템 정보 ====="
             docker system df
           EOF
-
       - name: Notify deployment result
         if: always()
         uses: 8398a7/action-slack@v3
