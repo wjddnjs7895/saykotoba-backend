@@ -15,6 +15,7 @@ import { ConversationGroupService } from './services/conversation-group.service'
 import { ClassroomEntity } from '../classroom/entities/classroom.entity';
 import { CharacterModule } from '../character/character.module';
 import { ClassroomModule } from '../classroom/classroom.module';
+import { PaymentModule } from '../payment/payment.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { ClassroomModule } from '../classroom/classroom.module';
     AwsModule,
     GoogleModule,
     CharacterModule,
+    PaymentModule,
     forwardRef(() => ClassroomModule),
   ],
   providers: [ConversationService, ConversationGroupService],

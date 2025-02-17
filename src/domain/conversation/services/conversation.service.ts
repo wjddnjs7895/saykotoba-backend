@@ -207,7 +207,7 @@ export class ConversationService {
   ): Promise<CreateConversationResponseDto> {
     try {
       const hintCount =
-        DIFFICULTY_MAP.CHALLENGE - createConversationDto.difficultyLevel;
+        DIFFICULTY_MAP.CHALLENGE - createConversationDto.difficultyLevel + 3;
       const characteristic =
         await this.characterService.getCharacteristicByName({
           name: createConversationDto.userRole,
@@ -471,14 +471,12 @@ export class ConversationService {
       } catch {
         throw new ConversationUpdateFailedException();
       }
+      const isSolved = await this.userService.isSolvedConversation({
+        userId: conversationInfo.userId,
+        conversationId: conversationInfo.id,
+      });
 
-      if (
-        feedback.score >= SCORE_THRESHOLD.PASS &&
-        !this.userService.isSolvedConversation({
-          userId: conversationInfo.userId,
-          conversationId: conversationInfo.id,
-        })
-      ) {
+      if (feedback.score >= SCORE_THRESHOLD.PASS && !isSolved) {
         await this.userService.updateUserExpAndCount({
           userId: conversationInfo.userId,
           exp: conversationInfo.exp,

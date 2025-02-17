@@ -122,6 +122,7 @@ export const CharacterErrorMessage: CharacterErrorMessageType = {
 export const UserErrorMessage: UserErrorMessageType = {
   [UserErrorCodeEnum.UserNotFound]: 'User not found',
   [UserErrorCodeEnum.UserUpdateFailed]: 'User update failed',
+  [UserErrorCodeEnum.UserTierUpdateFailed]: 'User tier update failed',
 };
 
 export const OpenAIErrorMessage: OpenAIErrorMessageType = {

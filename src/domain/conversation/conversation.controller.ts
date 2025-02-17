@@ -38,6 +38,7 @@ import { GetUserConversationGroupResponseDto } from './dtos/get-user-conversatio
 import { GetLectureGroupResponseDto } from './dtos/get-user-lecture-group.dto';
 import { GetConversationGroupInfoResponseDto } from './dtos/get-conversation-group-info.dto';
 import { GenerateHintResponseDto } from './dtos/generate-hint.dto';
+import { RequireSubscription } from '@/common/decorators/subscription.decorator';
 
 @Controller('conversation')
 export class ConversationController {
@@ -53,6 +54,7 @@ export class ConversationController {
     return this.conversationService.getConversationsByUserId(user.id);
   }
 
+  @RequireSubscription()
   @Post('audio-response')
   @UseInterceptors(FileInterceptor('audio'))
   async getResponseFromAudio(
@@ -124,6 +126,7 @@ export class ConversationController {
     );
   }
 
+  @RequireSubscription()
   @Post('hint/:conversationId')
   async generateHint(
     @Param('conversationId') conversationId: number,

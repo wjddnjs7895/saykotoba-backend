@@ -40,7 +40,7 @@ export const ConversationFeedbackTool = [
                 feedback: {
                   type: 'string',
                   description:
-                    'Explanation of why this expression is better and/or correction of any grammatical errors. Only provide feedback in the requested language (i.e. en, ko)',
+                    'Explanation of why this expression is better and/or correction of any grammatical errors. Only provide feedback in the requested language (i.e. en, ko) not in Japanese',
                 },
               },
               required: ['sentence', 'betterExpression', 'reading', 'feedback'],

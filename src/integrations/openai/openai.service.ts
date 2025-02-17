@@ -278,6 +278,7 @@ export class OpenAIService {
   async generateFeedBack(
     generateFeedbackRequestDto: AIFeedbackRequestDto,
   ): Promise<AIFeedbackResponseDto> {
+    console.log(generateFeedbackRequestDto);
     const response = await this.openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [

@@ -16,6 +16,7 @@ import * as fs from 'fs';
 import { LectureModule } from './domain/lecture/lecture.module';
 import { CharacterModule } from './domain/character/character.module';
 import { SystemModule } from './domain/system/system.module';
+import { PaymentModule } from './domain/payment/payment.module';
 
 @Module({
   imports: [
@@ -44,11 +45,14 @@ import { SystemModule } from './domain/system/system.module';
         GOOGLE_IOS_CLIENT_ID: Joi.string().required(),
         GOOGLE_TTS_API_KEY: Joi.string().required(),
         GOOGLE_TTS_CLIENT_EMAIL: Joi.string().required(),
+        GOOGLE_IAP_CLIENT_EMAIL: Joi.string().required(),
+        GOOGLE_IAP_API_KEY: Joi.string().required(),
         APPLE_CLIENT_ID: Joi.string().required(),
         APPLE_TEAM_ID: Joi.string().required(),
         APPLE_STORE_ISSUER_ID: Joi.string().required(),
         APPLE_STORE_KEY_ID: Joi.string().required(),
         APPLE_STORE_PRIVATE_KEY: Joi.string().required(),
+        APPLE_SHARED_SECRET: Joi.string().required(),
         JWT_ACCESS_SECRET: Joi.string().required(),
         JWT_REFRESH_SECRET: Joi.string().required(),
         JWT_ACCESS_EXPIRATION: Joi.string().default('1h'),
@@ -71,8 +75,8 @@ import { SystemModule } from './domain/system/system.module';
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_DATABASE'),
-        synchronize: configService.get('NODE_ENV') !== 'production',
-        logging: configService.get('NODE_ENV') !== 'production',
+        synchronize: false, //configService.get('NODE_ENV') !== 'production',
+        logging: false, //configService.get('NODE_ENV') !== 'production',
         autoLoadEntities: true,
         namingStrategy: new SnakeNamingStrategy(),
         ssl: {
@@ -93,6 +97,7 @@ import { SystemModule } from './domain/system/system.module';
     GoogleModule,
     CharacterModule,
     SystemModule,
+    PaymentModule,
   ],
   controllers: [],
   providers: [
