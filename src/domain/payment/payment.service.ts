@@ -10,22 +10,24 @@ import {
 import { LessThan, MoreThan } from 'typeorm';
 import { Cron } from '@nestjs/schedule';
 import { VerifyPurchaseServiceDto } from './dtos/verify-purchase.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class PaymentService implements OnModuleInit {
   constructor(
     @InjectRepository(SubscriptionEntity)
     private readonly subscriptionRepository: Repository<SubscriptionEntity>,
+    private readonly configService: ConfigService,
   ) {}
 
   async onModuleInit() {
     await iap.config({
-      test: process.env.NODE_ENV !== 'production',
+      test: this.configService.get('NODE_ENV') !== 'production',
       googleServiceAccount: {
-        clientEmail: process.env.GOOGLE_CLIENT_EMAIL,
-        privateKey: process.env.GOOGLE_PRIVATE_KEY,
+        clientEmail: this.configService.get('GOOGLE_IAP_CLIENT_EMAIL'),
+        privateKey: this.configService.get('GOOGLE_IAP_API_KEY'),
       },
-      applePassword: process.env.APPLE_SHARED_SECRET,
+      applePassword: this.configService.get('APPLE_SHARED_SECRET'),
     });
   }
 
