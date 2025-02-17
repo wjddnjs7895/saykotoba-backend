@@ -32,7 +32,7 @@ import { PaymentModule } from '../payment/payment.module';
     AwsModule,
     GoogleModule,
     CharacterModule,
-    forwardRef(() => PaymentModule),
+    PaymentModule,
     forwardRef(() => ClassroomModule),
   ],
   providers: [ConversationService, ConversationGroupService],
