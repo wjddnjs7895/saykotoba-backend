@@ -16,6 +16,7 @@ import * as fs from 'fs';
 import { LectureModule } from './domain/lecture/lecture.module';
 import { CharacterModule } from './domain/character/character.module';
 import { SystemModule } from './domain/system/system.module';
+import { PaymentModule } from './domain/payment/payment.module';
 
 @Module({
   imports: [
@@ -93,6 +94,7 @@ import { SystemModule } from './domain/system/system.module';
     GoogleModule,
     CharacterModule,
     SystemModule,
+    PaymentModule,
   ],
   controllers: [],
   providers: [
