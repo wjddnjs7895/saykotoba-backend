@@ -12,6 +12,7 @@ import {
 } from '../dtos/update-user.dto';
 import {
   UserNotFoundException,
+  UserTierUpdateFailedException,
   UserUpdateFailedException,
 } from '@/common/exception/custom-exception/user.exception';
 import {
@@ -20,6 +21,7 @@ import {
   TIER_THRESHOLD,
 } from '@/common/constants/user.constants';
 import { SubscriptionEntity } from '../../payment/entities/subscription.entity';
+import { CustomBaseException } from '@/common/exception/custom.base.exception';
 
 @Injectable()
 export class UserService {
@@ -103,7 +105,10 @@ export class UserService {
         1,
       );
       await this.updateUserTier(userId);
-    } catch {
+    } catch (error) {
+      if (error instanceof CustomBaseException) {
+        throw error;
+      }
       throw new UserUpdateFailedException();
     }
   }
@@ -143,8 +148,12 @@ export class UserService {
 
     const tier = Object.entries(TIER_THRESHOLD).reduce(
       (highest, [tier, threshold]) => (user.exp >= threshold ? tier : highest),
-      'BRONZE_4',
+      'BEGINNER_4',
     );
+
+    console.log('Computed Tier:', tier);
+    console.log('Mapped Tier:', TIER_MAP[tier as keyof typeof TIER_MAP]);
+    console.log('User Tier:', user.tier);
 
     try {
       if (TIER_MAP[tier as keyof typeof TIER_MAP] !== user.tier) {
@@ -153,7 +162,7 @@ export class UserService {
         });
       }
     } catch {
-      throw new UserUpdateFailedException();
+      throw new UserTierUpdateFailedException();
     }
   }
 

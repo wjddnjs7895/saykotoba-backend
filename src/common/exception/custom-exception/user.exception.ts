@@ -22,3 +22,13 @@ export class UserUpdateFailedException extends CustomBaseException {
     );
   }
 }
+
+export class UserTierUpdateFailedException extends CustomBaseException {
+  constructor() {
+    super(
+      UserErrorCodeEnum.UserTierUpdateFailed,
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      UserErrorMessage[UserErrorCodeEnum.UserTierUpdateFailed],
+    );
+  }
+}

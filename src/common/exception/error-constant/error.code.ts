@@ -64,6 +64,7 @@ export enum CharacterErrorCodeEnum {
 export enum UserErrorCodeEnum {
   UserNotFound = 'USER01',
   UserUpdateFailed = 'USER02',
+  UserTierUpdateFailed = 'USER03',
 }
 
 export enum OpenAIErrorCodeEnum {
