@@ -96,10 +96,12 @@ export class UserService {
     exp: number;
   }) {
     try {
-      await this.userRepository.update(userId, {
-        exp: () => `exp + ${exp}`,
-        solvedConversationCount: () => 'solvedConversationCount + 1',
-      });
+      await this.userRepository.increment({ id: userId }, 'exp', exp);
+      await this.userRepository.increment(
+        { id: userId },
+        'solvedConversationCount',
+        1,
+      );
       await this.updateUserTier(userId);
     } catch {
       throw new UserUpdateFailedException();
