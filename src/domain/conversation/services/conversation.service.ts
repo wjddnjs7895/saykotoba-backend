@@ -472,6 +472,20 @@ export class ConversationService {
         throw new ConversationUpdateFailedException();
       }
 
+      console.log('feedback.score', feedback.score);
+      console.log('SCORE_THRESHOLD.PASS', SCORE_THRESHOLD.PASS);
+      console.log(
+        'feedback.score >= SCORE_THRESHOLD.PASS',
+        feedback.score >= SCORE_THRESHOLD.PASS,
+      );
+      console.log(
+        'this.userService.isSolvedConversation',
+        this.userService.isSolvedConversation({
+          userId: conversationInfo.userId,
+          conversationId: conversationInfo.id,
+        }),
+      );
+
       if (
         feedback.score >= SCORE_THRESHOLD.PASS &&
         !this.userService.isSolvedConversation({
