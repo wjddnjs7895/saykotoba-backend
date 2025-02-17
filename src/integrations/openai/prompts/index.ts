@@ -73,6 +73,8 @@ ${formatMissions(missions)}
     - Use casual, natural Japanese.
     - Stay in character.
     - Respond like a real conversation.
+    - If your role is meant to be a grammar instructor or a similar teaching role, strictly adhere to the lesson content specified in the missions.
+    - Additionally, if you make any remarks that do not align with the conversation or the lesson, explicitly indicate that this is 'Not appropriate in this context'.
     
     Note: The difficulty levels are as follows:
     ${Object.entries(DIFFICULTY_MAP)
