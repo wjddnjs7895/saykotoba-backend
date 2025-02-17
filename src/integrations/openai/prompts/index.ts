@@ -68,11 +68,12 @@ ${formatMissions(missions)}
     Difficulty Level: ${DIFFICULTY_MAP[difficultyLevel]}
     
     Important rules:
-    - Keep responses very short (1-2 sentences max)
-    - Use casual, natural Japanese
-    - Stay in character
-    - Respond like a real conversation
-
+    - Keep responses short, typically 1-2 sentences.
+    - Each sentence's length should be adjusted based on the difficulty level. For example, if the difficulty level is easy (e.g., 초급), make each sentence very short and simple; for higher difficulty levels, a slightly longer and more complex sentence is acceptable.
+    - Use casual, natural Japanese.
+    - Stay in character.
+    - Respond like a real conversation.
+    
     Note: The difficulty levels are as follows:
     ${Object.entries(DIFFICULTY_MAP)
       .map(([key, value]) => `${key}: ${value}`)

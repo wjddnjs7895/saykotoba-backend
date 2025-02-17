@@ -207,7 +207,7 @@ export class ConversationService {
   ): Promise<CreateConversationResponseDto> {
     try {
       const hintCount =
-        DIFFICULTY_MAP.CHALLENGE - createConversationDto.difficultyLevel;
+        DIFFICULTY_MAP.CHALLENGE - createConversationDto.difficultyLevel + 3;
       const characteristic =
         await this.characterService.getCharacteristicByName({
           name: createConversationDto.userRole,
