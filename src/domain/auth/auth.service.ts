@@ -190,6 +190,7 @@ export class AuthService {
         audience: [
           this.configService.get('GOOGLE_IOS_CLIENT_ID'),
           this.configService.get('GOOGLE_EXPO_CLIENT_ID'),
+          this.configService.get('GOOGLE_ANDROID_CLIENT_ID'),
         ],
       });
       const payload = ticket.getPayload();
