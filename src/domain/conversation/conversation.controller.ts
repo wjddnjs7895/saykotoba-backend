@@ -61,7 +61,6 @@ export class ConversationController {
     @UploadedFile() audio: Express.Multer.File,
     @Body() body: { conversationId: string; speakingRate: string },
   ): Promise<ChatResponseDto> {
-    console.log(body);
     return this.conversationService.getAndProcessConversationFromAudio(
       parseInt(body.conversationId, 10),
       parseFloat(body.speakingRate),

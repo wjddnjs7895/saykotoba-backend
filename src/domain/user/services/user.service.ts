@@ -151,10 +151,6 @@ export class UserService {
       'BEGINNER_4',
     );
 
-    console.log('Computed Tier:', tier);
-    console.log('Mapped Tier:', TIER_MAP[tier as keyof typeof TIER_MAP]);
-    console.log('User Tier:', user.tier);
-
     try {
       if (TIER_MAP[tier as keyof typeof TIER_MAP] !== user.tier) {
         await this.userRepository.update(id, {

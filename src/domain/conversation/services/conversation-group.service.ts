@@ -129,7 +129,6 @@ export class ConversationGroupService {
         score: conversation.score,
       })),
     };
-    console.log(conversationGroupInfo);
     return conversationGroupInfo;
   }
 }

@@ -39,6 +39,7 @@ import {
   GenerateClassroomResponseDto,
 } from './dtos/generate-classroom.dto';
 import { ClassroomTool } from './tools/classroom.tool';
+import { convertM4AToWav } from '@/common/utils/audio.utils';
 
 @Injectable()
 export class OpenAIService {
@@ -99,11 +100,19 @@ export class OpenAIService {
     messages: MessageEntity[],
     audio: Express.Multer.File,
   ): Promise<GenerateResponseDto> {
-    const base64message = audio.buffer.toString('base64');
+    let audioBuffer = audio.buffer;
+    if (
+      audio.mimetype === 'audio/x-m4a' ||
+      audio.originalname.endsWith('.m4a')
+    ) {
+      audioBuffer = await convertM4AToWav(audio.buffer);
+    }
+
+    const base64message = audioBuffer.toString('base64');
 
     try {
       const response = await this.openai.chat.completions.create({
-        model: 'gpt-4o-audio-preview',
+        model: 'gpt-4o-mini-audio-preview',
         modalities: ['text'],
         messages: [
           {
@@ -278,7 +287,6 @@ export class OpenAIService {
   async generateFeedBack(
     generateFeedbackRequestDto: AIFeedbackRequestDto,
   ): Promise<AIFeedbackResponseDto> {
-    console.log(generateFeedbackRequestDto);
     const response = await this.openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [

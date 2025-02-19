@@ -120,8 +120,6 @@ export class AuthService {
 
     if (registerDto.provider === AuthProvider.LOCAL) {
       const hashedPassword = await this.hashPassword(registerDto.password);
-      console.log('registerDto.password', registerDto.password);
-      console.log('hashedPassword', hashedPassword);
       Object.assign(userData, { password: hashedPassword });
     } else if (registerDto.provider === AuthProvider.GOOGLE) {
       Object.assign(userData, { googleId: registerDto.googleId });
@@ -239,7 +237,6 @@ export class AuthService {
 
   private async verifyAppleToken(token: string): Promise<AppleTokenPayloadDto> {
     try {
-      console.log('Verifying token:', token);
       const decodedToken = jwt.decode(token, { complete: true });
       if (!decodedToken) {
         throw new AppleIdTokenVerifyFailedException();
