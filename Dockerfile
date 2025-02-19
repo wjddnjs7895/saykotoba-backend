@@ -2,6 +2,7 @@
 # 빌드 스테이지 (builder)
 # ------------------------
 FROM node:20 AS builder
+RUN apt-get update && apt-get install -y ffmpeg
 WORKDIR /app
   
 COPY package.json yarn.lock ./
