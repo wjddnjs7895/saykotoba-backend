@@ -2,7 +2,6 @@
 # 빌드 스테이지 (builder)
 # ------------------------
 FROM node:20 AS builder
-RUN apt-get update && apt-get install -y ffmpeg
 WORKDIR /app
   
 COPY package.json yarn.lock ./
@@ -28,6 +27,7 @@ RUN yarn install --production
 # 빌드 결과물(dist)과 ecosystem.config.js 복사
 COPY --from=builder /app/dist ./dist
 COPY ecosystem.config.js ./
+RUN apt-get update && apt-get install -y ffmpeg
   
 EXPOSE 8080
   
