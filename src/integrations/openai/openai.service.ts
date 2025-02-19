@@ -101,13 +101,11 @@ export class OpenAIService {
     audio: Express.Multer.File,
   ): Promise<GenerateResponseDto> {
     let audioBuffer = audio.buffer;
-    let audioFormat: 'wav' | 'mp3' = 'wav';
     if (
       audio.mimetype === 'audio/x-m4a' ||
       audio.originalname.endsWith('.m4a')
     ) {
       audioBuffer = await convertM4AToWav(audio.buffer);
-      audioFormat = 'wav';
     }
 
     const base64message = audioBuffer.toString('base64');
@@ -139,7 +137,7 @@ export class OpenAIService {
                 type: 'input_audio',
                 input_audio: {
                   data: base64message,
-                  format: audioFormat,
+                  format: 'wav',
                 },
               },
             ],
