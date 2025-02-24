@@ -15,9 +15,12 @@ import {
 import { UnexpectedException } from '@/common/exception/custom-exception/unexpected.exception';
 import { CustomBaseException } from '@/common/exception/custom.base.exception';
 import { StoreType } from '@/common/constants/user.constants';
+import { CustomLogger } from '@/common/logger/custom.logger';
 
 @Injectable()
 export class PaymentService implements OnModuleInit {
+  private readonly logger = new CustomLogger();
+
   constructor(
     @InjectRepository(SubscriptionEntity)
     private readonly subscriptionRepository: Repository<SubscriptionEntity>,
@@ -98,26 +101,30 @@ export class PaymentService implements OnModuleInit {
   }
 
   async handleAppleWebhook(notification: {
-    notification_type: string;
-    original_transaction_id: string;
-    transaction_id: string;
-    expires_date: string;
-    auto_renew_status: string;
+    notificationType: string;
+    originalTransactionId: string;
+    transactionId: string;
+    expiresDate: string;
+    autoRenewStatus: string;
   }) {
+    this.logger.log(
+      `Received webhook notification: ${JSON.stringify(notification)}`,
+    );
+
     try {
-      const receipt = notification.original_transaction_id;
+      const receipt = notification.originalTransactionId;
       const validationResponse = await iap.validate(iap.APPLE, receipt);
       const purchaseData = validationResponse.purchaseData[0];
 
       let status = SubscriptionStatus.ACTIVE;
       const updateData: Partial<SubscriptionEntity> = {
-        latestTransactionId: notification.transaction_id,
+        latestTransactionId: notification.transactionId,
         expiresAt: new Date(purchaseData.expiryDate),
-        isAutoRenew: notification.auto_renew_status === '1',
+        isAutoRenew: notification.autoRenewStatus === '1',
         storeType: StoreType.APP_STORE,
       };
 
-      switch (notification.notification_type) {
+      switch (notification.notificationType) {
         case 'SUBSCRIBED':
         case 'DID_RENEW':
         case 'OFFER_REDEEMED':
@@ -135,7 +142,7 @@ export class PaymentService implements OnModuleInit {
           break;
 
         case 'DID_CHANGE_RENEWAL_STATUS':
-          if (notification.auto_renew_status === '0') {
+          if (notification.autoRenewStatus === '0') {
             status = SubscriptionStatus.EXPIRED;
             updateData.cancelledAt = new Date();
           }
@@ -147,12 +154,19 @@ export class PaymentService implements OnModuleInit {
 
       updateData.status = status;
 
-      await this.subscriptionRepository.update(
-        { originalTransactionId: receipt },
-        updateData,
-      );
-    } catch {
-      throw SubscriptionUpdateFailedException;
+      try {
+        await this.subscriptionRepository.update(
+          { originalTransactionId: receipt },
+          updateData,
+        );
+      } catch {
+        throw SubscriptionUpdateFailedException;
+      }
+    } catch (error) {
+      if (error instanceof CustomBaseException) {
+        throw error;
+      }
+      throw new UnexpectedException();
     }
   }
 
