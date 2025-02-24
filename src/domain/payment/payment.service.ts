@@ -64,26 +64,14 @@ export class PaymentService implements OnModuleInit {
         throw new SubscriptionNotFoundException();
       }
 
-      const purchaseData = validationResponse.purchaseData[0];
-      const updateData: Partial<SubscriptionEntity> = {
-        status: SubscriptionStatus.ACTIVE,
-        expiresAt: new Date(purchaseData.expiryDate),
-        lastPaidAt: new Date(),
-      };
-
-      if (platform === 'GOOGLE') {
-        updateData.originalTransactionId = receipt;
-        updateData.storeType = StoreType.GOOGLE_PLAY;
-      } else {
-        updateData.originalTransactionId = receipt;
-        updateData.latestTransactionId = purchaseData.transactionId;
-        updateData.storeType = StoreType.APP_STORE;
+      try {
+        await this.subscriptionRepository.update(
+          { id: subscription.id },
+          { originalTransactionId: receipt },
+        );
+      } catch {
+        throw new SubscriptionUpdateFailedException();
       }
-
-      await this.subscriptionRepository.update(
-        { id: subscription.id },
-        updateData,
-      );
 
       return isValid;
     } catch (error) {
@@ -135,7 +123,7 @@ export class PaymentService implements OnModuleInit {
     expiresDate: string;
     autoRenewStatus: string;
   }) {
-    this.logger.log(
+    this.logger.error(
       `Received webhook notification: ${JSON.stringify(notification)}`,
     );
 
@@ -203,6 +191,12 @@ export class PaymentService implements OnModuleInit {
         throw new SubscriptionUpdateFailedException();
       }
     } catch (error) {
+      this.logger.error('Error details:', {
+        error,
+        isCustomBase: error instanceof CustomBaseException,
+        errorType: error.constructor.name,
+      });
+
       if (error instanceof CustomBaseException) {
         throw error;
       }
