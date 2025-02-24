@@ -3,10 +3,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { SubscriptionEntity } from './entities/subscription.entity';
 import { PaymentService } from './payment.service';
 import { PaymentController } from './payment.controller';
+import { CustomLogger } from '@/common/logger/custom.logger';
 
 @Module({
   imports: [TypeOrmModule.forFeature([SubscriptionEntity])],
-  providers: [PaymentService],
+  providers: [PaymentService, CustomLogger],
   controllers: [PaymentController],
   exports: [PaymentService],
 })

@@ -77,7 +77,7 @@ import { PaymentModule } from './domain/payment/payment.module';
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_DATABASE'),
         synchronize: false, //configService.get('NODE_ENV') !== 'production',
-        logging: false, //configService.get('NODE_ENV') !== 'production',
+        logging: configService.get('NODE_ENV') !== 'production',
         autoLoadEntities: true,
         namingStrategy: new SnakeNamingStrategy(),
         ssl: {
