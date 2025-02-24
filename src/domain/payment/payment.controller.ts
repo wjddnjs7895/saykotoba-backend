@@ -17,21 +17,21 @@ export class PaymentController {
     @Body()
     verifyPurchaseRequestDto: VerifyPurchaseRequestDto,
   ): Promise<VerifyPurchaseResponseDto> {
-    await this.paymentService.verifyPurchase({
-      userId: user.id,
-      receipt: verifyPurchaseRequestDto.receipt,
-      platform: verifyPurchaseRequestDto.platform,
-    });
-    return { success: true };
+    return {
+      success: await this.paymentService.verifyPurchase({
+        receipt: verifyPurchaseRequestDto.receipt,
+        platform: verifyPurchaseRequestDto.platform,
+      }),
+    };
   }
 
-  @Post('webhooks/google')
+  @Post('webhook/google')
   async googleWebhook(@Body() notification: any) {
     await this.paymentService.handleGoogleWebhook(notification);
     return { success: true };
   }
 
-  @Post('webhooks/apple')
+  @Post('webhook/apple')
   async appleWebhook(@Body() notification: any) {
     await this.paymentService.handleAppleWebhook(notification);
     return { success: true };

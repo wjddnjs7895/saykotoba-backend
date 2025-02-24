@@ -3,14 +3,18 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SubscriptionEntity } from './entities/subscription.entity';
 import * as iap from 'in-app-purchase';
-import {
-  StoreType,
-  SubscriptionStatus,
-} from '@/common/constants/user.constants';
+import { SubscriptionStatus } from '@/common/constants/user.constants';
 import { LessThan, MoreThan } from 'typeorm';
 import { Cron } from '@nestjs/schedule';
-import { VerifyPurchaseServiceDto } from './dtos/verify-purchase.dto';
+import { VerifyPurchaseRequestDto } from './dtos/verify-purchase.dto';
 import { ConfigService } from '@nestjs/config';
+import {
+  InvalidReceiptException,
+  SubscriptionUpdateFailedException,
+} from '@/common/exception/custom-exception/subscription.exception';
+import { UnexpectedException } from '@/common/exception/custom-exception/unexpected.exception';
+import { CustomBaseException } from '@/common/exception/custom.base.exception';
+import { StoreType } from '@/common/constants/user.constants';
 
 @Injectable()
 export class PaymentService implements OnModuleInit {
@@ -32,10 +36,9 @@ export class PaymentService implements OnModuleInit {
   }
 
   async verifyPurchase({
-    userId,
     receipt,
     platform,
-  }: VerifyPurchaseServiceDto): Promise<SubscriptionEntity> {
+  }: VerifyPurchaseRequestDto): Promise<boolean> {
     try {
       await iap.setup();
 
@@ -43,43 +46,21 @@ export class PaymentService implements OnModuleInit {
         platform === 'GOOGLE' ? iap.GOOGLE : iap.APPLE,
         receipt,
       );
+      console.log('validationResponse', validationResponse);
 
       const isValid = await iap.isValidated(validationResponse);
 
       if (!isValid) {
-        throw new Error('Invalid receipt');
+        throw new InvalidReceiptException();
       }
 
-      const purchaseData = validationResponse.purchaseData[0];
-
-      const subscription = this.subscriptionRepository.create({
-        user: { id: userId },
-        storeType:
-          platform === 'GOOGLE' ? StoreType.GOOGLE_PLAY : StoreType.APP_STORE,
-        originalTransactionId: receipt,
-        status: SubscriptionStatus.ACTIVE,
-        expiresAt: new Date(purchaseData.expiryDate),
-      });
-
-      return await this.subscriptionRepository.save(subscription);
+      return isValid;
     } catch (error) {
-      throw new Error(`Purchase verification failed: ${error.message}`);
+      if (error instanceof CustomBaseException) {
+        throw error;
+      }
+      throw new UnexpectedException();
     }
-  }
-
-  async handleSubscriptionWebhook(notification: any) {
-    const { originalTransactionId, status } = notification;
-
-    await this.subscriptionRepository.update(
-      { originalTransactionId },
-      {
-        status:
-          status === 'EXPIRED'
-            ? SubscriptionStatus.EXPIRED
-            : SubscriptionStatus.ACTIVE,
-        expiresAt: new Date(notification.expirationDate),
-      },
-    );
   }
 
   @Cron('0 0 * * *')
@@ -119,21 +100,60 @@ export class PaymentService implements OnModuleInit {
   async handleAppleWebhook(notification: {
     notification_type: string;
     original_transaction_id: string;
+    transaction_id: string;
     expires_date: string;
+    auto_renew_status: string;
   }) {
-    const receipt = notification.original_transaction_id;
-    const validationResponse = await iap.validate(iap.APPLE, receipt);
-    const purchaseData = validationResponse.purchaseData[0];
+    try {
+      const receipt = notification.original_transaction_id;
+      const validationResponse = await iap.validate(iap.APPLE, receipt);
+      const purchaseData = validationResponse.purchaseData[0];
 
-    await this.subscriptionRepository.update(
-      { originalTransactionId: receipt },
-      {
-        status: notification.notification_type.includes('EXPIRED')
-          ? SubscriptionStatus.EXPIRED
-          : SubscriptionStatus.ACTIVE,
+      let status = SubscriptionStatus.ACTIVE;
+      const updateData: Partial<SubscriptionEntity> = {
+        latestTransactionId: notification.transaction_id,
         expiresAt: new Date(purchaseData.expiryDate),
-      },
-    );
+        isAutoRenew: notification.auto_renew_status === '1',
+        storeType: StoreType.APP_STORE,
+      };
+
+      switch (notification.notification_type) {
+        case 'SUBSCRIBED':
+        case 'DID_RENEW':
+        case 'OFFER_REDEEMED':
+          status = SubscriptionStatus.ACTIVE;
+          updateData.lastPaidAt = new Date();
+          break;
+
+        case 'EXPIRED':
+        case 'DID_FAIL_TO_RENEW':
+        case 'REVOKE':
+        case 'GRACE_PERIOD_EXPIRED':
+        case 'REFUND':
+          status = SubscriptionStatus.EXPIRED;
+          updateData.cancelledAt = new Date();
+          break;
+
+        case 'DID_CHANGE_RENEWAL_STATUS':
+          if (notification.auto_renew_status === '0') {
+            status = SubscriptionStatus.EXPIRED;
+            updateData.cancelledAt = new Date();
+          }
+          break;
+
+        default:
+          return;
+      }
+
+      updateData.status = status;
+
+      await this.subscriptionRepository.update(
+        { originalTransactionId: receipt },
+        updateData,
+      );
+    } catch {
+      throw SubscriptionUpdateFailedException;
+    }
   }
 
   async isActiveSubscriber(userId: number): Promise<boolean> {

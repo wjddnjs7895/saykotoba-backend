@@ -145,6 +145,7 @@ export const SubscriptionErrorMessage: SubscriptionErrorMessageType = {
     'Subscription delete failed',
   [SubscriptionErrorCodeEnum.UnauthorizedSubscription]:
     'Unauthorized subscription',
+  [SubscriptionErrorCodeEnum.InvalidReceipt]: 'Invalid receipt',
 };
 
 export const UnexpectedErrorMessage: UnexpectedErrorMessageType = {
