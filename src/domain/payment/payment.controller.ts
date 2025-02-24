@@ -6,6 +6,7 @@ import {
 } from './dtos/verify-purchase.dto';
 import { User } from '@/common/decorators/user.decorator';
 import { UserEntity } from '../user/entities/user.entity';
+import { Public } from '@/common/decorators/public.decorator';
 
 @Controller('payment')
 export class PaymentController {
@@ -25,12 +26,14 @@ export class PaymentController {
     };
   }
 
+  @Public()
   @Post('webhook/google')
   async googleWebhook(@Body() notification: any) {
     await this.paymentService.handleGoogleWebhook(notification);
     return { success: true };
   }
 
+  @Public()
   @Post('webhook/apple')
   async appleWebhook(@Body() notification: any) {
     await this.paymentService.handleAppleWebhook(notification);
