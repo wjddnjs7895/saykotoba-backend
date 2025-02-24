@@ -60,3 +60,13 @@ export class InvalidReceiptException extends CustomBaseException {
     );
   }
 }
+
+export class SubscriptionNotFoundException extends CustomBaseException {
+  constructor() {
+    super(
+      SubscriptionErrorCodeEnum.SubscriptionNotFound,
+      HttpStatus.NOT_FOUND,
+      SubscriptionErrorMessage[SubscriptionErrorCodeEnum.SubscriptionNotFound],
+    );
+  }
+}

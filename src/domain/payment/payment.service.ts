@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SubscriptionEntity } from './entities/subscription.entity';
@@ -10,16 +10,16 @@ import { VerifyPurchaseServiceDto } from './dtos/verify-purchase.dto';
 import { ConfigService } from '@nestjs/config';
 import {
   InvalidReceiptException,
+  SubscriptionNotFoundException,
   SubscriptionUpdateFailedException,
 } from '@/common/exception/custom-exception/subscription.exception';
 import { UnexpectedException } from '@/common/exception/custom-exception/unexpected.exception';
 import { CustomBaseException } from '@/common/exception/custom.base.exception';
 import { StoreType } from '@/common/constants/user.constants';
-import { CustomLogger } from '@/common/logger/custom.logger';
 
 @Injectable()
 export class PaymentService implements OnModuleInit {
-  private readonly logger = new CustomLogger();
+  private readonly logger = new Logger(PaymentService.name);
 
   constructor(
     @InjectRepository(SubscriptionEntity)
@@ -61,8 +61,7 @@ export class PaymentService implements OnModuleInit {
       });
 
       if (!subscription) {
-        this.logger.error(`구독을 찾을 수 없습니다. userId: ${userId}`);
-        throw new SubscriptionUpdateFailedException();
+        throw new SubscriptionNotFoundException();
       }
 
       const purchaseData = validationResponse.purchaseData[0];
@@ -142,16 +141,29 @@ export class PaymentService implements OnModuleInit {
 
     try {
       const receipt = notification.originalTransactionId;
-      const validationResponse = await iap.validate(iap.APPLE, receipt);
-      const purchaseData = validationResponse.purchaseData[0];
+
+      const subscription = await this.subscriptionRepository.findOne({
+        where: [{ originalTransactionId: receipt }],
+      });
+
+      if (!subscription) {
+        throw new SubscriptionNotFoundException();
+      }
 
       let status = SubscriptionStatus.ACTIVE;
       const updateData: Partial<SubscriptionEntity> = {
         latestTransactionId: notification.transactionId,
-        expiresAt: new Date(purchaseData.expiryDate),
         isAutoRenew: notification.autoRenewStatus === '1',
         storeType: StoreType.APP_STORE,
       };
+
+      try {
+        const validationResponse = await iap.validate(iap.APPLE, receipt);
+        const purchaseData = validationResponse.purchaseData[0];
+        updateData.expiresAt = new Date(purchaseData.expiryDate);
+      } catch {
+        throw new InvalidReceiptException();
+      }
 
       switch (notification.notificationType) {
         case 'SUBSCRIBED':
@@ -182,10 +194,9 @@ export class PaymentService implements OnModuleInit {
       }
 
       updateData.status = status;
-
       try {
         await this.subscriptionRepository.update(
-          { originalTransactionId: receipt },
+          { id: subscription.id },
           updateData,
         );
       } catch {
