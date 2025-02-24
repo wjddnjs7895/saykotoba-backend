@@ -22,6 +22,7 @@ export class PaymentController {
       success: await this.paymentService.verifyPurchase({
         receipt: verifyPurchaseRequestDto.receipt,
         platform: verifyPurchaseRequestDto.platform,
+        userId: user.id,
       }),
     };
   }

@@ -3,6 +3,10 @@ export class VerifyPurchaseRequestDto {
   platform: 'GOOGLE' | 'APPLE';
 }
 
+export class VerifyPurchaseServiceDto extends VerifyPurchaseRequestDto {
+  userId: number;
+}
+
 export class VerifyPurchaseResponseDto {
   success: boolean;
 }

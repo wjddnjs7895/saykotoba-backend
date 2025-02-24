@@ -6,7 +6,7 @@ import * as iap from 'in-app-purchase';
 import { SubscriptionStatus } from '@/common/constants/user.constants';
 import { LessThan, MoreThan } from 'typeorm';
 import { Cron } from '@nestjs/schedule';
-import { VerifyPurchaseRequestDto } from './dtos/verify-purchase.dto';
+import { VerifyPurchaseServiceDto } from './dtos/verify-purchase.dto';
 import { ConfigService } from '@nestjs/config';
 import {
   InvalidReceiptException,
@@ -41,7 +41,8 @@ export class PaymentService implements OnModuleInit {
   async verifyPurchase({
     receipt,
     platform,
-  }: VerifyPurchaseRequestDto): Promise<boolean> {
+    userId,
+  }: VerifyPurchaseServiceDto): Promise<boolean> {
     try {
       await iap.setup();
 
@@ -49,13 +50,41 @@ export class PaymentService implements OnModuleInit {
         platform === 'GOOGLE' ? iap.GOOGLE : iap.APPLE,
         receipt,
       );
-      console.log('validationResponse', validationResponse);
 
       const isValid = await iap.isValidated(validationResponse);
-
       if (!isValid) {
         throw new InvalidReceiptException();
       }
+
+      const subscription = await this.subscriptionRepository.findOne({
+        where: { user: { id: userId } },
+      });
+
+      if (!subscription) {
+        this.logger.error(`구독을 찾을 수 없습니다. userId: ${userId}`);
+        throw new SubscriptionUpdateFailedException();
+      }
+
+      const purchaseData = validationResponse.purchaseData[0];
+      const updateData: Partial<SubscriptionEntity> = {
+        status: SubscriptionStatus.ACTIVE,
+        expiresAt: new Date(purchaseData.expiryDate),
+        lastPaidAt: new Date(),
+      };
+
+      if (platform === 'GOOGLE') {
+        updateData.originalTransactionId = receipt;
+        updateData.storeType = StoreType.GOOGLE_PLAY;
+      } else {
+        updateData.originalTransactionId = receipt;
+        updateData.latestTransactionId = purchaseData.transactionId;
+        updateData.storeType = StoreType.APP_STORE;
+      }
+
+      await this.subscriptionRepository.update(
+        { id: subscription.id },
+        updateData,
+      );
 
       return isValid;
     } catch (error) {
@@ -160,7 +189,7 @@ export class PaymentService implements OnModuleInit {
           updateData,
         );
       } catch {
-        throw SubscriptionUpdateFailedException;
+        throw new SubscriptionUpdateFailedException();
       }
     } catch (error) {
       if (error instanceof CustomBaseException) {
