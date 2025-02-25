@@ -16,6 +16,9 @@ import {
 import { UnexpectedException } from '@/common/exception/custom-exception/unexpected.exception';
 import { CustomBaseException } from '@/common/exception/custom.base.exception';
 import { StoreType } from '@/common/constants/user.constants';
+import { AppleWebhookUtil } from './utils/apple-webhook.util';
+import { AppleNotificationType } from './dtos/apple-webhook.dto';
+import { GoogleWebhookNotificationDto } from './dtos/google-webhook.dto';
 
 @Injectable()
 export class PaymentService implements OnModuleInit {
@@ -93,12 +96,7 @@ export class PaymentService implements OnModuleInit {
     );
   }
 
-  async handleGoogleWebhook(notification: {
-    subscriptionId: string;
-    purchaseToken: string;
-    eventTimeMillis: number;
-    notificationType: number;
-  }) {
+  async handleGoogleWebhook(notification: GoogleWebhookNotificationDto) {
     const receipt = notification.purchaseToken;
     const validationResponse = await iap.validate(iap.GOOGLE, receipt);
     const purchaseData = validationResponse.purchaseData[0];
@@ -114,16 +112,14 @@ export class PaymentService implements OnModuleInit {
     );
   }
 
-  async handleAppleWebhook(notification: {
-    notificationType: string;
-    originalTransactionId: string;
-    transactionId: string;
-    expiresDate: string;
-    autoRenewStatus: string;
-  }) {
-    Logger.log('handleAppleWebhook', JSON.stringify(notification, null, 2));
+  async handleAppleWebhook(notification: any) {
     try {
-      const receipt = notification.originalTransactionId;
+      const transactionInfo =
+        AppleWebhookUtil.extractTransactionInfo(notification);
+      Logger.log('transactionInfo', transactionInfo);
+      const receipt =
+        transactionInfo.originalTransactionId ||
+        notification.originalTransactionId;
 
       const subscription = await this.subscriptionRepository.findOne({
         where: [{ originalTransactionId: receipt }],
@@ -135,31 +131,42 @@ export class PaymentService implements OnModuleInit {
 
       let status = SubscriptionStatus.ACTIVE;
       const updateData: Partial<SubscriptionEntity> = {
-        latestTransactionId: notification.transactionId,
-        isAutoRenew: notification.autoRenewStatus === '1',
+        latestTransactionId:
+          transactionInfo.transactionId || notification.transactionId,
+        isAutoRenew:
+          transactionInfo.isAutoRenewable !== undefined
+            ? transactionInfo.isAutoRenewable
+            : notification.autoRenewStatus === '1',
         storeType: StoreType.APP_STORE,
       };
 
-      updateData.expiresAt = new Date(parseInt(notification.expiresDate));
+      if (transactionInfo.expiresDate) {
+        updateData.expiresAt = new Date(transactionInfo.expiresDate);
+      } else if (notification.expiresDate) {
+        updateData.expiresAt = new Date(parseInt(notification.expiresDate));
+      }
 
-      switch (notification.notificationType) {
-        case 'SUBSCRIBED':
-        case 'DID_RENEW':
-        case 'OFFER_REDEEMED':
+      const notificationType =
+        transactionInfo.notificationType || notification.notificationType;
+
+      switch (notificationType) {
+        case AppleNotificationType.SUBSCRIBED:
+        case AppleNotificationType.DID_RENEW:
+        case AppleNotificationType.OFFER_REDEEMED:
           status = SubscriptionStatus.ACTIVE;
           updateData.lastPaidAt = new Date();
           break;
 
-        case 'EXPIRED':
-        case 'DID_FAIL_TO_RENEW':
-        case 'REVOKE':
-        case 'GRACE_PERIOD_EXPIRED':
-        case 'REFUND':
+        case AppleNotificationType.EXPIRED:
+        case AppleNotificationType.DID_FAIL_TO_RENEW:
+        case AppleNotificationType.REVOKE:
+        case AppleNotificationType.GRACE_PERIOD_EXPIRED:
+        case AppleNotificationType.REFUND:
           status = SubscriptionStatus.EXPIRED;
           updateData.cancelledAt = new Date();
           break;
 
-        case 'DID_CHANGE_RENEWAL_STATUS':
+        case AppleNotificationType.DID_CHANGE_RENEWAL_STATUS:
           if (notification.autoRenewStatus === '0') {
             status = SubscriptionStatus.EXPIRED;
             updateData.cancelledAt = new Date();
@@ -180,6 +187,7 @@ export class PaymentService implements OnModuleInit {
       } catch {
         throw new SubscriptionUpdateFailedException();
       }
+      return true;
     } catch (error) {
       if (error instanceof CustomBaseException) {
         throw error;

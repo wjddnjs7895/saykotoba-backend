@@ -37,7 +37,6 @@ export class PaymentController {
   @Post('webhook/apple')
   async appleWebhook(@Body() notification: any) {
     Logger.log('appleWebhook', JSON.stringify(notification, null, 2));
-    await this.paymentService.handleAppleWebhook(notification);
-    return { success: true };
+    return await this.paymentService.handleAppleWebhook(notification);
   }
 }
