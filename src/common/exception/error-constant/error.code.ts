@@ -84,6 +84,8 @@ export enum SubscriptionErrorCodeEnum {
   SubscriptionUpdateFailed = 'SUBS04',
   SubscriptionDeleteFailed = 'SUBS05',
   InvalidReceipt = 'SUBS06',
+  AppleWebhookFailed = 'SUBS07',
+  AppleReceiptDecodeFailed = 'SUBS08',
 }
 
 export enum UnexpectedErrorCodeEnum {

@@ -146,6 +146,9 @@ export const SubscriptionErrorMessage: SubscriptionErrorMessageType = {
   [SubscriptionErrorCodeEnum.UnauthorizedSubscription]:
     'Unauthorized subscription',
   [SubscriptionErrorCodeEnum.InvalidReceipt]: 'Invalid receipt',
+  [SubscriptionErrorCodeEnum.AppleWebhookFailed]: 'Apple webhook failed',
+  [SubscriptionErrorCodeEnum.AppleReceiptDecodeFailed]:
+    'Apple receipt decode failed',
 };
 
 export const UnexpectedErrorMessage: UnexpectedErrorMessageType = {

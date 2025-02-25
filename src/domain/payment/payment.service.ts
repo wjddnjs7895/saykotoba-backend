@@ -9,6 +9,7 @@ import { Cron } from '@nestjs/schedule';
 import { VerifyPurchaseServiceDto } from './dtos/verify-purchase.dto';
 import { ConfigService } from '@nestjs/config';
 import {
+  AppleReceiptDecodeFailedException,
   InvalidReceiptException,
   SubscriptionNotFoundException,
   SubscriptionUpdateFailedException,
@@ -65,10 +66,33 @@ export class PaymentService implements OnModuleInit {
         throw new SubscriptionNotFoundException();
       }
 
+      let originalTransactionId = receipt;
+      if (platform === 'APPLE') {
+        try {
+          const rawNotification = { signedPayload: receipt };
+          const transactionInfo =
+            AppleWebhookUtil.extractTransactionInfo(rawNotification);
+
+          if (transactionInfo.originalTransactionId) {
+            originalTransactionId = transactionInfo.originalTransactionId;
+          } else if (
+            validationResponse.receipt &&
+            validationResponse.receipt.in_app
+          ) {
+            const latestReceipt = validationResponse.receipt.in_app[0];
+            if (latestReceipt && latestReceipt.original_transaction_id) {
+              originalTransactionId = latestReceipt.original_transaction_id;
+            }
+          }
+        } catch {
+          throw new AppleReceiptDecodeFailedException();
+        }
+      }
+
       try {
         await this.subscriptionRepository.update(
           { id: subscription.id },
-          { originalTransactionId: receipt },
+          { originalTransactionId },
         );
       } catch {
         throw new SubscriptionUpdateFailedException();

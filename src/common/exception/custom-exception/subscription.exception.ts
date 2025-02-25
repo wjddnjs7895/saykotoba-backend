@@ -70,3 +70,25 @@ export class SubscriptionNotFoundException extends CustomBaseException {
     );
   }
 }
+
+export class AppleWebhookFailedException extends CustomBaseException {
+  constructor() {
+    super(
+      SubscriptionErrorCodeEnum.AppleWebhookFailed,
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      SubscriptionErrorMessage[SubscriptionErrorCodeEnum.AppleWebhookFailed],
+    );
+  }
+}
+
+export class AppleReceiptDecodeFailedException extends CustomBaseException {
+  constructor() {
+    super(
+      SubscriptionErrorCodeEnum.AppleReceiptDecodeFailed,
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      SubscriptionErrorMessage[
+        SubscriptionErrorCodeEnum.AppleReceiptDecodeFailed
+      ],
+    );
+  }
+}
