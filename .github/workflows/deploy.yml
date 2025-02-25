@@ -103,9 +103,9 @@ jobs:
               echo "=== DEV 서버 배포 ==="
               echo "1. 개발 서버 이미지 업데이트"
               docker pull '${{ secrets.DOCKERHUB_USERNAME }}'/saykotoba-backend:dev
-              echo "2. 개발 서버 재시작"
-              docker-compose stop api-dev
-              docker-compose up -d api-dev
+              echo "2. 개발 서버 컨테이너 제거 및 재생성"
+              docker-compose rm -sf api-dev
+              docker-compose up -d --force-recreate api-dev
             '
           fi
       - name: Check deployment status
