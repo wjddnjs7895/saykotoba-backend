@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Logger, Post } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import {
   VerifyPurchaseRequestDto,
@@ -7,13 +7,9 @@ import {
 import { User } from '@/common/decorators/user.decorator';
 import { UserEntity } from '../user/entities/user.entity';
 import { Public } from '@/common/decorators/public.decorator';
-import { CustomLogger } from '@/common/logger/custom.logger';
 @Controller('payment')
 export class PaymentController {
-  constructor(
-    private readonly paymentService: PaymentService,
-    private readonly logger: CustomLogger,
-  ) {}
+  constructor(private readonly paymentService: PaymentService) {}
 
   @Post('verify')
   async verifyPurchase(
@@ -40,12 +36,8 @@ export class PaymentController {
   @Public()
   @Post('webhook/apple')
   async appleWebhook(@Body() notification: any) {
-    try {
-      await this.paymentService.handleAppleWebhook(notification);
-      return { success: true };
-    } catch (error) {
-      this.logger.error('Webhook error:', error);
-      throw error;
-    }
+    Logger.log('appleWebhook', notification);
+    await this.paymentService.handleAppleWebhook(notification);
+    return { success: true };
   }
 }

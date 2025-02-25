@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SubscriptionEntity } from './entities/subscription.entity';
@@ -16,7 +16,6 @@ import {
 import { UnexpectedException } from '@/common/exception/custom-exception/unexpected.exception';
 import { CustomBaseException } from '@/common/exception/custom.base.exception';
 import { StoreType } from '@/common/constants/user.constants';
-import { CustomLogger } from '@/common/logger/custom.logger';
 
 @Injectable()
 export class PaymentService implements OnModuleInit {
@@ -24,7 +23,6 @@ export class PaymentService implements OnModuleInit {
     @InjectRepository(SubscriptionEntity)
     private readonly subscriptionRepository: Repository<SubscriptionEntity>,
     private readonly configService: ConfigService,
-    private readonly logger: CustomLogger,
   ) {}
 
   async onModuleInit() {
@@ -123,12 +121,6 @@ export class PaymentService implements OnModuleInit {
     expiresDate: string;
     autoRenewStatus: string;
   }) {
-    this.logger.error(
-      `Received webhook notification: ${JSON.stringify(notification)}`,
-      null,
-      PaymentService.name,
-    );
-
     try {
       const receipt = notification.originalTransactionId;
 
@@ -190,11 +182,10 @@ export class PaymentService implements OnModuleInit {
           updateData,
         );
       } catch {
+        Logger.error('updateData', updateData);
         throw new SubscriptionUpdateFailedException();
       }
     } catch (error) {
-      this.logger.error('Error details:', error?.stack, PaymentService.name);
-
       if (error instanceof CustomBaseException) {
         throw error;
       }
