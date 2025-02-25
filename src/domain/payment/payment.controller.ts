@@ -7,6 +7,7 @@ import {
 import { User } from '@/common/decorators/user.decorator';
 import { UserEntity } from '../user/entities/user.entity';
 import { Public } from '@/common/decorators/public.decorator';
+import { AppleRawNotification } from './dtos/apple-webhook.dto';
 @Controller('payment')
 export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
@@ -35,7 +36,7 @@ export class PaymentController {
 
   @Public()
   @Post('webhook/apple')
-  async appleWebhook(@Body() notification: any) {
+  async appleWebhook(@Body() notification: AppleRawNotification) {
     Logger.log('appleWebhook', JSON.stringify(notification, null, 2));
     return await this.paymentService.handleAppleWebhook(notification);
   }

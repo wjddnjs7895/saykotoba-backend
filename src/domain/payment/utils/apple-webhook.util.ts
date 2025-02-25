@@ -1,6 +1,7 @@
 import * as jwt from 'jsonwebtoken';
 import { Logger } from '@nestjs/common';
 import {
+  AppleRawNotification,
   AppleTransactionInfoDto,
   AppleWebhookV2NotificationDto,
 } from '../dtos/apple-webhook.dto';
@@ -26,14 +27,75 @@ export class AppleWebhookUtil {
       notification.data.signedTransactionInfo
     );
   }
-  static extractTransactionInfo(notification: any): AppleTransactionInfoDto {
+
+  static extractTransactionInfo(
+    rawNotification: AppleRawNotification | any,
+  ): AppleTransactionInfoDto {
     const result: AppleTransactionInfoDto = {};
 
-    result.notificationType = notification.notificationType;
+    if ('signedPayload' in rawNotification) {
+      const decodedPayload = this.decodeJWT(rawNotification.signedPayload);
 
-    if (this.isV2Notification(notification)) {
-      if (notification.data.signedTransactionInfo) {
-        const decoded = this.decodeJWT(notification.data.signedTransactionInfo);
+      if (decodedPayload) {
+        if (decodedPayload.notificationType) {
+          result.notificationType = decodedPayload.notificationType;
+        }
+
+        if (decodedPayload.data) {
+          if (decodedPayload.data.signedTransactionInfo) {
+            const txInfo = this.decodeJWT(
+              decodedPayload.data.signedTransactionInfo,
+            );
+
+            if (txInfo) {
+              if (txInfo.expiresDate) {
+                result.expiresDate = txInfo.expiresDate;
+              }
+
+              if (txInfo.originalTransactionId) {
+                result.originalTransactionId = txInfo.originalTransactionId;
+              }
+
+              if (txInfo.transactionId) {
+                result.transactionId = txInfo.transactionId;
+              }
+
+              if (txInfo.autoRenewStatus !== undefined) {
+                result.isAutoRenewable =
+                  txInfo.autoRenewStatus === '1' ||
+                  txInfo.autoRenewStatus === 1;
+              }
+            }
+          }
+
+          if (decodedPayload.data.signedRenewalInfo) {
+            const renewalInfo = this.decodeJWT(
+              decodedPayload.data.signedRenewalInfo,
+            );
+
+            if (
+              renewalInfo &&
+              result.isAutoRenewable === undefined &&
+              renewalInfo.autoRenewStatus !== undefined
+            ) {
+              result.isAutoRenewable =
+                renewalInfo.autoRenewStatus === '1' ||
+                renewalInfo.autoRenewStatus === 1;
+            }
+          }
+        }
+
+        return result;
+      }
+    }
+
+    result.notificationType = rawNotification.notificationType;
+
+    if (this.isV2Notification(rawNotification)) {
+      if (rawNotification.data.signedTransactionInfo) {
+        const decoded = this.decodeJWT(
+          rawNotification.data.signedTransactionInfo,
+        );
 
         if (decoded) {
           if (decoded.expiresDate) {
@@ -65,8 +127,8 @@ export class AppleWebhookUtil {
         }
       }
 
-      if (notification.data.signedRenewalInfo) {
-        const decoded = this.decodeJWT(notification.data.signedRenewalInfo);
+      if (rawNotification.data.signedRenewalInfo) {
+        const decoded = this.decodeJWT(rawNotification.data.signedRenewalInfo);
 
         if (
           decoded &&
@@ -78,20 +140,20 @@ export class AppleWebhookUtil {
         }
       }
     } else {
-      if (notification.expiresDate) {
-        result.expiresDate = parseInt(notification.expiresDate);
+      if (rawNotification.expiresDate) {
+        result.expiresDate = parseInt(rawNotification.expiresDate);
       }
 
-      if (notification.originalTransactionId) {
-        result.originalTransactionId = notification.originalTransactionId;
+      if (rawNotification.originalTransactionId) {
+        result.originalTransactionId = rawNotification.originalTransactionId;
       }
 
-      if (notification.transactionId) {
-        result.transactionId = notification.transactionId;
+      if (rawNotification.transactionId) {
+        result.transactionId = rawNotification.transactionId;
       }
 
-      if (notification.autoRenewStatus) {
-        result.isAutoRenewable = notification.autoRenewStatus === '1';
+      if (rawNotification.autoRenewStatus) {
+        result.isAutoRenewable = rawNotification.autoRenewStatus === '1';
       }
     }
 

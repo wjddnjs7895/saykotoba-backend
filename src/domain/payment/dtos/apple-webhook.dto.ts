@@ -1,3 +1,7 @@
+export interface AppleRawNotification {
+  signedPayload: string;
+}
+
 export enum AppleNotificationType {
   SUBSCRIBED = 'SUBSCRIBED',
   DID_RENEW = 'DID_RENEW',
