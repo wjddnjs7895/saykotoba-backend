@@ -121,7 +121,7 @@ export class PaymentService implements OnModuleInit {
     expiresDate: string;
     autoRenewStatus: string;
   }) {
-    Logger.error('handleAppleWebhook', notification);
+    Logger.log('handleAppleWebhook', JSON.stringify(notification, null, 2));
     try {
       const receipt = notification.originalTransactionId;
 
@@ -140,13 +140,7 @@ export class PaymentService implements OnModuleInit {
         storeType: StoreType.APP_STORE,
       };
 
-      try {
-        const validationResponse = await iap.validate(iap.APPLE, receipt);
-        const purchaseData = validationResponse.purchaseData[0];
-        updateData.expiresAt = new Date(purchaseData.expiryDate);
-      } catch {
-        throw new InvalidReceiptException();
-      }
+      updateData.expiresAt = new Date(parseInt(notification.expiresDate));
 
       switch (notification.notificationType) {
         case 'SUBSCRIBED':
@@ -177,7 +171,7 @@ export class PaymentService implements OnModuleInit {
       }
 
       updateData.status = status;
-      Logger.error('updateData', updateData);
+      Logger.log('updateData', updateData);
       try {
         await this.subscriptionRepository.update(
           { id: subscription.id },
