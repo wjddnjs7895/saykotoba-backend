@@ -121,7 +121,6 @@ export class PaymentService implements OnModuleInit {
     expiresDate: string;
     autoRenewStatus: string;
   }) {
-    console.log('handleAppleWebhook', notification);
     try {
       const receipt = notification.originalTransactionId;
 
@@ -177,15 +176,14 @@ export class PaymentService implements OnModuleInit {
       }
 
       updateData.status = status;
-      try {
-        await this.subscriptionRepository.update(
-          { id: subscription.id },
-          updateData,
-        );
-      } catch {
-        console.log('updateData', updateData);
-        throw new SubscriptionUpdateFailedException();
-      }
+      // try {
+      //   await this.subscriptionRepository.update(
+      //     { id: subscription.id },
+      //     updateData,
+      //   );
+      // } catch {
+      //   throw new SubscriptionUpdateFailedException();
+      // }
     } catch (error) {
       if (error instanceof CustomBaseException) {
         throw error;
