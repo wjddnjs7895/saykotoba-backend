@@ -116,7 +116,7 @@ export class PaymentService implements OnModuleInit {
     try {
       const transactionInfo =
         AppleWebhookUtil.extractTransactionInfo(notification);
-      Logger.log('transactionInfo', transactionInfo);
+      Logger.log('transactionInfo', JSON.stringify(transactionInfo, null, 2));
       const receipt =
         transactionInfo.originalTransactionId ||
         notification.originalTransactionId;
