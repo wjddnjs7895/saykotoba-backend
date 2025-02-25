@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SubscriptionEntity } from './entities/subscription.entity';
@@ -121,6 +121,7 @@ export class PaymentService implements OnModuleInit {
     expiresDate: string;
     autoRenewStatus: string;
   }) {
+    Logger.error('handleAppleWebhook', notification);
     try {
       const receipt = notification.originalTransactionId;
 
@@ -176,6 +177,7 @@ export class PaymentService implements OnModuleInit {
       }
 
       updateData.status = status;
+      Logger.error('updateData', updateData);
       try {
         await this.subscriptionRepository.update(
           { id: subscription.id },

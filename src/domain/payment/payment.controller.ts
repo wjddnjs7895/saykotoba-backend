@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Logger, Post } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import {
   VerifyPurchaseRequestDto,
@@ -36,6 +36,7 @@ export class PaymentController {
   @Public()
   @Post('webhook/apple')
   async appleWebhook(@Body() notification: any) {
+    Logger.log('appleWebhook', notification);
     await this.paymentService.handleAppleWebhook(notification);
     return { success: true };
   }
