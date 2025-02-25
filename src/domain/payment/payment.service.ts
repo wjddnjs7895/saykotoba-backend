@@ -176,14 +176,14 @@ export class PaymentService implements OnModuleInit {
       }
 
       updateData.status = status;
-      // try {
-      //   await this.subscriptionRepository.update(
-      //     { id: subscription.id },
-      //     updateData,
-      //   );
-      // } catch {
-      //   throw new SubscriptionUpdateFailedException();
-      // }
+      try {
+        await this.subscriptionRepository.update(
+          { id: subscription.id },
+          updateData,
+        );
+      } catch {
+        throw new SubscriptionUpdateFailedException();
+      }
     } catch (error) {
       if (error instanceof CustomBaseException) {
         throw error;

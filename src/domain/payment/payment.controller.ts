@@ -36,9 +36,6 @@ export class PaymentController {
   @Public()
   @Post('webhook/apple')
   async appleWebhook(@Body() notification: any) {
-    throw new Error(
-      `Apple 웹훅 알림 내용: ${JSON.stringify(notification, null, 2)}`,
-    );
     await this.paymentService.handleAppleWebhook(notification);
     return { success: true };
   }
