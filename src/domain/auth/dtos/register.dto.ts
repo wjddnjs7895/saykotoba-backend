@@ -1,4 +1,10 @@
-import { IsString, IsEmail, IsOptional, IsBoolean } from 'class-validator';
+import {
+  IsString,
+  IsEmail,
+  IsOptional,
+  IsBoolean,
+  IsNumber,
+} from 'class-validator';
 import { TokenResponseDto } from './token.dto';
 import { AuthProvider } from '@/common/constants/user.constants';
 
@@ -40,6 +46,12 @@ export class AppleRegisterRequestDto extends BaseRegisterRequestDto {
 export class RegisterResponseDto extends TokenResponseDto {
   @IsBoolean()
   isOnboardingCompleted: boolean;
+
+  @IsString()
+  email: string;
+
+  @IsNumber()
+  userId: number;
 }
 
 export type RegisterRequestDto =

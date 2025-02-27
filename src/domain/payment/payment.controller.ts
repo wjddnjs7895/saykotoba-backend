@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Logger, Post } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import {
   VerifyPurchaseRequestDto,
@@ -6,7 +6,8 @@ import {
 } from './dtos/verify-purchase.dto';
 import { User } from '@/common/decorators/user.decorator';
 import { UserEntity } from '../user/entities/user.entity';
-
+import { Public } from '@/common/decorators/public.decorator';
+import { AppleRawNotification } from './dtos/apple-webhook.dto';
 @Controller('payment')
 export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
@@ -17,23 +18,26 @@ export class PaymentController {
     @Body()
     verifyPurchaseRequestDto: VerifyPurchaseRequestDto,
   ): Promise<VerifyPurchaseResponseDto> {
-    await this.paymentService.verifyPurchase({
-      userId: user.id,
-      receipt: verifyPurchaseRequestDto.receipt,
-      platform: verifyPurchaseRequestDto.platform,
-    });
-    return { success: true };
+    return {
+      success: await this.paymentService.verifyPurchase({
+        receipt: verifyPurchaseRequestDto.receipt,
+        platform: verifyPurchaseRequestDto.platform,
+        userId: user.id,
+      }),
+    };
   }
 
-  @Post('webhooks/google')
+  @Public()
+  @Post('webhook/google')
   async googleWebhook(@Body() notification: any) {
     await this.paymentService.handleGoogleWebhook(notification);
     return { success: true };
   }
 
-  @Post('webhooks/apple')
-  async appleWebhook(@Body() notification: any) {
-    await this.paymentService.handleAppleWebhook(notification);
-    return { success: true };
+  @Public()
+  @Post('webhook/apple')
+  async appleWebhook(@Body() notification: AppleRawNotification) {
+    Logger.log('appleWebhook', JSON.stringify(notification, null, 2));
+    return await this.paymentService.handleAppleWebhook(notification);
   }
 }

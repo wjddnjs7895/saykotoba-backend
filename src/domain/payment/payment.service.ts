@@ -1,16 +1,25 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SubscriptionEntity } from './entities/subscription.entity';
 import * as iap from 'in-app-purchase';
-import {
-  StoreType,
-  SubscriptionStatus,
-} from '@/common/constants/user.constants';
+import { SubscriptionStatus } from '@/common/constants/user.constants';
 import { LessThan, MoreThan } from 'typeorm';
 import { Cron } from '@nestjs/schedule';
 import { VerifyPurchaseServiceDto } from './dtos/verify-purchase.dto';
 import { ConfigService } from '@nestjs/config';
+import {
+  AppleReceiptDecodeFailedException,
+  InvalidReceiptException,
+  SubscriptionNotFoundException,
+  SubscriptionUpdateFailedException,
+} from '@/common/exception/custom-exception/subscription.exception';
+import { UnexpectedException } from '@/common/exception/custom-exception/unexpected.exception';
+import { CustomBaseException } from '@/common/exception/custom.base.exception';
+import { StoreType } from '@/common/constants/user.constants';
+import { AppleWebhookUtil } from './utils/apple-webhook.util';
+import { AppleNotificationType } from './dtos/apple-webhook.dto';
+import { GoogleWebhookNotificationDto } from './dtos/google-webhook.dto';
 
 @Injectable()
 export class PaymentService implements OnModuleInit {
@@ -32,10 +41,10 @@ export class PaymentService implements OnModuleInit {
   }
 
   async verifyPurchase({
-    userId,
     receipt,
     platform,
-  }: VerifyPurchaseServiceDto): Promise<SubscriptionEntity> {
+    userId,
+  }: VerifyPurchaseServiceDto): Promise<boolean> {
     try {
       await iap.setup();
 
@@ -45,41 +54,61 @@ export class PaymentService implements OnModuleInit {
       );
 
       const isValid = await iap.isValidated(validationResponse);
-
       if (!isValid) {
-        throw new Error('Invalid receipt');
+        throw new InvalidReceiptException();
       }
 
-      const purchaseData = validationResponse.purchaseData[0];
-
-      const subscription = this.subscriptionRepository.create({
-        user: { id: userId },
-        storeType:
-          platform === 'GOOGLE' ? StoreType.GOOGLE_PLAY : StoreType.APP_STORE,
-        originalTransactionId: receipt,
-        status: SubscriptionStatus.ACTIVE,
-        expiresAt: new Date(purchaseData.expiryDate),
+      const subscription = await this.subscriptionRepository.findOne({
+        where: { user: { id: userId } },
       });
 
-      return await this.subscriptionRepository.save(subscription);
+      if (!subscription) {
+        throw new SubscriptionNotFoundException();
+      }
+
+      let originalTransactionId = receipt;
+      if (platform === 'APPLE') {
+        try {
+          const rawNotification = { signedPayload: receipt };
+          const transactionInfo =
+            AppleWebhookUtil.extractTransactionInfo(rawNotification);
+
+          if (transactionInfo.originalTransactionId) {
+            originalTransactionId = transactionInfo.originalTransactionId;
+          } else if (
+            validationResponse.receipt &&
+            validationResponse.receipt.in_app
+          ) {
+            const latestReceipt = validationResponse.receipt.in_app[0];
+            if (latestReceipt && latestReceipt.original_transaction_id) {
+              originalTransactionId = latestReceipt.original_transaction_id;
+            }
+          }
+        } catch {
+          throw new AppleReceiptDecodeFailedException();
+        }
+      }
+
+      try {
+        await this.subscriptionRepository.update(
+          { id: subscription.id },
+          {
+            originalTransactionId,
+            status: SubscriptionStatus.ACTIVE,
+            expiresAt: new Date(new Date().getTime() + 5 * 60 * 1000),
+          },
+        );
+      } catch {
+        throw new SubscriptionUpdateFailedException();
+      }
+
+      return isValid;
     } catch (error) {
-      throw new Error(`Purchase verification failed: ${error.message}`);
+      if (error instanceof CustomBaseException) {
+        throw error;
+      }
+      throw new UnexpectedException();
     }
-  }
-
-  async handleSubscriptionWebhook(notification: any) {
-    const { originalTransactionId, status } = notification;
-
-    await this.subscriptionRepository.update(
-      { originalTransactionId },
-      {
-        status:
-          status === 'EXPIRED'
-            ? SubscriptionStatus.EXPIRED
-            : SubscriptionStatus.ACTIVE,
-        expiresAt: new Date(notification.expirationDate),
-      },
-    );
   }
 
   @Cron('0 0 * * *')
@@ -95,12 +124,7 @@ export class PaymentService implements OnModuleInit {
     );
   }
 
-  async handleGoogleWebhook(notification: {
-    subscriptionId: string;
-    purchaseToken: string;
-    eventTimeMillis: number;
-    notificationType: number;
-  }) {
+  async handleGoogleWebhook(notification: GoogleWebhookNotificationDto) {
     const receipt = notification.purchaseToken;
     const validationResponse = await iap.validate(iap.GOOGLE, receipt);
     const purchaseData = validationResponse.purchaseData[0];
@@ -116,24 +140,88 @@ export class PaymentService implements OnModuleInit {
     );
   }
 
-  async handleAppleWebhook(notification: {
-    notification_type: string;
-    original_transaction_id: string;
-    expires_date: string;
-  }) {
-    const receipt = notification.original_transaction_id;
-    const validationResponse = await iap.validate(iap.APPLE, receipt);
-    const purchaseData = validationResponse.purchaseData[0];
+  async handleAppleWebhook(notification: any) {
+    try {
+      const transactionInfo =
+        AppleWebhookUtil.extractTransactionInfo(notification);
+      Logger.log('transactionInfo', JSON.stringify(transactionInfo, null, 2));
+      const receipt =
+        transactionInfo.originalTransactionId ||
+        notification.originalTransactionId;
 
-    await this.subscriptionRepository.update(
-      { originalTransactionId: receipt },
-      {
-        status: notification.notification_type.includes('EXPIRED')
-          ? SubscriptionStatus.EXPIRED
-          : SubscriptionStatus.ACTIVE,
-        expiresAt: new Date(purchaseData.expiryDate),
-      },
-    );
+      const subscription = await this.subscriptionRepository.findOne({
+        where: [{ originalTransactionId: receipt }],
+      });
+
+      if (!subscription) {
+        throw new SubscriptionNotFoundException();
+      }
+
+      let status = SubscriptionStatus.ACTIVE;
+      const updateData: Partial<SubscriptionEntity> = {
+        latestTransactionId:
+          transactionInfo.transactionId || notification.transactionId,
+        isAutoRenew:
+          transactionInfo.isAutoRenewable !== undefined
+            ? transactionInfo.isAutoRenewable
+            : notification.autoRenewStatus === '1',
+        storeType: StoreType.APP_STORE,
+      };
+
+      if (transactionInfo.expiresDate) {
+        updateData.expiresAt = new Date(transactionInfo.expiresDate);
+      } else if (notification.expiresDate) {
+        updateData.expiresAt = new Date(parseInt(notification.expiresDate));
+      }
+
+      const notificationType =
+        transactionInfo.notificationType || notification.notificationType;
+
+      switch (notificationType) {
+        case AppleNotificationType.SUBSCRIBED:
+        case AppleNotificationType.DID_RENEW:
+        case AppleNotificationType.OFFER_REDEEMED:
+          status = SubscriptionStatus.ACTIVE;
+          updateData.lastPaidAt = new Date();
+          break;
+
+        case AppleNotificationType.EXPIRED:
+        case AppleNotificationType.DID_FAIL_TO_RENEW:
+        case AppleNotificationType.REVOKE:
+        case AppleNotificationType.GRACE_PERIOD_EXPIRED:
+        case AppleNotificationType.REFUND:
+          status = SubscriptionStatus.EXPIRED;
+          updateData.cancelledAt = new Date();
+          break;
+
+        case AppleNotificationType.DID_CHANGE_RENEWAL_STATUS:
+          if (notification.autoRenewStatus === '0') {
+            status = SubscriptionStatus.EXPIRED;
+            updateData.cancelledAt = new Date();
+          }
+          break;
+
+        default:
+          return;
+      }
+
+      updateData.status = status;
+      Logger.log('updateData', updateData);
+      try {
+        await this.subscriptionRepository.update(
+          { id: subscription.id },
+          updateData,
+        );
+      } catch {
+        throw new SubscriptionUpdateFailedException();
+      }
+      return true;
+    } catch (error) {
+      if (error instanceof CustomBaseException) {
+        throw error;
+      }
+      throw new UnexpectedException();
+    }
   }
 
   async isActiveSubscriber(userId: number): Promise<boolean> {

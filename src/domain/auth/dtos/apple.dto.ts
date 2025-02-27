@@ -22,6 +22,12 @@ export class AppleLoginRequestDto {
 export class AppleLoginResponseDto extends TokenResponseDto {
   @IsBoolean()
   isOnboardingCompleted: boolean;
+
+  @IsString()
+  email: string;
+
+  @IsNumber()
+  userId: number;
 }
 
 export class AppleTokenPayloadDto {

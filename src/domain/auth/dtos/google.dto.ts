@@ -1,4 +1,4 @@
-import { IsBoolean, IsString, IsNotEmpty } from 'class-validator';
+import { IsBoolean, IsString, IsNotEmpty, IsNumber } from 'class-validator';
 import { TokenResponseDto } from './token.dto';
 
 export class GoogleLoginRequestDto {
@@ -10,6 +10,12 @@ export class GoogleLoginRequestDto {
 export class GoogleLoginResponseDto extends TokenResponseDto {
   @IsBoolean()
   isOnboardingCompleted: boolean;
+
+  @IsString()
+  email: string;
+
+  @IsNumber()
+  userId: number;
 }
 
 export class GoogleTokenPayloadDto {

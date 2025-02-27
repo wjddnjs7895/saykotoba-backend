@@ -6,6 +6,8 @@ import { CustomExceptionFilter } from './common/exception/custom.exception.filte
 import { CustomLogger } from './common/logger/custom.logger';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 
+process.env.TZ = 'UTC';
+
 async function bootstrap() {
   const logger = new CustomLogger();
 

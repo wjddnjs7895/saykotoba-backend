@@ -85,14 +85,14 @@ jobs:
                 echo "1. Green 이미지 업데이트"
                 docker pull '${{ secrets.DOCKERHUB_USERNAME }}'/saykotoba-backend:latest
                 echo "2. Green 컨테이너 실행"
-                docker-compose up -d api-green
+                docker-compose up -d --force-recreate api-green
               else
                 echo "=== GREEN -> BLUE 전환 ==="
                 # Blue 배포
                 echo "1. Blue 이미지 업데이트"
                 docker pull '${{ secrets.DOCKERHUB_USERNAME }}'/saykotoba-backend:latest
                 echo "2. Blue 컨테이너 실행"
-                docker-compose up -d api-blue
+                docker-compose up -d --force-recreate api-blue
               fi
             '
           else
@@ -103,11 +103,22 @@ jobs:
               echo "=== DEV 서버 배포 ==="
               echo "1. 개발 서버 이미지 업데이트"
               docker pull '${{ secrets.DOCKERHUB_USERNAME }}'/saykotoba-backend:dev
-              echo "2. 개발 서버 재시작"
-              docker-compose stop api-dev
-              docker-compose up -d api-dev
+              echo "2. 개발 서버 컨테이너 제거 및 재생성"
+              docker-compose rm -sf api-dev
+              docker-compose up -d --force-recreate api-dev
             '
           fi
+
+          # 시스템 정리 작업 (모든 배포 후 실행)
+          ssh -o "StrictHostKeyChecking=no" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} '
+            echo "=== 시스템 리소스 정리 ==="
+            echo "1. 사용하지 않는 Docker 리소스 정리"
+            docker system prune -f --volumes
+            echo "2. 태그 없는 이미지 정리"
+            docker image prune -f
+            echo "3. 시스템 메모리 상태 확인"
+            free -h
+          '
       - name: Check deployment status
         if: always()
         run: |
