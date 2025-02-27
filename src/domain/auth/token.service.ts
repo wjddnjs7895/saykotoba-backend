@@ -90,6 +90,10 @@ export class TokenService {
 
     if (expirationString.endsWith('d')) {
       expirationMs = parseInt(expirationString) * 24 * 60 * 60 * 1000;
+    } else if (expirationString.endsWith('h')) {
+      expirationMs = parseInt(expirationString) * 60 * 60 * 1000;
+    } else if (expirationString.endsWith('m')) {
+      expirationMs = parseInt(expirationString) * 60 * 1000;
     } else {
       expirationMs = parseInt(expirationString) * 1000;
     }

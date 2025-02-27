@@ -92,7 +92,11 @@ export class PaymentService implements OnModuleInit {
       try {
         await this.subscriptionRepository.update(
           { id: subscription.id },
-          { originalTransactionId },
+          {
+            originalTransactionId,
+            status: SubscriptionStatus.ACTIVE,
+            expiresAt: new Date(new Date().getTime() + 5 * 60 * 1000),
+          },
         );
       } catch {
         throw new SubscriptionUpdateFailedException();

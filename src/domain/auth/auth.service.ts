@@ -82,10 +82,7 @@ export class AuthService {
 
   async logout(userId: number) {
     try {
-      await this.refreshTokenRepository.update(
-        { userId, isRevoked: false },
-        { isRevoked: true },
-      );
+      await this.refreshTokenRepository.update({ userId }, { isRevoked: true });
       return true;
     } catch {
       throw new LogoutFailedException();
@@ -138,6 +135,8 @@ export class AuthService {
     return {
       ...tokens,
       isOnboardingCompleted: false,
+      email: newUser.email,
+      userId: newUser.userId,
     };
   }
 
@@ -175,6 +174,8 @@ export class AuthService {
       isOnboardingCompleted: await this.onboardingService.isOnboardingCompleted(
         existingUser.id,
       ),
+      email,
+      userId: existingUser.id,
     };
   }
 
@@ -229,6 +230,8 @@ export class AuthService {
         ...tokens,
         isOnboardingCompleted:
           await this.onboardingService.isOnboardingCompleted(existingUser.id),
+        email: existingUser.email,
+        userId: existingUser.id,
       };
     } catch {
       throw new AppleOAuthFailedException();

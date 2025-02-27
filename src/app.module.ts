@@ -86,6 +86,7 @@ import { PaymentModule } from './domain/payment/payment.module';
         extra: {
           ssl: { rejectUnauthorized: false },
         },
+        timezone: 'Z',
       }),
       inject: [ConfigService],
     }),
