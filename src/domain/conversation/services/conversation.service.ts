@@ -112,33 +112,40 @@ export class ConversationService {
     conversationId: number,
     audio: Express.Multer.File,
   ) {
-    const conversationInfo = await this.conversationRepository.findOne({
-      where: { id: conversationId },
-      relations: ['missions'],
-    });
+    try {
+      const conversationInfo = await this.conversationRepository.findOne({
+        where: { id: conversationId },
+        relations: ['missions'],
+      });
 
-    if (!conversationInfo) {
-      throw new ConversationNotFoundException();
+      if (!conversationInfo) {
+        throw new ConversationNotFoundException();
+      }
+
+      const messages = await this.getAllMessage(conversationId);
+
+      if (messages.length === 0) {
+        throw new MessageNotFoundException();
+      }
+
+      const { response, meaning, missionResults } =
+        await this.openAIService.processAudioAndGenerateResponse(
+          conversationInfo,
+          messages,
+          audio,
+        );
+
+      return {
+        text: response,
+        meaning,
+        missionResults,
+      };
+    } catch (error) {
+      if (error instanceof CustomBaseException) {
+        throw error;
+      }
+      throw new UnexpectedException(error.message);
     }
-
-    const messages = await this.getAllMessage(conversationId);
-
-    if (messages.length === 0) {
-      throw new MessageNotFoundException();
-    }
-
-    const { response, meaning, missionResults } =
-      await this.openAIService.processAudioAndGenerateResponse(
-        conversationInfo,
-        messages,
-        audio,
-      );
-
-    return {
-      text: response,
-      meaning,
-      missionResults,
-    };
   }
 
   // async processTextResponse(conversationId: number, userText: string) {
@@ -267,7 +274,7 @@ export class ConversationService {
       if (error instanceof CustomBaseException) {
         throw error;
       }
-      throw new UnexpectedException();
+      throw new UnexpectedException(error.message);
     }
   }
 
@@ -315,7 +322,6 @@ export class ConversationService {
       }
 
       const aiResponse = await this.processAudioResponse(conversationId, audio);
-
       try {
         const assistantMessage = await this.messageRepository.save({
           conversationId,
@@ -359,7 +365,7 @@ export class ConversationService {
       if (error instanceof CustomBaseException) {
         throw error;
       }
-      throw new UnexpectedException();
+      throw new UnexpectedException(error.message);
     }
   }
 
@@ -432,7 +438,7 @@ export class ConversationService {
       if (error instanceof CustomBaseException) {
         throw error;
       }
-      throw new UnexpectedException();
+      throw new UnexpectedException(error.message);
     }
   }
 
@@ -481,19 +487,19 @@ export class ConversationService {
           userId: conversationInfo.userId,
           exp: conversationInfo.exp,
         });
-      }
 
-      await this.userService.addSolvedIds({
-        userId: conversationInfo.userId,
-        conversationId: conversationInfo.id,
-        problemId: conversationInfo.problemId,
-      });
+        await this.userService.addSolvedIds({
+          userId: conversationInfo.userId,
+          conversationId: conversationInfo.id,
+          problemId: conversationInfo.problemId,
+        });
+      }
       return feedback;
     } catch (error) {
       if (error instanceof CustomBaseException) {
         throw error;
       }
-      throw new UnexpectedException();
+      throw new UnexpectedException(error.message);
     }
   }
 
@@ -532,7 +538,7 @@ export class ConversationService {
       if (error instanceof CustomBaseException) {
         throw error;
       }
-      throw new UnexpectedException();
+      throw new UnexpectedException(error.message);
     }
   }
 
@@ -627,5 +633,19 @@ export class ConversationService {
       { id: conversationId },
       { group: { id: groupId } },
     );
+  }
+
+  async findConversationIdByLessonId(userId: number, lessonId: number) {
+    const conversations = await this.conversationRepository.find({
+      where: { userId, problemId: lessonId },
+      order: { updatedAt: 'DESC' },
+      take: 1,
+    });
+
+    if (!conversations || conversations.length === 0) {
+      return { conversationId: 0 };
+    }
+
+    return { conversationId: conversations[0].id };
   }
 }

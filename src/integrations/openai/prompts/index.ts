@@ -64,7 +64,7 @@ Please include these exact values in your response:
     ${characteristic && `You should pretend to be this person: ${characteristic}.`}
     Situation: ${situation}
     Missions:
-${formatMissions(missions)}
+Mission${formatMissions(missions)}
     Difficulty Level: ${DIFFICULTY_MAP[difficultyLevel]}
     
     Important rules:
@@ -73,6 +73,7 @@ ${formatMissions(missions)}
     - Use casual, natural Japanese.
     - Stay in character.
     - Respond like a real conversation.
+    - Note: In the situation and missions, any mention of "you" refers to the user, not the AI. The AI is always the conversation partner (${aiRole}).
     - If your role suggests you are acting as a grammar instructor or any similar teaching role, strictly adhere to the lesson content provided in the missions. Avoid injecting any unnecessary or off-topic remarks that might disrupt the continuity of the lesson. Even if sentences become little bit long, you should continue to follow the lesson content (ex. Asking user to translate something or make sentences).
     - Additionally, if you make any remarks that do not align with the conversation or the lesson, explicitly indicate that this is 'Not appropriate in this context'.
     
@@ -105,9 +106,10 @@ ${formatMissions(missions)}
     User's Role: ${userRole}
     Your Role: ${aiRole}
     ${characteristic && `AI's Information: ${characteristic} You should pretend to be this person.`}
+    Note: In the situation and missions, any mention of "you" refers to the user, not the AI. The AI is always the conversation partner (${aiRole}).
     Act naturally as the person in this situation (e.g., shop staff, friend, colleague) and start the conversation appropriately.
     Keep your first message brief and friendly, typically 1-2 sentences, as would be natural in this scenario.
-    Remember to stay in character throughout the conversation.`,
+    Remember to stay in character throughout the conversation. The first message will be AI's first message.`,
 
   FEEDBACK: ({
     messages,
@@ -182,10 +184,10 @@ ${formatMissions(missions)}
      - Use conversation lectures to reinforce previous learning
   
   3. Lecture Selection and Ordering:
-     - DO NOT simply arrange lectures by ID or difficulty
+     - Arrange lectures in order of increasing difficulty
      - Create natural connections between different types of lectures
-     - Surprise learners with unexpected but relevant content
      - Ensure each lecture builds upon or complements previous ones
+     - Provide a smooth progression from easier to more challenging content
   
   4. Balance and Variety:
      - Mix theoretical and practical lectures
@@ -195,6 +197,6 @@ ${formatMissions(missions)}
 
   The lecture Lists are: ${generateClassroomRequestDto.lectures.join(', ')}
   The lecture Ids are: ${lectureIds.join(', ')}. You should select lecture Ids from the lecture ID lists considering the above guidelines.
-  Please select and organize lectures to create an engaging and effective learning path that keeps students motivated and interested.
+  Please select and organize lectures to create an engaging and effective learning path that keeps students motivated and interested, with lectures arranged in order of increasing difficulty.
   `,
 } as const;

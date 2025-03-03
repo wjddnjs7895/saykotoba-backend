@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SubscriptionEntity } from './entities/subscription.entity';
@@ -107,7 +107,7 @@ export class PaymentService implements OnModuleInit {
       if (error instanceof CustomBaseException) {
         throw error;
       }
-      throw new UnexpectedException();
+      throw new UnexpectedException(error.message);
     }
   }
 
@@ -144,7 +144,6 @@ export class PaymentService implements OnModuleInit {
     try {
       const transactionInfo =
         AppleWebhookUtil.extractTransactionInfo(notification);
-      Logger.log('transactionInfo', JSON.stringify(transactionInfo, null, 2));
       const receipt =
         transactionInfo.originalTransactionId ||
         notification.originalTransactionId;
@@ -206,7 +205,6 @@ export class PaymentService implements OnModuleInit {
       }
 
       updateData.status = status;
-      Logger.log('updateData', updateData);
       try {
         await this.subscriptionRepository.update(
           { id: subscription.id },
@@ -220,7 +218,7 @@ export class PaymentService implements OnModuleInit {
       if (error instanceof CustomBaseException) {
         throw error;
       }
-      throw new UnexpectedException();
+      throw new UnexpectedException(error.message);
     }
   }
 

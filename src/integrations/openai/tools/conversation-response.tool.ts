@@ -21,13 +21,14 @@ export const ConversationResponseTool = [
           missionResults: {
             type: 'array',
             description:
-              'List of assigned conversation missions and their completion status',
+              "List of assigned conversation missions and their completion status. Make sure to match the exact mission ID when reporting completion status. Be lenient in your evaluation - if the mission's intent has been addressed even partially, consider it completed.",
             items: {
               type: 'object',
               properties: {
                 missionId: {
                   type: 'number',
-                  description: 'The id of the assigned conversation mission',
+                  description:
+                    'The id of the assigned conversation mission. Must exactly match the original mission ID.',
                 },
                 mission: {
                   type: 'string',
@@ -36,7 +37,7 @@ export const ConversationResponseTool = [
                 isCompleted: {
                   type: 'boolean',
                   description:
-                    'Indicates whether this specific mission is completed',
+                    "Indicates whether this specific mission is completed. Be lenient in evaluation and don't be too strict about exact wording or perfect execution.",
                 },
               },
               required: ['missionId', 'mission', 'isCompleted'],

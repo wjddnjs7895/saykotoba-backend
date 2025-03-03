@@ -91,7 +91,7 @@ export class OpenAIService {
       if (error instanceof CustomBaseException) {
         throw error;
       }
-      throw new UnexpectedException();
+      throw new UnexpectedException(error.message);
     }
   }
 
@@ -100,17 +100,17 @@ export class OpenAIService {
     messages: MessageEntity[],
     audio: Express.Multer.File,
   ): Promise<GenerateResponseDto> {
-    let audioBuffer = audio.buffer;
-    if (
-      audio.mimetype === 'audio/x-m4a' ||
-      audio.originalname.endsWith('.m4a')
-    ) {
-      audioBuffer = await convertM4AToWav(audio.buffer);
-    }
-
-    const base64message = audioBuffer.toString('base64');
-
     try {
+      let audioBuffer = audio.buffer;
+      if (
+        audio.mimetype === 'audio/x-m4a' ||
+        audio.originalname.endsWith('.m4a')
+      ) {
+        audioBuffer = await convertM4AToWav(audio.buffer);
+      }
+
+      const base64message = audioBuffer.toString('base64');
+
       const response = await this.openai.chat.completions.create({
         model: 'gpt-4o-mini-audio-preview',
         modalities: ['text'],
@@ -167,7 +167,9 @@ export class OpenAIService {
       if (error instanceof CustomBaseException) {
         throw error;
       }
-      throw new UnexpectedException();
+      throw new UnexpectedException(
+        'openAI service process audio and generate response: ' + error.message,
+      );
     }
   }
 
@@ -224,25 +226,32 @@ export class OpenAIService {
   // }
 
   async getTextFromAudio(audio: Express.Multer.File): Promise<string> {
-    const audioFile = new File([audio.buffer], audio.originalname, {
-      type: audio.mimetype,
-    });
-    if (!audioFile) {
-      throw new BufferToFileFailedException();
+    try {
+      const audioFile = new File([audio.buffer], audio.originalname, {
+        type: audio.mimetype,
+      });
+      if (!audioFile) {
+        throw new BufferToFileFailedException();
+      }
+
+      const response = await this.openai.audio.transcriptions.create({
+        file: audioFile,
+        model: 'whisper-1',
+        language: 'ja',
+        response_format: 'text',
+      });
+
+      if (!response) {
+        throw new OpenAICreateFailedException();
+      }
+
+      return response;
+    } catch (error) {
+      if (error instanceof CustomBaseException) {
+        throw error;
+      }
+      throw new UnexpectedException('get text from audio: ' + error.message);
     }
-
-    const response = await this.openai.audio.transcriptions.create({
-      file: audioFile,
-      model: 'whisper-1',
-      language: 'ja',
-      response_format: 'text',
-    });
-
-    if (!response) {
-      throw new OpenAICreateFailedException();
-    }
-
-    return response;
   }
 
   async getFirstMessage(

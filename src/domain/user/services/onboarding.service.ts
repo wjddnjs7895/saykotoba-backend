@@ -54,7 +54,7 @@ export class OnboardingService {
       if (error instanceof CustomBaseException) {
         throw error;
       }
-      throw new UnexpectedException();
+      throw new UnexpectedException(error.message);
     }
   }
 

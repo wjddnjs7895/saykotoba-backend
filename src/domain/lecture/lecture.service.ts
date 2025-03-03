@@ -68,7 +68,10 @@ export class LectureService {
     if (!lectures || lectures.length === 0) {
       throw new LectureNotFoundException();
     }
-    return lectures.map((lecture) => ({
+    const filteredLectures = lectures.filter(
+      (lecture) => !lecture.topics.some((topic) => topic.name === 'Grammar'),
+    );
+    return filteredLectures.map((lecture) => ({
       id: lecture.id,
       title: lecture.title,
       thumbnailUrl: this.s3Service.getCloudFrontUrl(lecture.thumbnailUrl) ?? '',
@@ -93,6 +96,11 @@ export class LectureService {
     if (!lecture) {
       throw new LectureNotFoundException();
     }
+
+    const sortedLessons = [...lecture.lessons].sort(
+      (a, b) => a.difficultyLevel - b.difficultyLevel,
+    );
+
     return {
       id: lecture.id,
       title: lecture.title,
@@ -102,7 +110,7 @@ export class LectureService {
       difficultyLevelEnd: lecture.difficultyLevelEnd,
       isCompleted: lecture.isCompleted,
       progress: lecture.progress,
-      lessons: lecture.lessons.map((lesson) => ({
+      lessons: sortedLessons.map((lesson) => ({
         id: lesson.id,
         title: lesson.title,
         difficultyLevel: lesson.difficultyLevel,
@@ -203,7 +211,7 @@ export class LectureService {
       if (error instanceof CustomBaseException) {
         throw error;
       }
-      throw new UnexpectedException();
+      throw new UnexpectedException(error.message);
     }
   }
 
@@ -246,7 +254,7 @@ export class LectureService {
       if (error instanceof CustomBaseException) {
         throw error;
       }
-      throw new UnexpectedException();
+      throw new UnexpectedException(error.message);
     }
   }
 

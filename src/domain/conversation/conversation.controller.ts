@@ -176,4 +176,15 @@ export class ConversationController {
   ): Promise<{ conversationId: number }> {
     return this.conversationService.resetConversation(conversationId);
   }
+
+  @Get('lesson/:lessonId')
+  async getConversationIdByLessonId(
+    @Param('lessonId') lessonId: number,
+    @User() user: UserEntity,
+  ): Promise<{ conversationId: number }> {
+    return this.conversationService.findConversationIdByLessonId(
+      user.id,
+      lessonId,
+    );
+  }
 }

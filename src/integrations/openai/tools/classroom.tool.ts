@@ -20,7 +20,7 @@ export const ClassroomTool = [
               description:
                 'Lecture IDs to be included in the classroom. You should select lecture Ids from the lecture ID lists.',
             },
-            minItems: 15,
+            minItems: 30,
             maxItems: 100,
           },
         },

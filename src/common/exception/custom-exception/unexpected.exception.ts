@@ -4,11 +4,12 @@ import { UnexpectedErrorCodeEnum } from '../error-constant/error.code';
 import { UnexpectedErrorMessage } from '../error-constant/error.message';
 
 export class UnexpectedException extends CustomBaseException {
-  constructor() {
+  constructor(message?: string) {
     super(
       UnexpectedErrorCodeEnum.Unexpected,
       HttpStatus.INTERNAL_SERVER_ERROR,
-      UnexpectedErrorMessage[UnexpectedErrorCodeEnum.Unexpected],
+      UnexpectedErrorMessage[UnexpectedErrorCodeEnum.Unexpected] +
+        (message ? `: ${message}` : ''),
     );
   }
 }
