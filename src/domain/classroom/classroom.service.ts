@@ -18,6 +18,7 @@ import {
   StartClassroomByOrderResponseDto,
   StartClassroomByOrderServiceDto,
 } from './dtos/start-classroom-by-order.dto';
+import { sortLectureIdsByDifficulty } from './utils/sort.utils';
 
 @Injectable()
 export class ClassroomService {
@@ -81,17 +82,19 @@ export class ClassroomService {
           ),
         });
 
-      const combinedLectureIds = interleaveArrays(
-        grammarIds,
+      const sortedConversationLectureIds = sortLectureIdsByDifficulty(
         aiConversationSelectResult.lectureIds,
+        lectures,
       );
 
-      const validLectureIds =
-        createClassroomDto.style !== 2
-          ? combinedLectureIds.filter((lectureId) =>
-              lectures.some((l) => l.id === lectureId),
-            )
-          : [...grammarIds];
+      const combinedLectureIds = interleaveArrays(
+        createClassroomDto.style !== 2 ? grammarIds : [],
+        sortedConversationLectureIds,
+      );
+
+      const validLectureIds = combinedLectureIds.filter((lectureId) =>
+        lectures.some((l) => l.id === lectureId),
+      );
 
       const classroom = await this.classroomRepository.save({
         user: { id: createClassroomDto.userId },
@@ -112,7 +115,7 @@ export class ClassroomService {
       if (error instanceof CustomBaseException) {
         throw error;
       }
-      throw new UnexpectedException();
+      throw new UnexpectedException(error.message);
     }
   }
 

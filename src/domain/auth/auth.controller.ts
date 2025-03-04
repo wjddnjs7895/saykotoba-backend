@@ -19,6 +19,8 @@ import {
 import { TokenService } from './token.service';
 import { AppleLoginRequestDto, AppleLoginResponseDto } from './dtos/apple.dto';
 import { AuthProvider } from '@/common/constants/user.constants';
+import { UserEntity } from '../user/entities/user.entity';
+import { User } from '@/common/decorators/user.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -39,8 +41,11 @@ export class AuthController {
   }
 
   @Post('logout')
-  async logout(@Request() req) {
-    return this.authService.logout(req.user.userId);
+  async logout(
+    @User() user: UserEntity,
+    @Body() body: { refreshToken: string },
+  ) {
+    return this.authService.logout(user.id, body.refreshToken);
   }
 
   @Public()

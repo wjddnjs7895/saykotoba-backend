@@ -53,7 +53,7 @@ export class ConversationGroupService {
       if (error instanceof CustomBaseException) {
         throw error;
       }
-      throw new UnexpectedException();
+      throw new UnexpectedException(error.message);
     }
   }
 
@@ -127,6 +127,7 @@ export class ConversationGroupService {
         title: conversation.title,
         isCompleted: conversation.isCompleted,
         score: conversation.score,
+        difficultyLevel: conversation.difficultyLevel,
       })),
     };
     return conversationGroupInfo;

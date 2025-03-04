@@ -1,5 +1,4 @@
 import * as jwt from 'jsonwebtoken';
-import { Logger } from '@nestjs/common';
 import {
   AppleRawNotification,
   AppleTransactionInfoDto,
@@ -10,10 +9,8 @@ export class AppleWebhookUtil {
   static decodeJWT(token: string): any {
     try {
       const decoded = jwt.decode(token);
-      Logger.log('Decoded JWT payload:', JSON.stringify(decoded, null, 2));
       return decoded;
-    } catch (error) {
-      Logger.error('Failed to decode Apple JWT token', error);
+    } catch {
       return null;
     }
   }

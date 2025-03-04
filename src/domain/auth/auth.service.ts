@@ -80,9 +80,12 @@ export class AuthService {
     return result;
   }
 
-  async logout(userId: number) {
+  async logout(userId: number, refreshToken: string) {
     try {
-      await this.refreshTokenRepository.update({ userId }, { isRevoked: true });
+      await this.refreshTokenRepository.update(
+        { userId, refreshToken: refreshToken },
+        { isRevoked: true },
+      );
       return true;
     } catch {
       throw new LogoutFailedException();

@@ -3,13 +3,14 @@ export const ConversationFirstResponseTool = [
     type: 'function',
     function: {
       name: 'generateFirstResponse',
-      description: 'Generate first response',
+      description: 'Generate first message',
       parameters: {
         type: 'object',
         properties: {
           response: {
             type: 'string',
-            description: 'The first response in Japanese',
+            description:
+              'The first message in Japanese that AI role play will say',
           },
           meaning: {
             type: 'string',

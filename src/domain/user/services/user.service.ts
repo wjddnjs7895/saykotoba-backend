@@ -146,16 +146,28 @@ export class UserService {
     const user = await this.userRepository.findOneBy({ id });
     if (!user) throw new UserNotFoundException();
 
-    const tier = Object.entries(TIER_THRESHOLD).reduce(
-      (highest, [tier, threshold]) => (user.exp >= threshold ? tier : highest),
-      'BEGINNER_4',
+    const sortedTiers = Object.entries(TIER_THRESHOLD).sort(
+      (a, b) => b[1] - a[1],
     );
 
+    let currentTier = sortedTiers[sortedTiers.length - 1][0];
+
+    for (let i = 0; i < sortedTiers.length; i++) {
+      const [tier, threshold] = sortedTiers[i];
+      if (user.exp >= threshold) {
+        if (i > 0) {
+          currentTier = sortedTiers[i - 1][0];
+        } else {
+          currentTier = tier;
+        }
+        break;
+      }
+    }
+
     try {
-      if (TIER_MAP[tier as keyof typeof TIER_MAP] !== user.tier) {
-        await this.userRepository.update(id, {
-          tier: TIER_MAP[tier as keyof typeof TIER_MAP],
-        });
+      const newTier = TIER_MAP[currentTier as keyof typeof TIER_MAP];
+      if (newTier !== user.tier) {
+        await this.userRepository.update(id, { tier: newTier });
       }
     } catch {
       throw new UserTierUpdateFailedException();
