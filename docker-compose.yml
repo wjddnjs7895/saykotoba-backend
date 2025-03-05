@@ -15,8 +15,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1'
-          memory: '1G'
+          cpus: '1.5'
+          memory: '1.5G'
       update_config:
         order: stop-first
 
@@ -36,8 +36,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1'
-          memory: '1G'
+          cpus: '1.5'
+          memory: '1.5G'
       update_config:
         order: stop-first
 
@@ -57,8 +57,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1'
-          memory: '1G'
+          cpus: '0.4'
+          memory: '512M'
       update_config:
         order: stop-first
   nginx:
