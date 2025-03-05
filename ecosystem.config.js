@@ -3,7 +3,7 @@ module.exports = {
     {
       name: 'saykotoba-backend',
       script: 'dist/main.js',
-      instances: '1',
+      instances: 'max',
       exec_mode: 'cluster',
       watch: false,
       env: {
