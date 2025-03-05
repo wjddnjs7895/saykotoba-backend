@@ -12,6 +12,13 @@ services:
       - /home/${USER}/saykotoba-backend/config/env/.env.prod
     networks:
       - saykotoba-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: '1G'
+      update_config:
+        order: stop-first
 
   api-green:
     image: ${DOCKERHUB_USERNAME}/saykotoba-backend:latest
@@ -26,6 +33,13 @@ services:
       - /home/${USER}/saykotoba-backend/config/env/.env.prod
     networks:
       - saykotoba-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: '1G'
+      update_config:
+        order: stop-first
 
   api-dev:
     image: ${DOCKERHUB_USERNAME}/saykotoba-backend:dev
@@ -40,6 +54,13 @@ services:
       - /home/${USER}/saykotoba-backend/config/env/.env.dev
     networks:
       - saykotoba-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: '1G'
+      update_config:
+        order: stop-first
   nginx:
     image: nginx:latest
     container_name: nginx
