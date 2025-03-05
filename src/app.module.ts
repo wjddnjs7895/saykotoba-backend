@@ -66,6 +66,8 @@ import { PaymentModule } from './domain/payment/payment.module';
         ANDROID_LATEST_VERSION: Joi.string().required(),
         ANDROID_FORCE_UPDATE: Joi.boolean().required(),
         ANDROID_STORE_URL: Joi.string().required(),
+        TERMS_OF_USE: Joi.string().required(),
+        PRIVACY_POLICY: Joi.string().required(),
       }),
     }),
     TypeOrmModule.forRootAsync({

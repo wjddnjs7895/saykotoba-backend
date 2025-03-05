@@ -23,4 +23,12 @@ export class SystemService {
           : this.configService.get('ANDROID_STORE_URL'),
     };
   }
+
+  getTermsOfUse(): { url: string } {
+    return { url: this.configService.get('TERMS_OF_USE') };
+  }
+
+  getPrivacyPolicy(): { url: string } {
+    return { url: this.configService.get('PRIVACY_POLICY') };
+  }
 }
