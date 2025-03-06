@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { SubscriptionEntity } from './entities/subscription.entity';
 import * as iap from 'in-app-purchase';
 import { SubscriptionStatus } from '@/common/constants/user.constants';
-import { LessThan, MoreThan } from 'typeorm';
+import { LessThan } from 'typeorm';
 import { Cron } from '@nestjs/schedule';
 import { VerifyPurchaseServiceDto } from './dtos/verify-purchase.dto';
 import { ConfigService } from '@nestjs/config';
@@ -20,6 +20,11 @@ import { StoreType } from '@/common/constants/user.constants';
 import { AppleWebhookUtil } from './utils/apple-webhook.util';
 import { AppleNotificationType } from './dtos/apple-webhook.dto';
 import { GoogleWebhookNotificationDto } from './dtos/google-webhook.dto';
+import {
+  RestoreSubscriptionResponseDto,
+  RestoreSubscriptionServiceDto,
+} from './dtos/restore-subscription';
+import { Platform } from '@/common/types/system';
 
 @Injectable()
 export class PaymentService implements OnModuleInit {
@@ -90,14 +95,15 @@ export class PaymentService implements OnModuleInit {
       }
 
       try {
-        await this.subscriptionRepository.update(
-          { id: subscription.id },
-          {
-            originalTransactionId,
-            status: SubscriptionStatus.ACTIVE,
-            expiresAt: new Date(new Date().getTime() + 5 * 60 * 1000),
-          },
-        );
+        if (subscription.status !== SubscriptionStatus.ACTIVE) {
+          await this.subscriptionRepository.update(
+            { id: subscription.id },
+            {
+              originalTransactionId,
+              status: SubscriptionStatus.ACTIVE,
+            },
+          );
+        }
       } catch {
         throw new SubscriptionUpdateFailedException();
       }
@@ -227,10 +233,72 @@ export class PaymentService implements OnModuleInit {
       where: {
         user: { id: userId },
         status: SubscriptionStatus.ACTIVE,
-        expiresAt: MoreThan(new Date()),
       },
     });
 
     return !!subscription;
+  }
+
+  async restoreSubscription({
+    receipt,
+    platform,
+    userId,
+  }: RestoreSubscriptionServiceDto): Promise<RestoreSubscriptionResponseDto> {
+    try {
+      await iap.setup();
+
+      const validationResponse = await iap.validate(
+        platform === Platform.GOOGLE ? iap.GOOGLE : iap.APPLE,
+        receipt,
+      );
+
+      const isValid = await iap.isValidated(validationResponse);
+      if (!isValid) {
+        throw new InvalidReceiptException();
+      }
+
+      let originalTransactionId = receipt;
+      let expiresAt: Date | null = null;
+
+      if (platform === Platform.APPLE) {
+        const transactionInfo = AppleWebhookUtil.extractTransactionInfo({
+          signedPayload: receipt,
+        });
+        if (transactionInfo.originalTransactionId) {
+          originalTransactionId = transactionInfo.originalTransactionId;
+        }
+        if (transactionInfo.expiresDate) {
+          expiresAt = new Date(transactionInfo.expiresDate);
+        }
+      } else if (platform === Platform.GOOGLE) {
+        const purchaseData = validationResponse.purchaseData[0];
+        if (purchaseData.expiryDate) {
+          expiresAt = new Date(purchaseData.expiryDate);
+        }
+      }
+
+      const subscription = await this.subscriptionRepository.findOne({
+        where: { originalTransactionId, user: { id: userId } },
+      });
+
+      if (subscription && expiresAt) {
+        await this.subscriptionRepository.update(
+          { id: subscription.id },
+          {
+            status: SubscriptionStatus.ACTIVE,
+            expiresAt: expiresAt,
+          },
+        );
+      } else {
+        throw new SubscriptionNotFoundException();
+      }
+
+      return { success: true };
+    } catch (error) {
+      if (error instanceof CustomBaseException) {
+        throw error;
+      }
+      throw new UnexpectedException('Restore subscription: ' + error.message);
+    }
   }
 }

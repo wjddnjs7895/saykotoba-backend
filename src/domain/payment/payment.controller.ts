@@ -8,6 +8,10 @@ import { User } from '@/common/decorators/user.decorator';
 import { UserEntity } from '../user/entities/user.entity';
 import { Public } from '@/common/decorators/public.decorator';
 import { AppleRawNotification } from './dtos/apple-webhook.dto';
+import {
+  RestoreSubscriptionRequestDto,
+  RestoreSubscriptionResponseDto,
+} from './dtos/restore-subscription';
 @Controller('payment')
 export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
@@ -25,6 +29,19 @@ export class PaymentController {
         userId: user.id,
       }),
     };
+  }
+
+  @Post('restore')
+  async restorePurchase(
+    @User() user: UserEntity,
+    @Body()
+    restorePurchaseRequestDto: RestoreSubscriptionRequestDto,
+  ): Promise<RestoreSubscriptionResponseDto> {
+    return await this.paymentService.restoreSubscription({
+      receipt: restorePurchaseRequestDto.receipt,
+      platform: restorePurchaseRequestDto.platform,
+      userId: user.id,
+    });
   }
 
   @Public()
