@@ -157,11 +157,13 @@ export class PaymentService implements OnModuleInit {
 
       let subscription = await this.subscriptionRepository.findOne({
         where: { originalTransactionId },
+        relations: ['user'],
       });
 
       if (!subscription && userId) {
         subscription = await this.subscriptionRepository.findOne({
           where: { user: { id: parseInt(userId) } },
+          relations: ['user'],
         });
       }
 
