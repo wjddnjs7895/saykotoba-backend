@@ -92,3 +92,23 @@ export class AppleReceiptDecodeFailedException extends CustomBaseException {
     );
   }
 }
+
+export class AppleReceiptNotFoundException extends CustomBaseException {
+  constructor() {
+    super(
+      SubscriptionErrorCodeEnum.AppleReceiptNotFound,
+      HttpStatus.NOT_FOUND,
+      SubscriptionErrorMessage[SubscriptionErrorCodeEnum.AppleReceiptNotFound],
+    );
+  }
+}
+
+export class SubscriptionExpiredException extends CustomBaseException {
+  constructor() {
+    super(
+      SubscriptionErrorCodeEnum.SubscriptionExpired,
+      HttpStatus.BAD_REQUEST,
+      SubscriptionErrorMessage[SubscriptionErrorCodeEnum.SubscriptionExpired],
+    );
+  }
+}

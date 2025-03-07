@@ -143,12 +143,14 @@ export const SubscriptionErrorMessage: SubscriptionErrorMessageType = {
     'Subscription update failed',
   [SubscriptionErrorCodeEnum.SubscriptionDeleteFailed]:
     'Subscription delete failed',
+  [SubscriptionErrorCodeEnum.SubscriptionExpired]: 'Subscription expired',
   [SubscriptionErrorCodeEnum.UnauthorizedSubscription]:
     'Unauthorized subscription',
   [SubscriptionErrorCodeEnum.InvalidReceipt]: 'Invalid receipt',
   [SubscriptionErrorCodeEnum.AppleWebhookFailed]: 'Apple webhook failed',
   [SubscriptionErrorCodeEnum.AppleReceiptDecodeFailed]:
     'Apple receipt decode failed',
+  [SubscriptionErrorCodeEnum.AppleReceiptNotFound]: 'Apple receipt not found',
 };
 
 export const UnexpectedErrorMessage: UnexpectedErrorMessageType = {

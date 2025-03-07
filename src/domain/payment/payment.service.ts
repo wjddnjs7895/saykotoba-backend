@@ -10,7 +10,9 @@ import { VerifyPurchaseServiceDto } from './dtos/verify-purchase.dto';
 import { ConfigService } from '@nestjs/config';
 import {
   AppleReceiptDecodeFailedException,
+  AppleReceiptNotFoundException,
   InvalidReceiptException,
+  SubscriptionExpiredException,
   SubscriptionNotFoundException,
   SubscriptionUpdateFailedException,
 } from '@/common/exception/custom-exception/subscription.exception';
@@ -95,15 +97,13 @@ export class PaymentService implements OnModuleInit {
       }
 
       try {
-        if (subscription.status !== SubscriptionStatus.ACTIVE) {
-          await this.subscriptionRepository.update(
-            { id: subscription.id },
-            {
-              originalTransactionId,
-              status: SubscriptionStatus.ACTIVE,
-            },
-          );
-        }
+        await this.subscriptionRepository.update(
+          { id: subscription.id },
+          {
+            originalTransactionId,
+            status: SubscriptionStatus.ACTIVE,
+          },
+        );
       } catch {
         throw new SubscriptionUpdateFailedException();
       }
@@ -150,13 +150,22 @@ export class PaymentService implements OnModuleInit {
     try {
       const transactionInfo =
         AppleWebhookUtil.extractTransactionInfo(notification);
-      const receipt =
+      const userId = transactionInfo.appAccountToken;
+      const originalTransactionId =
         transactionInfo.originalTransactionId ||
         notification.originalTransactionId;
 
-      const subscription = await this.subscriptionRepository.findOne({
-        where: [{ originalTransactionId: receipt }],
+      let subscription = await this.subscriptionRepository.findOne({
+        where: { originalTransactionId },
+        relations: ['user'],
       });
+
+      if (!subscription && userId) {
+        subscription = await this.subscriptionRepository.findOne({
+          where: { user: { id: parseInt(userId) } },
+          relations: ['user'],
+        });
+      }
 
       if (!subscription) {
         throw new SubscriptionNotFoundException();
@@ -164,6 +173,7 @@ export class PaymentService implements OnModuleInit {
 
       let status = SubscriptionStatus.ACTIVE;
       const updateData: Partial<SubscriptionEntity> = {
+        originalTransactionId,
         latestTransactionId:
           transactionInfo.transactionId || notification.transactionId,
         isAutoRenew:
@@ -211,10 +221,12 @@ export class PaymentService implements OnModuleInit {
       }
 
       updateData.status = status;
+      console.log('subscription', subscription);
+      console.log('updateData', updateData);
       try {
         await this.subscriptionRepository.update(
           { id: subscription.id },
-          updateData,
+          { ...updateData },
         );
       } catch {
         throw new SubscriptionUpdateFailedException();
@@ -261,14 +273,22 @@ export class PaymentService implements OnModuleInit {
       let expiresAt: Date | null = null;
 
       if (platform === Platform.APPLE) {
-        const transactionInfo = AppleWebhookUtil.extractTransactionInfo({
-          signedPayload: receipt,
-        });
-        if (transactionInfo.originalTransactionId) {
-          originalTransactionId = transactionInfo.originalTransactionId;
-        }
-        if (transactionInfo.expiresDate) {
-          expiresAt = new Date(transactionInfo.expiresDate);
+        try {
+          const validationResponse = await iap.validate(iap.APPLE, receipt);
+          const latestReceipt =
+            validationResponse.latest_receipt_info?.[0] ||
+            validationResponse.receipt?.in_app?.[0];
+
+          if (latestReceipt) {
+            originalTransactionId = latestReceipt.original_transaction_id;
+            expiresAt = latestReceipt.expires_date_ms
+              ? new Date(parseInt(latestReceipt.expires_date_ms))
+              : null;
+          } else {
+            throw new AppleReceiptNotFoundException();
+          }
+        } catch {
+          throw new AppleReceiptDecodeFailedException();
         }
       } else if (platform === Platform.GOOGLE) {
         const purchaseData = validationResponse.purchaseData[0];
@@ -277,20 +297,20 @@ export class PaymentService implements OnModuleInit {
         }
       }
 
-      const subscription = await this.subscriptionRepository.findOne({
-        where: { originalTransactionId, user: { id: userId } },
-      });
-
-      if (subscription && expiresAt) {
-        await this.subscriptionRepository.update(
-          { id: subscription.id },
-          {
-            status: SubscriptionStatus.ACTIVE,
-            expiresAt: expiresAt,
-          },
-        );
+      if (expiresAt && expiresAt > new Date()) {
+        try {
+          await this.subscriptionRepository.update(
+            { originalTransactionId, user: { id: userId } },
+            {
+              status: SubscriptionStatus.ACTIVE,
+              expiresAt: expiresAt,
+            },
+          );
+        } catch {
+          throw new SubscriptionUpdateFailedException();
+        }
       } else {
-        throw new SubscriptionNotFoundException();
+        throw new SubscriptionExpiredException();
       }
 
       return { success: true };
