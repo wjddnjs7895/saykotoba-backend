@@ -219,10 +219,12 @@ export class PaymentService implements OnModuleInit {
       }
 
       updateData.status = status;
+      console.log('subscription', subscription);
+      console.log('updateData', updateData);
       try {
         await this.subscriptionRepository.update(
           { id: subscription.id },
-          updateData,
+          { ...updateData },
         );
       } catch {
         throw new SubscriptionUpdateFailedException();
