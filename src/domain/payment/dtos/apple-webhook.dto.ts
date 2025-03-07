@@ -48,4 +48,5 @@ export interface AppleTransactionInfoDto {
   transactionId?: string;
   isAutoRenewable?: boolean;
   notificationType?: AppleNotificationType | string;
+  appAccountToken?: string;
 }
