@@ -19,7 +19,7 @@ import { ConversationEntity } from '../entities/conversation.entity';
 import { CONVERSATION_GROUP_TYPE } from '@/common/constants/conversation.constants';
 import { GetConversationGroupInfoResponseDto } from '../dtos/get-conversation-group-info.dto';
 import { S3Service } from '@/integrations/aws/services/s3/s3.service';
-
+import { LogParams } from '@/common/decorators/log-params.decorator';
 @Injectable()
 export class ConversationGroupService {
   constructor(
@@ -30,6 +30,7 @@ export class ConversationGroupService {
     private readonly s3Service: S3Service,
   ) {}
 
+  @LogParams()
   async getUserConversationGroups(
     userId: number,
   ): Promise<GetUserConversationGroupResponseDto[]> {
@@ -57,6 +58,7 @@ export class ConversationGroupService {
     }
   }
 
+  @LogParams()
   async getUserLectureGroups(
     userId: number,
   ): Promise<GetLectureGroupResponseDto[]> {
@@ -77,6 +79,7 @@ export class ConversationGroupService {
     }));
   }
 
+  @LogParams()
   async createConversationGroup(
     conversationGroup: CreateConversationGroupRequestDto,
   ): Promise<CreateConversationGroupResponseDto> {
@@ -95,6 +98,7 @@ export class ConversationGroupService {
     }
   }
 
+  @LogParams()
   async addConversationToGroup(
     addConversationToGroupDto: AddConversationToGroupRequestDto,
   ): Promise<void> {
@@ -108,6 +112,7 @@ export class ConversationGroupService {
     await this.conversationGroupRepository.save(group);
   }
 
+  @LogParams()
   async getUserConversationGroupInfo(
     groupId: number,
   ): Promise<GetConversationGroupInfoResponseDto> {

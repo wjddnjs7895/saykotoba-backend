@@ -22,6 +22,7 @@ import { User } from '@/common/decorators/user.decorator';
 import { UpdateUserOnboardingRequestDto } from './dtos/update-user-onboarding.dto';
 import { OnboardingService } from './services/onboarding.service';
 import { GetInterestListResponseDto } from './dtos/get-interest.dto';
+import { LogParams } from '@/common/decorators/log-params.decorator';
 
 @Controller('user')
 export class UserController {
@@ -31,6 +32,7 @@ export class UserController {
   ) {}
 
   @Post()
+  @LogParams()
   createUser(
     @Body() createUserDto: CreateUserRequestDto,
   ): Promise<CreateUserResponseDto> {
@@ -38,11 +40,13 @@ export class UserController {
   }
 
   @Get()
+  @LogParams()
   getUserInfo(@User() user: UserEntity): Promise<GetUserInfoRespondDto> {
     return this.userService.getUserInfo(user.id);
   }
 
   @Patch(':id')
+  @LogParams()
   updateUser(
     @Param('id') id: number,
     @Body() updateUserDto: UpdateUserRequestDto,
@@ -51,11 +55,13 @@ export class UserController {
   }
 
   @Delete(':id')
+  @LogParams()
   removeUser(@Param('id') id: number) {
     return this.userService.removeUser(id);
   }
 
   @Get('tier-list')
+  @LogParams()
   getTierList(): Promise<{
     tierList: { tier: string; threshold: number }[];
   }> {
@@ -63,6 +69,7 @@ export class UserController {
   }
 
   @Post('onboarding')
+  @LogParams()
   updateUserOnboarding(
     @User() user: UserEntity,
     @Body() updateUserOnboardingDto: UpdateUserOnboardingRequestDto,
@@ -74,6 +81,7 @@ export class UserController {
   }
 
   @Get('interest-list')
+  @LogParams()
   getInterestList(): Promise<GetInterestListResponseDto> {
     return this.onboardingService.getInterestList();
   }

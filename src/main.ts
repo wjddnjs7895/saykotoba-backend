@@ -3,20 +3,26 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { CustomExceptionFilter } from './common/exception/custom.exception.filter';
-import { CustomLogger } from './common/logger/custom.logger';
+import { CustomLoggerService } from './common/logger/logger.service';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { S3LoggerService } from './integrations/aws/services/s3/s3-logger.service';
 
 process.env.TZ = 'UTC';
 
 async function bootstrap() {
-  const logger = new CustomLogger();
-
   const app = await NestFactory.create(AppModule, {
-    logger,
+    logger: false,
+    bufferLogs: true,
   });
+
+  const s3LoggerService = app.get(S3LoggerService);
+  global.s3LoggerService = s3LoggerService;
+  const logger = new CustomLoggerService(s3LoggerService);
+  global.logger = logger;
+
+  app.useGlobalInterceptors(new LoggingInterceptor(logger));
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalFilters(new CustomExceptionFilter());
-  app.useGlobalInterceptors(new LoggingInterceptor(logger));
 
   const config = new DocumentBuilder()
     .setTitle('API List')
@@ -26,6 +32,17 @@ async function bootstrap() {
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('swagger', app, documentFactory);
+
   await app.listen(8080);
+
+  const server = app.getHttpServer();
+  const router = server._events.request._router;
+
+  const routes = router.stack
+    .filter((layer) => layer.route)
+    .map((layer) => layer.route.path);
+
+  logger.setRegisteredPaths(routes);
+  app.useLogger(logger);
 }
 bootstrap();

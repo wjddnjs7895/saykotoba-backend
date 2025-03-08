@@ -5,12 +5,13 @@ import { User } from '@/common/decorators/user.decorator';
 import { UserEntity } from '../user/entities/user.entity';
 import { GetClassroomResponseDto } from './dtos/get-classroom.dto';
 import { StartClassroomByOrderRequestDto } from './dtos/start-classroom-by-order.dto';
-
+import { LogParams } from '@/common/decorators/log-params.decorator';
 @Controller('classroom')
 export class ClassroomController {
   constructor(private readonly classroomService: ClassroomService) {}
 
   @Get('current')
+  @LogParams()
   async getCurrentClassroom(
     @User() user: UserEntity,
   ): Promise<GetClassroomResponseDto> {
@@ -29,6 +30,7 @@ export class ClassroomController {
   }
 
   @Post('start')
+  @LogParams()
   async startClassroomByOrder(
     @User() user: UserEntity,
     @Body() startClassroomByOrderDto: StartClassroomByOrderRequestDto,

@@ -12,12 +12,14 @@ import {
   CreateLecturesResponseDto,
 } from './dtos/create-lectures.dto';
 import { StartLessonResponseDto } from './dtos/start-lesson.dto';
+import { LogParams } from '@/common/decorators/log-params.decorator';
 
 @Controller('lecture')
 export class LectureController {
   constructor(private readonly lectureService: LectureService) {}
 
   @Get()
+  @LogParams()
   async getAllLectures(
     @User() user: UserEntity,
   ): Promise<GetLecturesResponseDto[]> {
@@ -25,6 +27,7 @@ export class LectureController {
   }
 
   @Get(':id')
+  @LogParams()
   async getLectureInfoById(
     @Param('id') id: number,
   ): Promise<GetLectureInfoResponseDto> {
@@ -32,6 +35,7 @@ export class LectureController {
   }
 
   @Post('/start/:id')
+  @LogParams()
   async startLecture(
     @Param('id') id: number,
     @User() user: UserEntity,
@@ -43,6 +47,7 @@ export class LectureController {
   }
 
   @Post('/start/lesson/:id')
+  @LogParams()
   async startLesson(
     @Param('id') id: number,
     @User() user: UserEntity,
@@ -54,6 +59,7 @@ export class LectureController {
   }
 
   @Get('/lesson/:lessonId')
+  @LogParams()
   async getLessonInfo(
     @Param('lessonId') lessonId: number,
   ): Promise<GetLessonInfoResponseDto> {
@@ -61,6 +67,7 @@ export class LectureController {
   }
 
   @Get('/topic/:topic')
+  @LogParams()
   async getLecturesByTopic(
     @Param('topic') topic: string,
   ): Promise<GetLecturesResponseDto[]> {
@@ -69,6 +76,7 @@ export class LectureController {
 
   @Admin()
   @Post('/create')
+  @LogParams()
   async createLectures(
     @Body() createLectureDto: CreateLectureRequestDto[],
   ): Promise<CreateLecturesResponseDto> {
@@ -77,6 +85,7 @@ export class LectureController {
 
   @Admin()
   @Delete(':id')
+  @LogParams()
   async deleteLecture(@Param('id') id: number): Promise<void> {
     return this.lectureService.deleteLecture(id);
   }

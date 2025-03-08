@@ -12,11 +12,14 @@ import {
   RestoreSubscriptionRequestDto,
   RestoreSubscriptionResponseDto,
 } from './dtos/restore-subscription';
+import { LogParams } from '@/common/decorators/log-params.decorator';
+
 @Controller('payment')
 export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
 
   @Post('verify')
+  @LogParams()
   async verifyPurchase(
     @User() user: UserEntity,
     @Body()
@@ -32,6 +35,7 @@ export class PaymentController {
   }
 
   @Post('restore')
+  @LogParams()
   async restorePurchase(
     @User() user: UserEntity,
     @Body()
@@ -46,6 +50,7 @@ export class PaymentController {
 
   @Public()
   @Post('webhook/google')
+  @LogParams()
   async googleWebhook(@Body() notification: any) {
     await this.paymentService.handleGoogleWebhook(notification);
     return { success: true };
@@ -53,6 +58,7 @@ export class PaymentController {
 
   @Public()
   @Post('webhook/apple')
+  @LogParams()
   async appleWebhook(@Body() notification: AppleRawNotification) {
     return await this.paymentService.handleAppleWebhook(notification);
   }

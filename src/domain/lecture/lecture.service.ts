@@ -40,6 +40,7 @@ import {
   StartLessonRequestDto,
   StartLessonResponseDto,
 } from './dtos/start-lesson.dto';
+import { LogParams } from '@/common/decorators/log-params.decorator';
 
 @Injectable()
 export class LectureService {
@@ -55,6 +56,7 @@ export class LectureService {
     private readonly topicRepository: Repository<TopicEntity>,
   ) {}
 
+  @LogParams()
   async getAllLectures(language: Language): Promise<GetLecturesResponseDto[]> {
     const lectures = await this.lectureRepository.find({
       where: {
@@ -88,6 +90,7 @@ export class LectureService {
     }));
   }
 
+  @LogParams()
   async getLectureInfoById(id: number): Promise<GetLectureInfoResponseDto> {
     const lecture = await this.lectureRepository.findOne({
       where: { id },
@@ -119,6 +122,7 @@ export class LectureService {
     };
   }
 
+  @LogParams()
   async getLessonInfo(lessonId: number): Promise<GetLessonInfoResponseDto> {
     const lesson = await this.lessonRepository.findOne({
       where: { id: lessonId },
@@ -215,6 +219,7 @@ export class LectureService {
     }
   }
 
+  @LogParams()
   async startLesson(
     startLessonRequestDto: StartLessonRequestDto,
   ): Promise<StartLessonResponseDto> {
@@ -258,6 +263,7 @@ export class LectureService {
     }
   }
 
+  @LogParams()
   async getLecturesByTopic(topic: string): Promise<GetLecturesResponseDto[]> {
     const lectures = await this.lectureRepository.find({
       where: {
@@ -287,6 +293,7 @@ export class LectureService {
     }));
   }
 
+  @LogParams()
   async createLectures(
     createLectureDto: CreateLectureRequestDto[],
   ): Promise<CreateLecturesResponseDto> {
@@ -332,6 +339,7 @@ export class LectureService {
     return { lectureIds: lectures.map((lecture) => lecture.id) };
   }
 
+  @LogParams()
   async deleteLecture(lectureId: number): Promise<void> {
     try {
       await this.lectureRepository.delete(lectureId);

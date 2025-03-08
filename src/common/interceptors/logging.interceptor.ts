@@ -22,7 +22,7 @@ export class LoggingInterceptor implements NestInterceptor {
         const response = context.switchToHttp().getResponse();
         this.logger.log(
           `${method} ${url} ${response.statusCode} ${Date.now() - now}ms`,
-          'HTTP',
+          context.getClass().name,
         );
       }),
     );

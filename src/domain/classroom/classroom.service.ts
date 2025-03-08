@@ -19,6 +19,7 @@ import {
   StartClassroomByOrderServiceDto,
 } from './dtos/start-classroom-by-order.dto';
 import { sortLectureIdsByDifficulty } from './utils/sort.utils';
+import { LogParams } from '@/common/decorators/log-params.decorator';
 
 @Injectable()
 export class ClassroomService {
@@ -35,6 +36,7 @@ export class ClassroomService {
     private readonly s3Service: S3Service,
   ) {}
 
+  @LogParams()
   async createClassroom(createClassroomDto: CreateClassroomServiceDto) {
     try {
       const lectures = await this.lectureService.getAllLectures(
@@ -119,6 +121,7 @@ export class ClassroomService {
     }
   }
 
+  @LogParams()
   async getCurrentClassroom({
     userId,
   }: {
@@ -162,6 +165,7 @@ export class ClassroomService {
     return result;
   }
 
+  @LogParams()
   async startClassroomByOrder({
     userId,
     classroomId,

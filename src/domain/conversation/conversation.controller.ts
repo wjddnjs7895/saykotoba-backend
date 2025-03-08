@@ -39,7 +39,7 @@ import { GetLectureGroupResponseDto } from './dtos/get-user-lecture-group.dto';
 import { GetConversationGroupInfoResponseDto } from './dtos/get-conversation-group-info.dto';
 import { GenerateHintResponseDto } from './dtos/generate-hint.dto';
 import { RequireSubscription } from '@/common/decorators/subscription.decorator';
-
+import { LogParams } from '@/common/decorators/log-params.decorator';
 @Controller('conversation')
 export class ConversationController {
   constructor(
@@ -48,6 +48,7 @@ export class ConversationController {
   ) {}
 
   @Get('my-conversation-list')
+  @LogParams()
   async getMyConversationList(
     @User() user: UserEntity,
   ): Promise<GetConversationListResponseDto[]> {
@@ -57,6 +58,7 @@ export class ConversationController {
   @RequireSubscription()
   @Post('audio-response')
   @UseInterceptors(FileInterceptor('audio'))
+  @LogParams()
   async getResponseFromAudio(
     @UploadedFile() audio: Express.Multer.File,
     @Body() body: { conversationId: string; speakingRate: string },
@@ -69,6 +71,7 @@ export class ConversationController {
   }
 
   @Post('generate-scenario')
+  @LogParams()
   async generateScenario(
     @Body() generateScenarioDto: GenerateScenarioRequestDto,
   ): Promise<GenerateScenarioResponseDto> {
@@ -76,6 +79,7 @@ export class ConversationController {
   }
 
   @Post('create')
+  @LogParams()
   async createConversation(
     @User() user: UserEntity,
     @Body() createConversationDto: CreateConversationRequestDto,
@@ -88,6 +92,7 @@ export class ConversationController {
   }
 
   @Get('conversation-message/:conversationId')
+  @LogParams()
   async getAllMessage(
     @Param('conversationId') conversationId: number,
   ): Promise<GetConversationMessageResponseDto[]> {
@@ -103,6 +108,7 @@ export class ConversationController {
   }
 
   @Get('conversation-info/:conversationId')
+  @LogParams()
   async getConversationInfo(
     @Param('conversationId') conversationId: number,
   ): Promise<GetConversationInfoResponseDto> {
@@ -110,6 +116,7 @@ export class ConversationController {
   }
 
   @Post('audio-from-text')
+  @LogParams()
   async getAudioFromText(
     @Body() textToSpeechDto: GetAudioFromTextRequestDto,
   ): Promise<GetAudioFromTextResponseDto> {
@@ -117,6 +124,7 @@ export class ConversationController {
   }
 
   @Post('feedback')
+  @LogParams()
   async generateFeedback(
     @Body() body: { conversationId: number },
   ): Promise<GenerateFeedbackResponseDto> {
@@ -127,6 +135,7 @@ export class ConversationController {
 
   @RequireSubscription()
   @Post('hint/:conversationId')
+  @LogParams()
   async generateHint(
     @Param('conversationId') conversationId: number,
   ): Promise<GenerateHintResponseDto> {
@@ -134,6 +143,7 @@ export class ConversationController {
   }
 
   @Delete('undo/:conversationId')
+  @LogParams()
   async undoMission(
     @Param('conversationId') conversationId: number,
   ): Promise<boolean> {
@@ -141,6 +151,7 @@ export class ConversationController {
   }
 
   @Post('group')
+  @LogParams()
   async createConversationGroup(
     @Body() createConversationGroupDto: CreateConversationGroupRequestDto,
   ): Promise<CreateConversationGroupResponseDto> {
@@ -150,6 +161,7 @@ export class ConversationController {
   }
 
   @Get('group/all')
+  @LogParams()
   async getConversationGroup(
     @User() user: UserEntity,
   ): Promise<GetUserConversationGroupResponseDto[]> {
@@ -157,6 +169,7 @@ export class ConversationController {
   }
 
   @Get('group/:groupId')
+  @LogParams()
   async getConversationGroupInfo(
     @Param('groupId') groupId: number,
   ): Promise<GetConversationGroupInfoResponseDto> {
@@ -164,6 +177,7 @@ export class ConversationController {
   }
 
   @Get('lecture-group')
+  @LogParams()
   async getUserLectureGroup(
     @User() user: UserEntity,
   ): Promise<GetLectureGroupResponseDto[]> {
@@ -171,6 +185,7 @@ export class ConversationController {
   }
 
   @Post('reset/:conversationId')
+  @LogParams()
   async resetConversation(
     @Param('conversationId') conversationId: number,
   ): Promise<{ conversationId: number }> {
@@ -178,6 +193,7 @@ export class ConversationController {
   }
 
   @Get('lesson/:lessonId')
+  @LogParams()
   async getConversationIdByLessonId(
     @Param('lessonId') lessonId: number,
     @User() user: UserEntity,

@@ -12,6 +12,7 @@ import { GetInterestListResponseDto } from '../dtos/get-interest.dto';
 import { InterestEntity } from '../entities/interest.entity';
 import { ClassroomService } from '@/domain/classroom/classroom.service';
 import { CustomBaseException } from '@/common/exception/custom.base.exception';
+import { LogParams } from '@/common/decorators/log-params.decorator';
 
 @Injectable()
 export class OnboardingService {
@@ -23,6 +24,7 @@ export class OnboardingService {
     private readonly classroomService: ClassroomService,
   ) {}
 
+  @LogParams()
   async updateUserOnboarding(
     userId: number,
     updateUserOnboardingDto: UpdateUserOnboardingRequestDto,
@@ -58,6 +60,7 @@ export class OnboardingService {
     }
   }
 
+  @LogParams()
   async updateUserOnboardingStatus(userId: number) {
     const result = await this.userRepository.update(userId, {
       isOnboardingCompleted: true,
@@ -65,12 +68,14 @@ export class OnboardingService {
     if (!result.affected) throw new UserUpdateFailedException();
   }
 
+  @LogParams()
   async isOnboardingCompleted(userId: number): Promise<boolean> {
     const user = await this.userRepository.findOneBy({ id: userId });
     if (!user) throw new UserNotFoundException();
     return user.isOnboardingCompleted;
   }
 
+  @LogParams()
   async getInterestList(): Promise<GetInterestListResponseDto> {
     const interests = await this.interestRepository.find();
     const interestList = interests.map((interest) => ({

@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { VersionCheckRequestDto } from './dtos/check-version.dto';
+import { LogParams } from '@/common/decorators/log-params.decorator';
+
 @Injectable()
 export class SystemService {
   constructor(private readonly configService: ConfigService) {}
 
+  @LogParams()
   async checkVersion(versionCheckDto: VersionCheckRequestDto) {
     const { platform, currentVersion } = versionCheckDto;
     const latestVersion = this.configService.get(
