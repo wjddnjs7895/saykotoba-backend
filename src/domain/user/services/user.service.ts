@@ -70,7 +70,6 @@ export class UserService {
     };
   }
 
-  @LogParams()
   async findUserByEmail(email: string) {
     return await this.userRepository.findOneBy({ email });
   }

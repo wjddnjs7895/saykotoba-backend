@@ -1,6 +1,10 @@
-import { CustomLogger } from '../logger/custom.logger';
+import { CustomLoggerService } from '../logger/logger.service';
 
 export const LOG_PARAMS_KEY = 'log_params';
+
+const getLoggerService = (): CustomLoggerService => {
+  return global.logger;
+};
 
 export function LogParams(): MethodDecorator {
   return (
@@ -10,9 +14,8 @@ export function LogParams(): MethodDecorator {
   ) => {
     const originalMethod = descriptor.value;
     const className = target.constructor.name;
-    const logger = new CustomLogger();
+    const logger = new CustomLoggerService(global.s3LoggerService);
 
-    // 메타데이터 설정
     Reflect.defineMetadata(
       LOG_PARAMS_KEY,
       true,
@@ -22,7 +25,7 @@ export function LogParams(): MethodDecorator {
 
     descriptor.value = async function (...args: any[]) {
       try {
-        // 파라미터 마스킹 처리
+        const logger = getLoggerService();
         const maskedArgs = args.map((arg) => maskSensitiveData(arg));
 
         logger.debug(

@@ -1,7 +1,25 @@
+import { S3LoggerService } from '@/integrations/aws/services/s3/s3-logger.service';
 import { LoggerService } from '@nestjs/common';
 import * as chalk from 'chalk';
 
-export class CustomLogger implements LoggerService {
+export class CustomLoggerService implements LoggerService {
+  private logBuffer: string[] = [];
+  private readonly flushInterval = 30 * 60 * 1000;
+
+  constructor(private readonly s3LoggerService: S3LoggerService) {
+    setInterval(() => this.flushLogs(), this.flushInterval);
+  }
+
+  private async flushLogs() {
+    if (this.logBuffer.length === 0) return;
+
+    const timestamp = new Date().toISOString();
+    const logContent = this.logBuffer.join('\n');
+    const key = `${timestamp.substr(0, 7)}/${timestamp.substr(5, 10)}/batch-${timestamp}.log`;
+
+    await this.s3LoggerService.uploadLog(key, logContent);
+    this.logBuffer = [];
+  }
   private registeredPaths: Set<string> = new Set();
 
   setRegisteredPaths(paths: string[]) {
@@ -81,22 +99,58 @@ export class CustomLogger implements LoggerService {
   }
 
   log(message: string, context?: string) {
+    const logEntry = JSON.stringify({
+      timestamp: new Date().toISOString(),
+      level: 'LOG',
+      context,
+      message,
+    });
+    this.logBuffer.push(logEntry);
     this.printMessage('LOG', message, context);
   }
 
   error(message: any, stack?: string, context?: string) {
+    const logEntry = JSON.stringify({
+      timestamp: new Date().toISOString(),
+      level: 'ERROR',
+      context,
+      message,
+      stack,
+    });
+    this.logBuffer.push(logEntry);
     this.printMessage('ERROR', message, context, stack);
   }
 
   warn(message: any, context?: string) {
+    const logEntry = JSON.stringify({
+      timestamp: new Date().toISOString(),
+      level: 'WARN',
+      context,
+      message,
+    });
+    this.logBuffer.push(logEntry);
     this.printMessage('WARN', message, context);
   }
 
   debug(message: any, context?: string) {
+    const logEntry = JSON.stringify({
+      timestamp: new Date().toISOString(),
+      level: 'DEBUG',
+      context,
+      message,
+    });
+    this.logBuffer.push(logEntry);
     this.printMessage('DEBUG', message, context);
   }
 
   verbose(message: any, context?: string) {
+    const logEntry = JSON.stringify({
+      timestamp: new Date().toISOString(),
+      level: 'VERBOSE',
+      context,
+      message,
+    });
+    this.logBuffer.push(logEntry);
     this.printMessage('VERBOSE', message, context);
   }
 }

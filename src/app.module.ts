@@ -17,6 +17,7 @@ import { LectureModule } from './domain/lecture/lecture.module';
 import { CharacterModule } from './domain/character/character.module';
 import { SystemModule } from './domain/system/system.module';
 import { PaymentModule } from './domain/payment/payment.module';
+import { LoggerModule } from './common/logger/logger.module';
 
 @Module({
   imports: [
@@ -102,6 +103,7 @@ import { PaymentModule } from './domain/payment/payment.module';
     CharacterModule,
     SystemModule,
     PaymentModule,
+    LoggerModule,
   ],
   controllers: [],
   providers: [
