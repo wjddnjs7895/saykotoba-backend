@@ -15,7 +15,7 @@ export class CustomLoggerService implements LoggerService {
 
     const timestamp = new Date().toISOString();
     const logContent = this.logBuffer.join('\n');
-    const key = `${timestamp.substr(0, 7)}/${timestamp.substr(5, 10)}/batch-${timestamp}.log`;
+    const key = `${timestamp.slice(0, 7)}/${timestamp.slice(5, 10)}/batch-${timestamp}.log`;
 
     await this.s3LoggerService.uploadLog(key, logContent);
     this.logBuffer = [];
