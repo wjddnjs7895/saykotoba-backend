@@ -62,6 +62,10 @@ export class AppleWebhookUtil {
                   txInfo.autoRenewStatus === '1' ||
                   txInfo.autoRenewStatus === 1;
               }
+
+              if (txInfo.appAccountToken) {
+                result.appAccountToken = txInfo.appAccountToken;
+              }
             }
           }
 

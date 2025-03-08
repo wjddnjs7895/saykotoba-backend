@@ -159,6 +159,9 @@ export class PaymentService implements OnModuleInit {
         transactionInfo.originalTransactionId ||
         notification.originalTransactionId;
 
+      console.log('transactionInfo', transactionInfo);
+      console.log('userId', userId);
+
       const subscription = await this.subscriptionRepository.findOne({
         where: { user: { id: parseInt(userId) } },
         relations: ['user'],
