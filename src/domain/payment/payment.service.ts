@@ -27,6 +27,7 @@ import {
   RestoreSubscriptionServiceDto,
 } from './dtos/restore-subscription';
 import { Platform } from '@/common/types/system';
+import { LogParams } from '@/common/decorators/log-params.decorator';
 
 @Injectable()
 export class PaymentService implements OnModuleInit {
@@ -47,6 +48,7 @@ export class PaymentService implements OnModuleInit {
     });
   }
 
+  @LogParams()
   async verifyPurchase({
     receipt,
     platform,
@@ -130,6 +132,7 @@ export class PaymentService implements OnModuleInit {
     );
   }
 
+  @LogParams()
   async handleGoogleWebhook(notification: GoogleWebhookNotificationDto) {
     const receipt = notification.purchaseToken;
     const validationResponse = await iap.validate(iap.GOOGLE, receipt);
@@ -146,6 +149,7 @@ export class PaymentService implements OnModuleInit {
     );
   }
 
+  @LogParams()
   async handleAppleWebhook(notification: any) {
     try {
       const transactionInfo =
@@ -155,17 +159,10 @@ export class PaymentService implements OnModuleInit {
         transactionInfo.originalTransactionId ||
         notification.originalTransactionId;
 
-      let subscription = await this.subscriptionRepository.findOne({
-        where: { originalTransactionId },
+      const subscription = await this.subscriptionRepository.findOne({
+        where: { user: { id: parseInt(userId) } },
         relations: ['user'],
       });
-
-      if (!subscription && userId) {
-        subscription = await this.subscriptionRepository.findOne({
-          where: { user: { id: parseInt(userId) } },
-          relations: ['user'],
-        });
-      }
 
       if (!subscription) {
         throw new SubscriptionNotFoundException();
@@ -221,8 +218,6 @@ export class PaymentService implements OnModuleInit {
       }
 
       updateData.status = status;
-      console.log('subscription', subscription);
-      console.log('updateData', updateData);
       try {
         await this.subscriptionRepository.update(
           { id: subscription.id },
@@ -240,6 +235,7 @@ export class PaymentService implements OnModuleInit {
     }
   }
 
+  @LogParams()
   async isActiveSubscriber(userId: number): Promise<boolean> {
     const subscription = await this.subscriptionRepository.findOne({
       where: {
@@ -251,6 +247,7 @@ export class PaymentService implements OnModuleInit {
     return !!subscription;
   }
 
+  @LogParams()
   async restoreSubscription({
     receipt,
     platform,

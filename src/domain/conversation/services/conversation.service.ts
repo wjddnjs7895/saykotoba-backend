@@ -51,7 +51,7 @@ import { GoogleTTSService } from '@/integrations/google/services/google-tts.serv
 import { CharacterService } from '@/domain/character/character.service';
 import { S3Service } from '@/integrations/aws/services/s3/s3.service';
 import { GenerateHintResponseDto } from '../dtos/generate-hint.dto';
-
+import { LogParams } from '@/common/decorators/log-params.decorator';
 @Injectable()
 export class ConversationService {
   constructor(
@@ -70,6 +70,7 @@ export class ConversationService {
     private readonly s3Service: S3Service,
   ) {}
 
+  @LogParams()
   async getConversationsByUserId(
     userId: number,
   ): Promise<GetConversationListResponseDto[]> {
@@ -93,6 +94,7 @@ export class ConversationService {
     }));
   }
 
+  @LogParams()
   async getAllMessage(conversationId: number): Promise<MessageEntity[]> {
     const messages = await this.messageRepository.find({
       where: { conversationId },
@@ -108,6 +110,7 @@ export class ConversationService {
     return messages;
   }
 
+  @LogParams()
   async processAudioResponse(
     conversationId: number,
     audio: Express.Multer.File,
@@ -167,6 +170,7 @@ export class ConversationService {
   //   };
   // }
 
+  @LogParams()
   async generateScenario(
     generateScenarioDto: GenerateScenarioRequestDto,
   ): Promise<GenerateScenarioResponseDto> {
@@ -183,6 +187,7 @@ export class ConversationService {
     };
   }
 
+  @LogParams()
   async getConversationInfo(
     conversationId: number,
   ): Promise<GetConversationInfoResponseDto> {
@@ -209,6 +214,7 @@ export class ConversationService {
     return response;
   }
 
+  @LogParams()
   async createConversation(
     createConversationDto: CreateConversationServiceDto,
   ): Promise<CreateConversationResponseDto> {
@@ -278,6 +284,7 @@ export class ConversationService {
     }
   }
 
+  @LogParams()
   async getFirstMessage(
     conversationInfo: CreateConversationServiceDto,
     characteristic: string,
@@ -293,6 +300,7 @@ export class ConversationService {
     });
   }
 
+  @LogParams()
   async getAndProcessConversationFromAudio(
     conversationId: number,
     speakingRate: number,
@@ -406,6 +414,7 @@ export class ConversationService {
   //   }
   // }
 
+  @LogParams()
   async updateMissionStatus(
     conversationId: number,
     missionResults: MissionResultType[],
@@ -442,6 +451,7 @@ export class ConversationService {
     }
   }
 
+  @LogParams()
   async generateFeedBackAndSave(conversationId: number) {
     try {
       const language = 'en';
@@ -503,6 +513,7 @@ export class ConversationService {
     }
   }
 
+  @LogParams()
   async generateHintAndCount(
     conversationId: number,
   ): Promise<GenerateHintResponseDto> {
@@ -542,6 +553,7 @@ export class ConversationService {
     }
   }
 
+  @LogParams()
   async getAudioFromText(
     textToSpeechDto: GetAudioFromTextRequestDto,
   ): Promise<GetAudioFromTextResponseDto> {
@@ -550,6 +562,7 @@ export class ConversationService {
     return { audioUrl: `data:audio/mp3;base64,${base64Audio}` };
   }
 
+  @LogParams()
   async undoChat(conversationId: number): Promise<boolean> {
     const messages = await this.messageRepository.find({
       where: { conversationId },
@@ -580,6 +593,7 @@ export class ConversationService {
     }
   }
 
+  @LogParams()
   async resetConversation(
     conversationId: number,
   ): Promise<{ conversationId: number }> {
@@ -628,6 +642,7 @@ export class ConversationService {
     };
   }
 
+  @LogParams()
   async updateConversationGroup(conversationId: number, groupId: number) {
     return this.conversationRepository.update(
       { id: conversationId },
@@ -635,6 +650,7 @@ export class ConversationService {
     );
   }
 
+  @LogParams()
   async findConversationIdByLessonId(userId: number, lessonId: number) {
     const conversations = await this.conversationRepository.find({
       where: { userId, problemId: lessonId },

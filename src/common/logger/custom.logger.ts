@@ -2,6 +2,38 @@ import { LoggerService } from '@nestjs/common';
 import * as chalk from 'chalk';
 
 export class CustomLogger implements LoggerService {
+  private registeredPaths: Set<string> = new Set();
+
+  setRegisteredPaths(paths: string[]) {
+    this.registeredPaths = new Set(paths);
+  }
+
+  private shouldLog(context?: string, message?: any): boolean {
+    if (!context) {
+      return false;
+    }
+
+    if (context === 'HTTP' && typeof message === 'string') {
+      const matches = message.match(/^(GET|POST|PUT|DELETE|PATCH)\s+([^\s]+)/);
+      if (matches) {
+        const path = matches[2];
+        if (!this.registeredPaths.has(path)) {
+          return false;
+        }
+      }
+    }
+
+    if (typeof message === 'object') {
+      if (message.path) {
+        if (!this.registeredPaths.has(message.path)) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
   private getColorByLevel(level: string): chalk.ChalkFunction {
     switch (level) {
       case 'LOG':
@@ -25,6 +57,10 @@ export class CustomLogger implements LoggerService {
     context?: string,
     stack?: string,
   ) {
+    if (!this.shouldLog(context, message)) {
+      return;
+    }
+
     const timestamp = new Date().toISOString();
     const color = this.getColorByLevel(level);
 

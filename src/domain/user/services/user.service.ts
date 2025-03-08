@@ -22,6 +22,7 @@ import {
 } from '@/common/constants/user.constants';
 import { SubscriptionEntity } from '../../payment/entities/subscription.entity';
 import { CustomBaseException } from '@/common/exception/custom.base.exception';
+import { LogParams } from '@/common/decorators/log-params.decorator';
 
 @Injectable()
 export class UserService {
@@ -32,6 +33,7 @@ export class UserService {
     private readonly subscriptionRepository: Repository<SubscriptionEntity>,
   ) {}
 
+  @LogParams()
   async createUser(
     createUserDto: CreateUserRequestDto,
   ): Promise<CreateUserResponseDto> {
@@ -48,6 +50,7 @@ export class UserService {
     };
   }
 
+  @LogParams()
   async getUserInfo(id: number) {
     const user = await this.userRepository.findOne({
       where: { id },
@@ -67,6 +70,7 @@ export class UserService {
     };
   }
 
+  @LogParams()
   async findUserByEmail(email: string) {
     return await this.userRepository.findOneBy({ email });
   }
@@ -78,6 +82,7 @@ export class UserService {
     });
   }
 
+  @LogParams()
   async updateUser(
     id: number,
     updateUserDto: UpdateUserRequestDto,
@@ -86,10 +91,12 @@ export class UserService {
     return { userId: id };
   }
 
+  @LogParams()
   async removeUser(id: number) {
     return await this.userRepository.delete(id);
   }
 
+  @LogParams()
   async updateUserExpAndCount({
     userId,
     exp,
@@ -113,6 +120,7 @@ export class UserService {
     }
   }
 
+  @LogParams()
   async addSolvedIds({
     userId,
     conversationId,
@@ -142,6 +150,7 @@ export class UserService {
     }
   }
 
+  @LogParams()
   async updateUserTier(id: number) {
     const user = await this.userRepository.findOneBy({ id });
     if (!user) throw new UserNotFoundException();
@@ -174,6 +183,7 @@ export class UserService {
     }
   }
 
+  @LogParams()
   async getTierList(): Promise<{
     tierList: { tier: string; threshold: number }[];
   }> {
@@ -185,6 +195,7 @@ export class UserService {
     };
   }
 
+  @LogParams()
   async isSolvedConversation({
     userId,
     conversationId,
