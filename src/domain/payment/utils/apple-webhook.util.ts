@@ -43,6 +43,7 @@ export class AppleWebhookUtil {
             const txInfo = this.decodeJWT(
               decodedPayload.data.signedTransactionInfo,
             );
+            console.log('txInfo', txInfo);
 
             if (txInfo) {
               if (txInfo.expiresDate) {
