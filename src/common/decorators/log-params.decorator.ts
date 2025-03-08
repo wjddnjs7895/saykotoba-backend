@@ -14,7 +14,6 @@ export function LogParams(): MethodDecorator {
   ) => {
     const originalMethod = descriptor.value;
     const className = target.constructor.name;
-    const logger = new CustomLoggerService(global.s3LoggerService);
 
     Reflect.defineMetadata(
       LOG_PARAMS_KEY,
@@ -36,6 +35,7 @@ export function LogParams(): MethodDecorator {
         const result = await originalMethod.apply(this, args);
         return result;
       } catch (error) {
+        const logger = getLoggerService();
         logger.error(
           `Error in ${className}.${String(propertyKey)}: ${error.message}`,
           error.stack,
