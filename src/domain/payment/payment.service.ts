@@ -261,7 +261,7 @@ export class PaymentService implements OnModuleInit {
 
         if (subscription) {
           const result = await this.handleAppleWebhook(
-            webhook.notification,
+            JSON.parse(webhook.notification),
             true,
           );
 

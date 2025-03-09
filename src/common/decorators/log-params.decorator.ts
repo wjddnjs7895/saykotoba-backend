@@ -62,6 +62,8 @@ function maskSensitiveData(obj: any): any {
     'email',
     'phone',
     'receipt',
+    'signedPayload',
+    'notification',
   ];
 
   if (!obj || typeof obj !== 'object') {
