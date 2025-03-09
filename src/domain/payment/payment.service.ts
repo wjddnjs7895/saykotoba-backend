@@ -1,6 +1,6 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { MoreThan, Repository } from 'typeorm';
 import { SubscriptionEntity } from './entities/subscription.entity';
 import * as iap from 'in-app-purchase';
 import { SubscriptionStatus } from '@/common/constants/user.constants';
@@ -12,6 +12,7 @@ import {
   AppleReceiptDecodeFailedException,
   AppleReceiptNotFoundException,
   InvalidReceiptException,
+  PendingWebhookFailedException,
   SubscriptionExpiredException,
   SubscriptionNotFoundException,
   SubscriptionUpdateFailedException,
@@ -28,6 +29,7 @@ import {
 } from './dtos/restore-subscription';
 import { Platform } from '@/common/types/system';
 import { LogParams } from '@/common/decorators/log-params.decorator';
+import { PendingWebhookEntity } from './entities/pending-webhook.entity';
 
 @Injectable()
 export class PaymentService implements OnModuleInit {
@@ -35,6 +37,8 @@ export class PaymentService implements OnModuleInit {
     @InjectRepository(SubscriptionEntity)
     private readonly subscriptionRepository: Repository<SubscriptionEntity>,
     private readonly configService: ConfigService,
+    @InjectRepository(PendingWebhookEntity)
+    private readonly pendingWebhookRepository: Repository<PendingWebhookEntity>,
   ) {}
 
   async onModuleInit() {
@@ -150,22 +154,26 @@ export class PaymentService implements OnModuleInit {
   }
 
   @LogParams()
-  async handleAppleWebhook(notification: any) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async handleAppleWebhook(notification: any, isPending: boolean = false) {
     try {
       const transactionInfo =
         AppleWebhookUtil.extractTransactionInfo(notification);
-      const userId = transactionInfo.appAccountToken;
       const originalTransactionId =
         transactionInfo.originalTransactionId ||
         notification.originalTransactionId;
 
       const subscription = await this.subscriptionRepository.findOne({
-        where: { user: { id: parseInt(userId) } },
+        where: { originalTransactionId },
         relations: ['user'],
       });
 
       if (!subscription) {
-        throw new SubscriptionNotFoundException();
+        await this.pendingWebhookRepository.save({
+          originalTransactionId,
+          notification: JSON.stringify(notification),
+        });
+        return true;
       }
 
       let status = SubscriptionStatus.ACTIVE;
@@ -232,6 +240,41 @@ export class PaymentService implements OnModuleInit {
         throw error;
       }
       throw new UnexpectedException(error.message);
+    }
+  }
+
+  @Cron('*/10 * * * *')
+  async processPendingWebhooks() {
+    const pendingWebhooks = await this.pendingWebhookRepository.find({
+      where: {
+        isProcessed: false,
+        createdAt: MoreThan(new Date(Date.now() - 24 * 60 * 60 * 1000)),
+      },
+      take: 50,
+    });
+
+    for (const webhook of pendingWebhooks) {
+      try {
+        const subscription = await this.subscriptionRepository.findOne({
+          where: { originalTransactionId: webhook.originalTransactionId },
+        });
+
+        if (subscription) {
+          const result = await this.handleAppleWebhook(
+            JSON.parse(webhook.notification),
+            true,
+          );
+
+          if (result) {
+            await this.pendingWebhookRepository.update(
+              { id: webhook.id },
+              { processedAt: new Date(), isProcessed: true },
+            );
+          }
+        }
+      } catch {
+        throw new PendingWebhookFailedException();
+      }
     }
   }
 

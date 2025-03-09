@@ -112,3 +112,13 @@ export class SubscriptionExpiredException extends CustomBaseException {
     );
   }
 }
+
+export class PendingWebhookFailedException extends CustomBaseException {
+  constructor() {
+    super(
+      SubscriptionErrorCodeEnum.PendingWebhookFailed,
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      SubscriptionErrorMessage[SubscriptionErrorCodeEnum.PendingWebhookFailed],
+    );
+  }
+}
