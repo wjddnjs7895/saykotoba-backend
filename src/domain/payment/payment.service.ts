@@ -154,7 +154,6 @@ export class PaymentService implements OnModuleInit {
   }
 
   @LogParams()
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async handleAppleWebhook(notification: any, isPending: boolean = false) {
     try {
       const transactionInfo =
@@ -168,7 +167,7 @@ export class PaymentService implements OnModuleInit {
         relations: ['user'],
       });
 
-      if (!subscription) {
+      if (!subscription && !isPending) {
         await this.pendingWebhookRepository.save({
           originalTransactionId,
           notification: JSON.stringify(notification),
