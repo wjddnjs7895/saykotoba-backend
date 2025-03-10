@@ -6,6 +6,7 @@ import {
   OneToMany,
   OneToOne,
   JoinTable,
+  DeleteDateColumn,
 } from 'typeorm';
 import { SubscriptionEntity } from '../../payment/entities/subscription.entity';
 import {
@@ -139,4 +140,10 @@ export class UserEntity extends BaseEntity {
     comment: 'User role',
   })
   role: UserRole;
+
+  @DeleteDateColumn({ name: 'deleted_at', nullable: true })
+  deletedAt: Date;
+
+  @Column({ default: false })
+  isWithdrawn: boolean;
 }

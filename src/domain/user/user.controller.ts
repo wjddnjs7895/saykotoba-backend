@@ -85,4 +85,11 @@ export class UserController {
   getInterestList(): Promise<GetInterestListResponseDto> {
     return this.onboardingService.getInterestList();
   }
+
+  @Delete('withdraw')
+  @LogParams()
+  async withdrawUser(@User() user: UserEntity): Promise<{ success: boolean }> {
+    await this.userService.withdrawUser(user.id);
+    return { success: true };
+  }
 }

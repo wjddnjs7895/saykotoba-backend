@@ -81,6 +81,7 @@ import { LoggerModule } from './common/logger/logger.module';
         database: configService.get('DB_DATABASE'),
         synchronize: false, //configService.get('NODE_ENV') !== 'production',
         logging: false, //configService.get('NODE_ENV') !== 'production',
+        softDelete: true,
         autoLoadEntities: true,
         namingStrategy: new SnakeNamingStrategy(),
         ssl: {
