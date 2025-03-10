@@ -54,10 +54,11 @@ export class UserController {
     return this.userService.updateUser(id, updateUserDto);
   }
 
-  @Delete(':id')
+  @Delete('withdraw')
   @LogParams()
-  removeUser(@Param('id') id: number) {
-    return this.userService.removeUser(id);
+  async withdrawUser(@User() user: UserEntity): Promise<{ success: boolean }> {
+    await this.userService.withdrawUser(user.id);
+    return { success: true };
   }
 
   @Get('tier-list')
@@ -84,12 +85,5 @@ export class UserController {
   @LogParams()
   getInterestList(): Promise<GetInterestListResponseDto> {
     return this.onboardingService.getInterestList();
-  }
-
-  @Delete('withdraw')
-  @LogParams()
-  async withdrawUser(@User() user: UserEntity): Promise<{ success: boolean }> {
-    await this.userService.withdrawUser(user.id);
-    return { success: true };
   }
 }
