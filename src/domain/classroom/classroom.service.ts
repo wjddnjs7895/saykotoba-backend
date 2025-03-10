@@ -20,6 +20,7 @@ import {
 } from './dtos/start-classroom-by-order.dto';
 import { sortLectureIdsByDifficulty } from './utils/sort.utils';
 import { LogParams } from '@/common/decorators/log-params.decorator';
+import { LessonNotFoundException } from '@/common/exception/custom-exception/lecture.exception';
 
 @Injectable()
 export class ClassroomService {
@@ -171,6 +172,7 @@ export class ClassroomService {
     classroomId,
     lectureOrder,
     lessonOrder,
+    lessonId,
   }: StartClassroomByOrderServiceDto): Promise<StartClassroomByOrderResponseDto> {
     const classroomLecture = await this.classroomLectureRepository.findOne({
       where: { classroomId, order: lectureOrder },
@@ -183,8 +185,12 @@ export class ClassroomService {
 
     const newConversation = await this.lectureService.startLesson({
       userId,
-      lessonId: classroomLecture.lecture.lessons[lessonOrder].id,
+      lessonId,
     });
+
+    if (!newConversation) {
+      throw new LessonNotFoundException();
+    }
 
     const totalLessons = classroomLecture.lecture.lessons.length;
     let nextLectureOrder = lectureOrder;
