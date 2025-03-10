@@ -308,7 +308,7 @@ export class PaymentService implements OnModuleInit {
         throw new InvalidReceiptException();
       }
 
-      let originalTransactionId = receipt;
+      let originalTransactionId;
       let expiresAt: Date | null = null;
 
       if (platform === Platform.APPLE) {
@@ -338,13 +338,43 @@ export class PaymentService implements OnModuleInit {
 
       if (expiresAt && expiresAt > new Date()) {
         try {
-          await this.subscriptionRepository.update(
-            { originalTransactionId, user: { id: userId } },
-            {
-              status: SubscriptionStatus.ACTIVE,
-              expiresAt: expiresAt,
-            },
-          );
+          const subscription = await this.subscriptionRepository.findOne({
+            where: { user: { id: userId } },
+          });
+
+          if (subscription) {
+            const updatedSubscription =
+              await this.subscriptionRepository.update(
+                { user: { id: userId } },
+                {
+                  originalTransactionId,
+                  status: SubscriptionStatus.ACTIVE,
+                  expiresAt: expiresAt,
+                },
+              );
+
+            if (updatedSubscription) {
+              const allSubscriptionsWithSameTransaction =
+                await this.subscriptionRepository.find({
+                  where: { originalTransactionId },
+                  relations: ['user'],
+                });
+
+              for (const sub of allSubscriptionsWithSameTransaction) {
+                if (sub.user && sub.user.id !== userId) {
+                  {
+                    await this.subscriptionRepository.update(
+                      { id: sub.id },
+                      {
+                        status: SubscriptionStatus.EXPIRED,
+                        cancelledAt: new Date(),
+                      },
+                    );
+                  }
+                }
+              }
+            }
+          }
         } catch {
           throw new SubscriptionUpdateFailedException();
         }

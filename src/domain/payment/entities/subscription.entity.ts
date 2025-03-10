@@ -77,7 +77,7 @@ export class SubscriptionEntity extends BaseEntity {
   })
   cancelledAt: Date;
 
-  @OneToOne(() => UserEntity)
-  @JoinColumn()
+  @OneToOne(() => UserEntity, (user) => user.subscription)
+  @JoinColumn({ name: 'user_id' })
   user: UserEntity;
 }
