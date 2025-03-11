@@ -19,4 +19,7 @@ export interface GoogleWebhookNotificationDto {
   purchaseToken: string;
   eventTimeMillis: number;
   notificationType: GoogleNotificationType;
+  autoRenewing: boolean;
+  cancelReason: number;
+  expiryTimeMillis: string;
 }
