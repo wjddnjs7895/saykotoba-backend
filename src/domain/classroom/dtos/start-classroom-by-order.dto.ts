@@ -7,6 +7,8 @@ export class StartClassroomByOrderRequestDto {
   lessonOrder: number;
   @IsNumber()
   classroomId: number;
+  @IsNumber()
+  lessonId: number;
 }
 
 export class StartClassroomByOrderServiceDto extends StartClassroomByOrderRequestDto {

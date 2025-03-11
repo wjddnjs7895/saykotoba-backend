@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectRepository, InjectDataSource } from '@nestjs/typeorm';
 import { UserEntity } from '../entities/user.entity';
-import { Repository } from 'typeorm/repository/Repository';
+import { Repository, DataSource } from 'typeorm';
 import {
   CreateUserRequestDto,
   CreateUserResponseDto,
@@ -23,6 +23,8 @@ import {
 import { SubscriptionEntity } from '../../payment/entities/subscription.entity';
 import { CustomBaseException } from '@/common/exception/custom.base.exception';
 import { LogParams } from '@/common/decorators/log-params.decorator';
+import { ConversationGroupEntity } from '@/domain/conversation/entities/conversation_group.entity';
+import { ClassroomEntity } from '@/domain/classroom/entities/classroom.entity';
 
 @Injectable()
 export class UserService {
@@ -31,6 +33,8 @@ export class UserService {
     private readonly userRepository: Repository<UserEntity>,
     @InjectRepository(SubscriptionEntity)
     private readonly subscriptionRepository: Repository<SubscriptionEntity>,
+    @InjectDataSource()
+    private readonly dataSource: DataSource,
   ) {}
 
   @LogParams()
@@ -209,5 +213,25 @@ export class UserService {
       user.solvedConversationIds.includes(conversationId) ||
       user.solvedProblemIds.includes(problemId)
     );
+  }
+
+  async withdrawUser(userId: number): Promise<void> {
+    return this.dataSource.transaction(async (manager) => {
+      // 1. 개인정보 익명화 (GDPR 등 규정 준수)
+      await manager.update(UserEntity, userId, {
+        email: `withdrawn_${userId}_${Date.now()}@email.com`,
+        name: 'withdrawn_user',
+        password: null,
+        googleId: null,
+        appleId: null,
+        isWithdrawn: true,
+      });
+      await manager.softDelete(SubscriptionEntity, { user: { id: userId } });
+      await manager.softDelete(ConversationGroupEntity, {
+        user: { id: userId },
+      });
+      await manager.softDelete(ClassroomEntity, { user: { id: userId } });
+      await manager.softDelete(UserEntity, userId);
+    });
   }
 }
