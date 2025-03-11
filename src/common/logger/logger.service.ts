@@ -96,61 +96,32 @@ export class CustomLoggerService implements LoggerService {
     if (stack) {
       console.log(chalk.red(stack));
     }
-  }
-
-  log(message: string, context?: string) {
     const logEntry = JSON.stringify({
       timestamp: new Date().toISOString(),
-      level: 'LOG',
+      level: level,
       context,
       message,
     });
     this.logBuffer.push(logEntry);
+  }
+
+  log(message: string, context?: string) {
     this.printMessage('LOG', message, context);
   }
 
   error(message: any, stack?: string, context?: string) {
-    const logEntry = JSON.stringify({
-      timestamp: new Date().toISOString(),
-      level: 'ERROR',
-      context,
-      message,
-      stack,
-    });
-    this.logBuffer.push(logEntry);
     this.printMessage('ERROR', message, context, stack);
   }
 
   warn(message: any, context?: string) {
-    const logEntry = JSON.stringify({
-      timestamp: new Date().toISOString(),
-      level: 'WARN',
-      context,
-      message,
-    });
-    this.logBuffer.push(logEntry);
     this.printMessage('WARN', message, context);
   }
 
   debug(message: any, context?: string) {
-    const logEntry = JSON.stringify({
-      timestamp: new Date().toISOString(),
-      level: 'DEBUG',
-      context,
-      message,
-    });
-    this.logBuffer.push(logEntry);
     this.printMessage('DEBUG', message, context);
   }
 
   verbose(message: any, context?: string) {
-    const logEntry = JSON.stringify({
-      timestamp: new Date().toISOString(),
-      level: 'VERBOSE',
-      context,
-      message,
-    });
-    this.logBuffer.push(logEntry);
     this.printMessage('VERBOSE', message, context);
   }
 }
