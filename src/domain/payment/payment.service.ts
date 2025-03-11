@@ -30,6 +30,7 @@ import {
 import { Platform } from '@/common/types/system';
 import { LogParams } from '@/common/decorators/log-params.decorator';
 import { PendingWebhookEntity } from './entities/pending-webhook.entity';
+import { GoogleWebhookUtil } from './utils/google-webhook.util';
 
 @Injectable()
 export class PaymentService implements OnModuleInit {
@@ -61,26 +62,32 @@ export class PaymentService implements OnModuleInit {
     try {
       await iap.setup();
 
-      const validationResponse = await iap.validate(
-        platform === 'GOOGLE' ? iap.GOOGLE : iap.APPLE,
-        receipt,
-      );
-
-      const isValid = await iap.isValidated(validationResponse);
-      if (!isValid) {
-        throw new InvalidReceiptException();
-      }
-
-      const subscription = await this.subscriptionRepository.findOne({
-        where: { user: { id: userId } },
-      });
-
-      if (!subscription) {
-        throw new SubscriptionNotFoundException();
-      }
-
+      let validationResponse;
       let originalTransactionId = receipt;
-      if (platform === 'APPLE') {
+
+      if (platform === 'GOOGLE') {
+        // Google Play 구매 검증
+        validationResponse = await iap.validate(iap.GOOGLE, receipt);
+        const purchaseData = validationResponse.purchaseData?.[0];
+
+        if (!purchaseData) {
+          throw new InvalidReceiptException();
+        }
+
+        if (purchaseData.purchaseState !== 0) {
+          throw new InvalidReceiptException();
+        }
+
+        if (
+          purchaseData.expiryDate &&
+          new Date(purchaseData.expiryDate) < new Date()
+        ) {
+          throw new SubscriptionExpiredException();
+        }
+
+        originalTransactionId = purchaseData.purchaseToken || receipt;
+      } else {
+        validationResponse = await iap.validate(iap.APPLE, receipt);
         try {
           const rawNotification = { signedPayload: receipt };
           const transactionInfo =
@@ -102,13 +109,38 @@ export class PaymentService implements OnModuleInit {
         }
       }
 
+      const isValid = await iap.isValidated(validationResponse);
+      if (!isValid) {
+        throw new InvalidReceiptException();
+      }
+
+      const subscription = await this.subscriptionRepository.findOne({
+        where: { user: { id: userId } },
+      });
+
+      if (!subscription) {
+        throw new SubscriptionNotFoundException();
+      }
+
       try {
+        const updateData: Partial<SubscriptionEntity> = {
+          originalTransactionId,
+          status: SubscriptionStatus.ACTIVE,
+        };
+
+        // Google Play의 경우 만료일 업데이트
+        if (
+          platform === 'GOOGLE' &&
+          validationResponse.purchaseData?.[0]?.expiryDate
+        ) {
+          updateData.expiresAt = new Date(
+            validationResponse.purchaseData[0].expiryDate,
+          );
+        }
+
         await this.subscriptionRepository.update(
           { id: subscription.id },
-          {
-            originalTransactionId,
-            status: SubscriptionStatus.ACTIVE,
-          },
+          updateData,
         );
       } catch {
         throw new SubscriptionUpdateFailedException();
@@ -138,19 +170,60 @@ export class PaymentService implements OnModuleInit {
 
   @LogParams()
   async handleGoogleWebhook(notification: GoogleWebhookNotificationDto) {
-    const receipt = notification.purchaseToken;
-    const validationResponse = await iap.validate(iap.GOOGLE, receipt);
-    const purchaseData = validationResponse.purchaseData[0];
+    try {
+      const transactionInfo =
+        GoogleWebhookUtil.extractTransactionInfo(notification);
+      const originalTransactionId = transactionInfo.originalTransactionId;
 
-    await this.subscriptionRepository.update(
-      { originalTransactionId: receipt },
-      {
-        status: purchaseData.cancelReason
-          ? SubscriptionStatus.EXPIRED
-          : SubscriptionStatus.ACTIVE,
-        expiresAt: new Date(purchaseData.expiryDate),
-      },
-    );
+      const subscription = await this.subscriptionRepository.findOne({
+        where: { originalTransactionId },
+        relations: ['user'],
+      });
+
+      if (!subscription) {
+        await this.pendingWebhookRepository.save({
+          originalTransactionId,
+          notification: JSON.stringify(notification),
+        });
+        return true;
+      }
+
+      let status = SubscriptionStatus.ACTIVE;
+      const updateData: Partial<SubscriptionEntity> = {
+        originalTransactionId,
+        latestTransactionId: transactionInfo.transactionId,
+        isAutoRenew: transactionInfo.isAutoRenewable,
+        storeType: StoreType.GOOGLE_PLAY,
+      };
+
+      if (transactionInfo.expiresDate) {
+        updateData.expiresAt = new Date(transactionInfo.expiresDate);
+      }
+
+      if (transactionInfo.cancelReason) {
+        status = SubscriptionStatus.EXPIRED;
+        updateData.cancelledAt = new Date();
+      } else {
+        updateData.lastPaidAt = new Date();
+      }
+
+      updateData.status = status;
+
+      try {
+        await this.subscriptionRepository.update(
+          { id: subscription.id },
+          { ...updateData },
+        );
+      } catch {
+        throw new SubscriptionUpdateFailedException();
+      }
+      return true;
+    } catch (error) {
+      if (error instanceof CustomBaseException) {
+        throw error;
+      }
+      throw new UnexpectedException(error.message);
+    }
   }
 
   @LogParams()
