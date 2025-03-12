@@ -31,16 +31,6 @@ export class CustomLoggerService implements LoggerService {
       return false;
     }
 
-    if (context === 'HTTP' && typeof message === 'string') {
-      const matches = message.match(/^(GET|POST|PUT|DELETE|PATCH)\s+([^\s]+)/);
-      if (matches) {
-        const path = matches[2];
-        if (!this.registeredPaths.has(path)) {
-          return false;
-        }
-      }
-    }
-
     if (typeof message === 'object') {
       if (message.path) {
         if (!this.registeredPaths.has(message.path)) {

@@ -8,6 +8,9 @@ import {
 import { Language } from '@/common/constants/app.constants';
 
 export class CreateClassroomRequestDto {
+  @IsString()
+  name: string;
+
   @IsNumber()
   difficultyLevel: number;
 
