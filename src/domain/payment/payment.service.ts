@@ -66,7 +66,6 @@ export class PaymentService implements OnModuleInit {
       let originalTransactionId = receipt;
 
       if (platform === 'GOOGLE') {
-        // Google Play 구매 검증
         validationResponse = await iap.validate(iap.GOOGLE, receipt);
         const purchaseData = validationResponse.purchaseData?.[0];
 
