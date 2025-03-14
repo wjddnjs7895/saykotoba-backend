@@ -1,5 +1,5 @@
 export class VerifyPurchaseRequestDto {
-  receipt: string;
+  receipt: any;
   platform: 'GOOGLE' | 'APPLE';
 }
 
