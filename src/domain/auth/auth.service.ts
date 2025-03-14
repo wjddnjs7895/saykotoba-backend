@@ -271,4 +271,13 @@ export class AuthService {
       throw new AppleIdTokenVerifyFailedException();
     }
   }
+
+  async isValidateUser({ userId }: { userId: number }): Promise<boolean> {
+    try {
+      const user = await this.userService.getUserInfo(userId);
+      return !!user;
+    } catch {
+      throw new UserNotFoundException();
+    }
+  }
 }

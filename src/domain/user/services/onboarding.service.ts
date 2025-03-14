@@ -43,6 +43,7 @@ export class OnboardingService {
       });
 
       try {
+        user.name = updateUserOnboardingDto.name;
         user.isOnboardingCompleted = true;
         user.interests = updateUserOnboardingDto.interestIds.map(
           (id) => ({ id }) as InterestEntity,

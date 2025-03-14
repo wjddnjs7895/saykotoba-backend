@@ -88,7 +88,7 @@ export class AuthController {
   }
 
   @Get('validate')
-  async validateAccessToken(): Promise<boolean> {
-    return true;
+  async validateAccessToken(@User() user: UserEntity): Promise<boolean> {
+    return this.authService.isValidateUser({ userId: user.id });
   }
 }
