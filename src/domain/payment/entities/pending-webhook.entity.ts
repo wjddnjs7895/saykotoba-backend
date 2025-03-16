@@ -1,3 +1,4 @@
+import { StoreType } from '@/common/constants/user.constants';
 import { BaseEntity } from '@/common/entities/base.entity';
 import { Entity, Column } from 'typeorm';
 
@@ -14,4 +15,11 @@ export class PendingWebhookEntity extends BaseEntity {
 
   @Column({ name: 'is_processed', nullable: true, default: false })
   isProcessed: boolean;
+
+  @Column({
+    type: 'enum',
+    enum: StoreType,
+    nullable: true,
+  })
+  storeType: StoreType;
 }

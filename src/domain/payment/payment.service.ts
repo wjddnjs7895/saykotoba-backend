@@ -135,12 +135,14 @@ export class PaymentService implements OnModuleInit {
           status: SubscriptionStatus.ACTIVE,
         };
 
+        console.log('validationResponse', validationResponse);
+
         if (
           platform === Platform.GOOGLE &&
-          validationResponse.purchaseData?.[0]?.expiryDate
+          validationResponse.purchaseData.expiryDate
         ) {
           updateData.expiresAt = new Date(
-            validationResponse.purchaseData[0].expiryDate,
+            validationResponse.purchaseData.expiryDate,
           );
         }
 
@@ -203,6 +205,7 @@ export class PaymentService implements OnModuleInit {
           await this.pendingWebhookRepository.save({
             originalTransactionId,
             notification: JSON.stringify(notification),
+            storeType: StoreType.GOOGLE_PLAY,
           });
           return true;
         }
@@ -232,6 +235,7 @@ export class PaymentService implements OnModuleInit {
           await this.pendingWebhookRepository.save({
             originalTransactionId,
             notification: JSON.stringify(notification),
+            storeType: StoreType.GOOGLE_PLAY,
           });
           return true;
         }
@@ -290,6 +294,7 @@ export class PaymentService implements OnModuleInit {
         await this.pendingWebhookRepository.save({
           originalTransactionId,
           notification: JSON.stringify(notification),
+          storeType: StoreType.APP_STORE,
         });
         return true;
       }
@@ -378,16 +383,30 @@ export class PaymentService implements OnModuleInit {
         });
 
         if (subscription) {
-          const result = await this.handleAppleWebhook(
-            JSON.parse(webhook.notification),
-            true,
-          );
-
-          if (result) {
-            await this.pendingWebhookRepository.update(
-              { id: webhook.id },
-              { processedAt: new Date(), isProcessed: true },
+          if (webhook.storeType === StoreType.APP_STORE) {
+            const result = await this.handleAppleWebhook(
+              JSON.parse(webhook.notification),
+              true,
             );
+
+            if (result) {
+              await this.pendingWebhookRepository.update(
+                { id: webhook.id },
+                { processedAt: new Date(), isProcessed: true },
+              );
+            }
+          } else {
+            const result = await this.handleGoogleWebhook(
+              JSON.parse(webhook.notification),
+              true,
+            );
+
+            if (result) {
+              await this.pendingWebhookRepository.update(
+                { id: webhook.id },
+                { processedAt: new Date(), isProcessed: true },
+              );
+            }
           }
         }
       } catch {
