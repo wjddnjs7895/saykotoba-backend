@@ -1,6 +1,6 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MoreThan, Repository } from 'typeorm';
+import { In, MoreThan, Repository } from 'typeorm';
 import { SubscriptionEntity } from './entities/subscription.entity';
 import * as iap from 'in-app-purchase';
 import { SubscriptionStatus } from '@/common/constants/user.constants';
@@ -34,6 +34,7 @@ import {
 import { Platform } from '@/common/types/system';
 import { LogParams } from '@/common/decorators/log-params.decorator';
 import { PendingWebhookEntity } from './entities/pending-webhook.entity';
+import { parseDuration } from '@/common/utils/date.utils';
 
 @Injectable()
 export class PaymentService implements OnModuleInit {
@@ -70,7 +71,6 @@ export class PaymentService implements OnModuleInit {
         typeof receipt === 'object' ? receipt.purchaseToken : receipt;
 
       if (platform === Platform.GOOGLE && typeof receipt === 'object') {
-        console.log('receipt', receipt);
         try {
           validationResponse = await iap.validate(iap.GOOGLE, {
             ...receipt,
@@ -91,7 +91,6 @@ export class PaymentService implements OnModuleInit {
         ) {
           throw new SubscriptionExpiredException();
         }
-        console.log('purchaseData', purchaseData);
 
         originalTransactionId = purchaseData.purchaseToken;
       } else {
@@ -402,7 +401,7 @@ export class PaymentService implements OnModuleInit {
     const subscription = await this.subscriptionRepository.findOne({
       where: {
         user: { id: userId },
-        status: SubscriptionStatus.ACTIVE,
+        status: In([SubscriptionStatus.ACTIVE, SubscriptionStatus.TRIAL]),
       },
     });
 
@@ -509,5 +508,24 @@ export class PaymentService implements OnModuleInit {
       }
       throw new UnexpectedException('Restore subscription: ' + error.message);
     }
+  }
+
+  @LogParams()
+  async startTrial({ userId }: { userId: number }) {
+    const trialDuration = this.configService.get('TRIAL_DURATION');
+    const expiresAt = new Date(Date.now() + parseDuration(trialDuration));
+    const subscription = await this.subscriptionRepository.findOne({
+      where: { user: { id: userId } },
+      relations: ['user'],
+    });
+
+    if (!subscription) {
+      throw new SubscriptionNotFoundException();
+    }
+
+    await this.subscriptionRepository.update(
+      { id: subscription.id },
+      { status: SubscriptionStatus.TRIAL, expiresAt },
+    );
   }
 }
