@@ -231,7 +231,7 @@ export class PaymentService implements OnModuleInit {
           relations: ['user'],
         });
 
-        if (!subscription) {
+        if (!subscription && !isPending) {
           await this.pendingWebhookRepository.save({
             originalTransactionId,
             notification: JSON.stringify(notification),
@@ -264,7 +264,14 @@ export class PaymentService implements OnModuleInit {
             { ...updateData },
           );
         } catch {
-          throw new SubscriptionUpdateFailedException();
+          if (!isPending) {
+            await this.pendingWebhookRepository.save({
+              originalTransactionId,
+              notification: JSON.stringify(notification),
+              storeType: StoreType.GOOGLE_PLAY,
+            });
+            return true;
+          }
         }
         return true;
       }
@@ -355,7 +362,14 @@ export class PaymentService implements OnModuleInit {
           { ...updateData },
         );
       } catch {
-        throw new SubscriptionUpdateFailedException();
+        if (!isPending) {
+          await this.pendingWebhookRepository.save({
+            originalTransactionId,
+            notification: JSON.stringify(notification),
+            storeType: StoreType.APP_STORE,
+          });
+          return true;
+        }
       }
       return true;
     } catch (error) {
