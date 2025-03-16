@@ -139,11 +139,9 @@ export class PaymentService implements OnModuleInit {
 
         if (
           platform === Platform.GOOGLE &&
-          validationResponse.purchaseData.expiryDate
+          validationResponse.expiryTimeMillis
         ) {
-          updateData.expiresAt = new Date(
-            validationResponse.purchaseData.expiryDate,
-          );
+          updateData.expiresAt = new Date(validationResponse.expiryTimeMillis);
         }
 
         await this.subscriptionRepository.update(
