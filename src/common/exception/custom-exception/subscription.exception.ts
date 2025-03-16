@@ -122,3 +122,27 @@ export class PendingWebhookFailedException extends CustomBaseException {
     );
   }
 }
+
+export class InvalidGoogleWebhookDataException extends CustomBaseException {
+  constructor() {
+    super(
+      SubscriptionErrorCodeEnum.InvalidGoogleWebhookData,
+      HttpStatus.BAD_REQUEST,
+      SubscriptionErrorMessage[
+        SubscriptionErrorCodeEnum.InvalidGoogleWebhookData
+      ],
+    );
+  }
+}
+
+export class InvalidGoogleNotificationException extends CustomBaseException {
+  constructor() {
+    super(
+      SubscriptionErrorCodeEnum.InvalidGoogleNotification,
+      HttpStatus.BAD_REQUEST,
+      SubscriptionErrorMessage[
+        SubscriptionErrorCodeEnum.InvalidGoogleNotification
+      ],
+    );
+  }
+}

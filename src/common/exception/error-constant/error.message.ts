@@ -152,6 +152,10 @@ export const SubscriptionErrorMessage: SubscriptionErrorMessageType = {
     'Apple receipt decode failed',
   [SubscriptionErrorCodeEnum.AppleReceiptNotFound]: 'Apple receipt not found',
   [SubscriptionErrorCodeEnum.PendingWebhookFailed]: 'Pending webhook failed',
+  [SubscriptionErrorCodeEnum.InvalidGoogleWebhookData]:
+    'Invalid google webhook data',
+  [SubscriptionErrorCodeEnum.InvalidGoogleNotification]:
+    'Invalid google notification',
 };
 
 export const UnexpectedErrorMessage: UnexpectedErrorMessageType = {
