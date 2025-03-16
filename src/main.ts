@@ -10,8 +10,10 @@ import { S3LoggerService } from './integrations/aws/services/s3/s3-logger.servic
 process.env.TZ = 'UTC';
 
 async function bootstrap() {
+  const isDevelopment = process.env.NODE_ENV === 'development';
+
   const app = await NestFactory.create(AppModule, {
-    logger: false,
+    logger: isDevelopment ? ['error', 'warn'] : false,
     bufferLogs: true,
   });
 
