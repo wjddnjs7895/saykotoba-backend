@@ -79,6 +79,32 @@ jobs:
               # 현재 실행 중인 컨테이너 확인
               IS_GREEN=$(docker ps | grep "api-green" | grep "Up")
 
+              # Health check 함수 정의
+              check_health() {
+                local container=$1
+                local port=$2
+                local max_attempts=30
+                local attempt=1
+                local delay=5
+                
+                echo "Health check 시작: $container"
+                while [ $attempt -le $max_attempts ]; do
+                  echo "Health check 시도 $attempt/$max_attempts..."
+                  
+                  # 컨테이너 내부 health check 엔드포인트 호출
+                  if docker exec $container curl -s -f http://localhost:$port/swagger > /dev/null; then
+                    echo "Health check 성공!"
+                    return 0
+                  fi
+                  
+                  attempt=$((attempt+1))
+                  sleep $delay
+                done
+                
+                echo "Health check 실패! 최대 시도 횟수 초과"
+                return 1
+              }
+
               if [ -z "$IS_GREEN" ]; then
                 echo "=== BLUE -> GREEN 전환 ==="
                 # Green 배포
@@ -86,6 +112,28 @@ jobs:
                 docker pull '${{ secrets.DOCKERHUB_USERNAME }}'/saykotoba-backend:latest
                 echo "2. Green 컨테이너 실행"
                 docker-compose up -d --force-recreate api-green
+                
+                # Health Check 실행
+                if check_health api-green 8080; then
+                  echo "3. Green 컨테이너 정상 작동 확인"
+                  echo "4. Nginx 설정 변경 - Blue에서 Green으로 트래픽 전환"
+                  # nginx.conf 파일 수정 - Blue 주석 처리, Green 주석 해제
+                  sed -i "s/server api-blue:8080;/#server api-blue:8080;/" /home/${{ secrets.EC2_USER }}/saykotoba-backend/config/nginx.conf
+                  sed -i "s/#server api-green:8080;/server api-green:8080;/" /home/${{ secrets.EC2_USER }}/saykotoba-backend/config/nginx.conf
+                  # Nginx 설정 리로드
+                  docker-compose exec -T nginx nginx -s reload
+                  echo "5. 트래픽 전환 완료: BLUE -> GREEN"
+                  
+                  # 트래픽 전환 성공 후 이전 환경(Blue) 컨테이너 정지
+                  echo "6. 이전 Blue 컨테이너 정지"
+                  docker-compose stop api-blue
+                  echo "7. Blue-Green 전환 완료"
+                else
+                  echo "Green 컨테이너 Health Check 실패! 트래픽 전환 취소, 배포 중단"
+                  # 롤백 - 실패한 컨테이너 중지
+                  docker-compose stop api-green
+                  exit 1
+                fi
               else
                 echo "=== GREEN -> BLUE 전환 ==="
                 # Blue 배포
@@ -93,6 +141,28 @@ jobs:
                 docker pull '${{ secrets.DOCKERHUB_USERNAME }}'/saykotoba-backend:latest
                 echo "2. Blue 컨테이너 실행"
                 docker-compose up -d --force-recreate api-blue
+                
+                # Health Check 실행
+                if check_health api-blue 8080; then
+                  echo "3. Blue 컨테이너 정상 작동 확인"
+                  echo "4. Nginx 설정 변경 - Green에서 Blue로 트래픽 전환"
+                  # nginx.conf 파일 수정 - Green 주석 처리, Blue 주석 해제
+                  sed -i "s/#server api-blue:8080;/server api-blue:8080;/" /home/${{ secrets.EC2_USER }}/saykotoba-backend/config/nginx.conf
+                  sed -i "s/server api-green:8080;/#server api-green:8080;/" /home/${{ secrets.EC2_USER }}/saykotoba-backend/config/nginx.conf
+                  # Nginx 설정 리로드
+                  docker-compose exec -T nginx nginx -s reload
+                  echo "5. 트래픽 전환 완료: GREEN -> BLUE"
+                  
+                  # 트래픽 전환 성공 후 이전 환경(Green) 컨테이너 정지
+                  echo "6. 이전 Green 컨테이너 정지"
+                  docker-compose stop api-green
+                  echo "7. Green-Blue 전환 완료"
+                else
+                  echo "Blue 컨테이너 Health Check 실패! 트래픽 전환 취소, 배포 중단"
+                  # 롤백 - 실패한 컨테이너 중지
+                  docker-compose stop api-blue
+                  exit 1
+                fi
               fi
             '
           else
