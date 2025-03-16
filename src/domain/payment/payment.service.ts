@@ -144,9 +144,11 @@ export class PaymentService implements OnModuleInit {
           updateData.expiresAt = new Date(validationResponse.expiryTimeMillis);
         }
 
+        console.log('updateData', updateData);
+
         await this.subscriptionRepository.update(
           { id: subscription.id },
-          updateData,
+          { ...updateData },
         );
       } catch {
         throw new SubscriptionUpdateFailedException();
