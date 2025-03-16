@@ -141,7 +141,9 @@ export class PaymentService implements OnModuleInit {
           platform === Platform.GOOGLE &&
           validationResponse.expiryTimeMillis
         ) {
-          updateData.expiresAt = new Date(validationResponse.expiryTimeMillis);
+          updateData.expiresAt = new Date(
+            parseInt(validationResponse.expiryTimeMillis),
+          );
         }
 
         console.log('updateData', updateData);
