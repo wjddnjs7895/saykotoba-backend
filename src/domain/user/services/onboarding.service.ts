@@ -13,6 +13,7 @@ import { InterestEntity } from '../entities/interest.entity';
 import { ClassroomService } from '@/domain/classroom/classroom.service';
 import { CustomBaseException } from '@/common/exception/custom.base.exception';
 import { LogParams } from '@/common/decorators/log-params.decorator';
+import { PaymentService } from '@/domain/payment/payment.service';
 
 @Injectable()
 export class OnboardingService {
@@ -21,6 +22,7 @@ export class OnboardingService {
     private readonly userRepository: Repository<UserEntity>,
     @InjectRepository(InterestEntity)
     private readonly interestRepository: Repository<InterestEntity>,
+    private readonly paymentService: PaymentService,
     private readonly classroomService: ClassroomService,
   ) {}
 
@@ -50,6 +52,7 @@ export class OnboardingService {
         );
 
         await this.userRepository.save(user);
+        await this.paymentService.startTrial({ userId });
       } catch {
         throw new UserUpdateFailedException();
       }

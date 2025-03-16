@@ -69,6 +69,7 @@ import { LoggerModule } from './common/logger/logger.module';
         ANDROID_STORE_URL: Joi.string().required(),
         TERMS_OF_USE: Joi.string().required(),
         PRIVACY_POLICY: Joi.string().required(),
+        TRIAL_DURATION: Joi.string().required(),
       }),
     }),
     TypeOrmModule.forRootAsync({

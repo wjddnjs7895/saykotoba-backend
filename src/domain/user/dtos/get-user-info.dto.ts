@@ -1,5 +1,12 @@
 import { TIER_MAP } from '@/common/constants/user.constants';
-import { IsBoolean, IsEnum, IsJSON, IsNumber, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsDate,
+  IsEnum,
+  IsJSON,
+  IsNumber,
+  IsString,
+} from 'class-validator';
 
 export class GetUserInfoRespondDto {
   @IsNumber()
@@ -28,4 +35,7 @@ export class GetUserInfoRespondDto {
 
   @IsString()
   subscriptionStatus: string;
+
+  @IsDate()
+  expiresAt: Date;
 }

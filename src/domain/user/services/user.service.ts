@@ -25,6 +25,7 @@ import { CustomBaseException } from '@/common/exception/custom.base.exception';
 import { LogParams } from '@/common/decorators/log-params.decorator';
 import { ConversationGroupEntity } from '@/domain/conversation/entities/conversation_group.entity';
 import { ClassroomEntity } from '@/domain/classroom/entities/classroom.entity';
+import { GetUserInfoRespondDto } from '../dtos/get-user-info.dto';
 
 @Injectable()
 export class UserService {
@@ -55,7 +56,7 @@ export class UserService {
   }
 
   @LogParams()
-  async getUserInfo(id: number) {
+  async getUserInfo({ id }: { id: number }): Promise<GetUserInfoRespondDto> {
     const user = await this.userRepository.findOne({
       where: { id },
       relations: ['subscription'],
@@ -71,6 +72,7 @@ export class UserService {
       solvedProblemIds: user.solvedProblemIds,
       solvedConversationIds: user.solvedConversationIds,
       subscriptionStatus: user.subscription.status,
+      expiresAt: user.subscription.expiresAt,
     };
   }
 

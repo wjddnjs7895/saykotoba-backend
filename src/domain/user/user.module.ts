@@ -9,6 +9,7 @@ import { ClassroomEntity } from '../classroom/entities/classroom.entity';
 import { InterestEntity } from './entities/interest.entity';
 import { OnboardingService } from './services/onboarding.service';
 import { ClassroomModule } from '../classroom/classroom.module';
+import { PaymentModule } from '../payment/payment.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ClassroomModule } from '../classroom/classroom.module';
       ConversationGroupEntity,
       ClassroomEntity,
       InterestEntity,
+      PaymentModule,
     ]),
     forwardRef(() => ClassroomModule),
   ],

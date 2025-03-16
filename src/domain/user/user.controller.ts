@@ -42,7 +42,7 @@ export class UserController {
   @Get()
   @LogParams()
   getUserInfo(@User() user: UserEntity): Promise<GetUserInfoRespondDto> {
-    return this.userService.getUserInfo(user.id);
+    return this.userService.getUserInfo({ id: user.id });
   }
 
   @Patch(':id')
