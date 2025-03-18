@@ -135,8 +135,6 @@ export class PaymentService implements OnModuleInit {
           status: SubscriptionStatus.ACTIVE,
         };
 
-        console.log('validationResponse', validationResponse);
-
         if (
           platform === Platform.GOOGLE &&
           validationResponse.expiryTimeMillis
@@ -145,8 +143,6 @@ export class PaymentService implements OnModuleInit {
             parseInt(validationResponse.expiryTimeMillis),
           );
         }
-
-        console.log('updateData', updateData);
 
         await this.subscriptionRepository.update(
           { id: subscription.id },
@@ -172,7 +168,7 @@ export class PaymentService implements OnModuleInit {
     await this.subscriptionRepository.update(
       {
         expiresAt: LessThan(now),
-        status: SubscriptionStatus.ACTIVE,
+        status: In([SubscriptionStatus.ACTIVE, SubscriptionStatus.TRIAL]),
       },
       { status: SubscriptionStatus.EXPIRED },
     );
