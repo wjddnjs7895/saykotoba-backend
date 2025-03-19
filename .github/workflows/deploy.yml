@@ -125,12 +125,11 @@ jobs:
                   sed -i "s|^\s*server api-blue:8080;|    #server api-blue:8080;|" /home/${{ secrets.EC2_USER }}/saykotoba-backend/config/nginx.conf
                   sed -i "s|^\s*#server api-green:8080;|    server api-green:8080;|" /home/${{ secrets.EC2_USER }}/saykotoba-backend/config/nginx.conf
                   # Nginx 설정 변경 - 컨테이너 내부에서 직접 수정
-                  docker-compose exec -T nginx sed -i "s|^\s*server api-blue:8080;|    #server api-blue:8080;|" /etc/nginx/nginx.conf
-                  docker-compose exec -T nginx sed -i "s|^\s*#server api-green:8080;|    server api-green:8080;|" /etc/nginx/nginx.conf
-                  
+                  docker-compose exec -T nginx bash -c "cat /etc/nginx/nginx.conf | sed 's|^\s*server api-blue:8080;|    #server api-blue:8080;|' | sed 's|^\s*#server api-green:8080;|    server api-green:8080;|' > /tmp/new_nginx.conf"
+                  docker-compose exec -T nginx bash -c "cat /tmp/new_nginx.conf > /etc/nginx/nginx.conf"
                   # 변경 내용 확인
-                  echo "Nginx 설정 변경 확인:"
-                  grep -A 2 "upstream api-backend" /home/${{ secrets.EC2_USER }}/saykotoba-backend/config/nginx.conf
+                  docker-compose exec -T nginx grep -A 2 "upstream api-backend" /etc/nginx/nginx.conf
+                  
                   # Nginx 설정 리로드
                   docker-compose exec -T nginx nginx -s reload
                   echo "5. 트래픽 전환 완료: BLUE -> GREEN"
@@ -162,13 +161,12 @@ jobs:
                   sed -i "s|^\s*#server api-blue:8080;|    server api-blue:8080;|" /home/${{ secrets.EC2_USER }}/saykotoba-backend/config/nginx.conf
                   sed -i "s|^\s*server api-green:8080;|    #server api-green:8080;|" /home/${{ secrets.EC2_USER }}/saykotoba-backend/config/nginx.conf
                    # Nginx 설정 변경 - 컨테이너 내부에서 직접 수정
-                  docker-compose exec -T nginx sed -i "s|^\s*#server api-blue:8080;|    server api-blue:8080;|" /etc/nginx/nginx.conf
-                  docker-compose exec -T nginx sed -i "s|^\s*server api-green:8080;|    #server api-green:8080;|" /etc/nginx/nginx.conf
-                
+                  docker-compose exec -T nginx bash -c "cat /etc/nginx/nginx.conf | sed 's|^\s*#server api-blue:8080;|    server api-blue:8080;|' | sed 's|^\s*server api-green:8080;|    #server api-green:8080;|' > /tmp/new_nginx.conf"
+                  docker-compose exec -T nginx bash -c "cat /tmp/new_nginx.conf > /etc/nginx/nginx.conf"
                  
                   # 변경 내용 확인
-                  echo "Nginx 설정 변경 확인:"
-                  grep -A 2 "upstream api-backend" /home/${{ secrets.EC2_USER }}/saykotoba-backend/config/nginx.conf
+                  docker-compose exec -T nginx grep -A 2 "upstream api-backend" /etc/nginx/nginx.conf
+                  
                   # Nginx 설정 리로드
                   docker-compose exec -T nginx nginx -s reload
                   echo "5. 트래픽 전환 완료: GREEN -> BLUE"
