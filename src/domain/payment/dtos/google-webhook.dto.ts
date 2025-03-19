@@ -1,3 +1,12 @@
+import { Type } from 'class-transformer';
+import {
+  IsNumber,
+  IsObject,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
+
 export enum GoogleNotificationType {
   SUBSCRIPTION_RECOVERED = 1,
   SUBSCRIPTION_RENEWED = 2,
@@ -14,12 +23,65 @@ export enum GoogleNotificationType {
   SUBSCRIPTION_EXPIRED = 13,
 }
 
-export interface GoogleWebhookNotificationDto {
-  subscriptionId: string;
+class Message {
+  @IsString()
+  data: string;
+  @IsString()
+  messageId: string;
+  @IsString()
+  message_id: string;
+  @IsString()
+  publishTime: string;
+  @IsString()
+  publish_time: string;
+}
+
+export class GoogleWebhookNotificationDto {
+  @IsObject()
+  @ValidateNested()
+  @Type(() => Message)
+  message: Message;
+  @IsString()
+  subscription: string;
+}
+
+class SubscriptionNotification {
+  @IsString()
+  version: string;
+  @IsNumber()
+  notificationType: number;
+  @IsString()
   purchaseToken: string;
-  eventTimeMillis: number;
-  notificationType: GoogleNotificationType;
-  autoRenewing: boolean;
-  cancelReason: number;
-  expiryTimeMillis: string;
+  @IsString()
+  subscriptionId: string;
+}
+
+class VoidedPurchaseNotification {
+  @IsString()
+  purchaseToken: string;
+  @IsString()
+  orderId: string;
+  @IsNumber()
+  productType: number;
+  @IsNumber()
+  refundType: number;
+}
+
+export class GoogleWebhookDecodedDataDto {
+  @IsString()
+  version: string;
+  @IsString()
+  packageName: string;
+  @IsString()
+  eventTimeMillis: string;
+  @IsOptional()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => VoidedPurchaseNotification)
+  voidedPurchaseNotification?: VoidedPurchaseNotification;
+  @IsOptional()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => SubscriptionNotification)
+  subscriptionNotification?: SubscriptionNotification;
 }

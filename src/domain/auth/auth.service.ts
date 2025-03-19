@@ -274,7 +274,7 @@ export class AuthService {
 
   async isValidateUser({ userId }: { userId: number }): Promise<boolean> {
     try {
-      const user = await this.userService.getUserInfo(userId);
+      const user = await this.userService.getUserInfo({ id: userId });
       return !!user;
     } catch {
       throw new UserNotFoundException();
