@@ -91,8 +91,12 @@ jobs:
                 while [ $attempt -le $max_attempts ]; do
                   echo "Health check 시도 $attempt/$max_attempts..."
                   
-                  # 컨테이너 내부 health check 엔드포인트 호출
-                  if docker exec $container curl -s -f http://localhost:$port/swagger > /dev/null; then
+                  # curl 명령의 결과 상태 확인을 위한 디버깅 추가
+                  docker exec $container curl -s -f http://localhost:$port/swagger > /dev/null
+                  local status=$?
+                  echo "curl 상태 코드: $status"
+                  
+                  if [ $status -eq 0 ]; then
                     echo "Health check 성공!"
                     return 0
                   fi
@@ -125,6 +129,7 @@ jobs:
                   echo "5. 트래픽 전환 완료: BLUE -> GREEN"
                   
                   # 트래픽 전환 성공 후 이전 환경(Blue) 컨테이너 정지
+                  
                   echo "6. 이전 Blue 컨테이너 정지"
                   docker-compose stop api-blue
                   echo "7. Blue-Green 전환 완료"
