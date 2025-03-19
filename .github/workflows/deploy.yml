@@ -124,6 +124,10 @@ jobs:
                   # nginx.conf 파일 수정 - Blue 주석 처리, Green 주석 해제
                   sed -i "s|^\s*server api-blue:8080;|    #server api-blue:8080;|" /home/${{ secrets.EC2_USER }}/saykotoba-backend/config/nginx.conf
                   sed -i "s|^\s*#server api-green:8080;|    server api-green:8080;|" /home/${{ secrets.EC2_USER }}/saykotoba-backend/config/nginx.conf
+                  # Nginx 설정 변경 - 컨테이너 내부에서 직접 수정
+                  docker-compose exec -T nginx sed -i "s|^\s*server api-blue:8080;|    #server api-blue:8080;|" /etc/nginx/nginx.conf
+                  docker-compose exec -T nginx sed -i "s|^\s*#server api-green:8080;|    server api-green:8080;|" /etc/nginx/nginx.conf
+                  
                   # 변경 내용 확인
                   echo "Nginx 설정 변경 확인:"
                   grep -A 2 "upstream api-backend" /home/${{ secrets.EC2_USER }}/saykotoba-backend/config/nginx.conf
@@ -157,6 +161,11 @@ jobs:
                   # nginx.conf 파일 수정 - Green 주석 처리, Blue 주석 해제
                   sed -i "s|^\s*#server api-blue:8080;|    server api-blue:8080;|" /home/${{ secrets.EC2_USER }}/saykotoba-backend/config/nginx.conf
                   sed -i "s|^\s*server api-green:8080;|    #server api-green:8080;|" /home/${{ secrets.EC2_USER }}/saykotoba-backend/config/nginx.conf
+                   # Nginx 설정 변경 - 컨테이너 내부에서 직접 수정
+                  docker-compose exec -T nginx sed -i "s|^\s*#server api-blue:8080;|    server api-blue:8080;|" /etc/nginx/nginx.conf
+                  docker-compose exec -T nginx sed -i "s|^\s*server api-green:8080;|    #server api-green:8080;|" /etc/nginx/nginx.conf
+                
+                 
                   # 변경 내용 확인
                   echo "Nginx 설정 변경 확인:"
                   grep -A 2 "upstream api-backend" /home/${{ secrets.EC2_USER }}/saykotoba-backend/config/nginx.conf
