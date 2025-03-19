@@ -122,8 +122,11 @@ jobs:
                   echo "3. Green 컨테이너 정상 작동 확인"
                   echo "4. Nginx 설정 변경 - Blue에서 Green으로 트래픽 전환"
                   # nginx.conf 파일 수정 - Blue 주석 처리, Green 주석 해제
-                  sed -i "s/server api-blue:8080;/#server api-blue:8080;/" /home/${{ secrets.EC2_USER }}/saykotoba-backend/config/nginx.conf
-                  sed -i "s/#server api-green:8080;/server api-green:8080;/" /home/${{ secrets.EC2_USER }}/saykotoba-backend/config/nginx.conf
+                  sed -i "s|^\s*server api-blue:8080;|    #server api-blue:8080;|" /home/${{ secrets.EC2_USER }}/saykotoba-backend/config/nginx.conf
+                  sed -i "s|^\s*#server api-green:8080;|    server api-green:8080;|" /home/${{ secrets.EC2_USER }}/saykotoba-backend/config/nginx.conf
+                  # 변경 내용 확인
+                  echo "Nginx 설정 변경 확인:"
+                  grep -A 2 "upstream api-backend" /home/${{ secrets.EC2_USER }}/saykotoba-backend/config/nginx.conf
                   # Nginx 설정 리로드
                   docker-compose exec -T nginx nginx -s reload
                   echo "5. 트래픽 전환 완료: BLUE -> GREEN"
@@ -152,8 +155,11 @@ jobs:
                   echo "3. Blue 컨테이너 정상 작동 확인"
                   echo "4. Nginx 설정 변경 - Green에서 Blue로 트래픽 전환"
                   # nginx.conf 파일 수정 - Green 주석 처리, Blue 주석 해제
-                  sed -i "s/#server api-blue:8080;/server api-blue:8080;/" /home/${{ secrets.EC2_USER }}/saykotoba-backend/config/nginx.conf
-                  sed -i "s/server api-green:8080;/#server api-green:8080;/" /home/${{ secrets.EC2_USER }}/saykotoba-backend/config/nginx.conf
+                  sed -i "s|^\s*#server api-blue:8080;|    server api-blue:8080;|" /home/${{ secrets.EC2_USER }}/saykotoba-backend/config/nginx.conf
+                  sed -i "s|^\s*server api-green:8080;|    #server api-green:8080;|" /home/${{ secrets.EC2_USER }}/saykotoba-backend/config/nginx.conf
+                  # 변경 내용 확인
+                  echo "Nginx 설정 변경 확인:"
+                  grep -A 2 "upstream api-backend" /home/${{ secrets.EC2_USER }}/saykotoba-backend/config/nginx.conf
                   # Nginx 설정 리로드
                   docker-compose exec -T nginx nginx -s reload
                   echo "5. 트래픽 전환 완료: GREEN -> BLUE"
