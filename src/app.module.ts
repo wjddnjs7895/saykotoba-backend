@@ -49,6 +49,7 @@ import { LoggerModule } from './common/logger/logger.module';
         GOOGLE_IAP_CLIENT_EMAIL: Joi.string().required(),
         GOOGLE_IAP_API_KEY: Joi.string().required(),
         GOOGLE_ANDROID_CLIENT_ID: Joi.string().required(),
+        GOOGLE_ANDROID_RELEASE_CLIENT_ID: Joi.string().required(),
         APPLE_CLIENT_ID: Joi.string().required(),
         APPLE_TEAM_ID: Joi.string().required(),
         APPLE_STORE_ISSUER_ID: Joi.string().required(),
