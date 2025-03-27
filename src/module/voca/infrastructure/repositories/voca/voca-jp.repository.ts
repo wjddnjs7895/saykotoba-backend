@@ -1,12 +1,12 @@
 // src/voca/repositories/voca-jp.repository.ts
 import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
-import { VocaJpEntity } from '@/domain/voca/entities/voca-jp.entity';
+import { VocaJpEntity } from '@/module/voca/domain/entities/voca-jp.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CreateVocaJpDto } from '@/domain/voca/dtos/create-voca-jp.dto';
-
+import { CreateVocaJpDto } from '@/module/voca/application/dtos/create-voca-jp.dto';
+import { VocaBaseRepository } from './voca-base.repository';
 @Injectable()
-export class VocaJpRepository {
+export class VocaJpRepository extends VocaBaseRepository<VocaJpEntity> {
   constructor(
     @InjectRepository(VocaJpEntity)
     private readonly repo: Repository<VocaJpEntity>,

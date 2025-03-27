@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { VocaJpEntity } from '../entities/voca-jp.entity';
+import { VocaJpEntity } from '../domain/entities/voca-jp.entity';
 import { VocaStrategy } from './voca-strategy.interface';
-import { CreateVocaJpDto } from '../dtos/create-voca-jp.dto';
+import { CreateVocaJpDto } from '../application/dtos/create-voca-jp.dto';
 import { DifficultyJpStrategy } from './difficulty-jp.interface';
 import { InvalidDifficultyException } from '@/common/exception/custom-exception/voca.exception';
 

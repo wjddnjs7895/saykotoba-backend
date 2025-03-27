@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { VocaController } from '@/presentation/controllers/voca.controller';
 import { VocaService } from './services/voca.service';
-import { VocaJpEntity } from './entities/voca-jp.entity';
+import { VocaJpEntity } from './domain/entities/voca-jp.entity';
 import { VocaJpRepository } from '@/infrastructure/repositories/voca/voca-jp.repository';
 import { VocaJpStrategy } from './strategies/voca-jp.strategy';
 import { DifficultyJpStrategy } from './strategies/difficulty-jp.interface';

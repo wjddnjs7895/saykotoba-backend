@@ -1,5 +1,5 @@
 import { Injectable, BadRequestException, Inject } from '@nestjs/common';
-import { CreateVocaBaseDto } from '../dtos/create-voca-base.dto';
+import { CreateVocaBaseDto } from '../application/dtos/create-voca-base.dto';
 import { VocaStrategy } from '../strategies/voca-strategy.interface';
 
 @Injectable()

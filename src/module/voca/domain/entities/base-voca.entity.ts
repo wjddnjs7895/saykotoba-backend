@@ -12,16 +12,13 @@ export abstract class BaseVocaEntity extends BaseEntity {
   meaning: string;
 
   @Column()
-  reading: string;
-
-  @Column()
   example: string;
 
   @Column()
   example_meaning: string;
 
   @Column()
-  example_reading: string;
+  languageCode: string;
 
   abstract difficulty: BaseDifficulty;
 }

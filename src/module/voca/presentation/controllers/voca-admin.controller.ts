@@ -1,6 +1,6 @@
 import { Controller, Post, Body } from '@nestjs/common';
-import { VocaAdminService } from '../../domain/voca/services/voca-admin.service';
-import { CreateVocaBaseDto } from '../../domain/voca/dtos/create-voca-base.dto';
+import { VocaAdminService } from '../../module/voca/services/voca-admin.service';
+import { CreateVocaBaseDto } from '../../module/voca/dtos/create-voca-base.dto';
 import { Admin } from '@/common/decorators/admin.decorator';
 
 @Controller('voca-admin')
