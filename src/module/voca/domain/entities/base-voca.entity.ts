@@ -21,4 +21,10 @@ export abstract class BaseVocaEntity extends BaseEntity {
   languageCode: string;
 
   abstract difficulty: BaseDifficulty;
+
+  isMeaningCorrect({ meaning }: { meaning: string }): boolean {
+    return this.meaning === meaning;
+  }
+
+  abstract getFormattedInfo(): string;
 }

@@ -1,38 +1,37 @@
-export abstract class VocaLanguageDetail {
-  abstract languageCode: string;
-  abstract reading: string;
-  abstract meaning: string;
-
-  abstract getFormattedInfo(): string;
-}
+import { BaseVocaEntity } from '../entities/base-voca.entity';
 
 export class VocaAggregate {
   private readonly id: string;
   private readonly word: string;
-  private languageDetails: Map<string, VocaLanguageDetail>;
+  private translations: Map<string, BaseVocaEntity>;
 
   constructor(id: string, word: string) {
     this.id = id;
     this.word = word;
-    this.languageDetails = new Map();
+    this.translations = new Map();
   }
 
-  // 서브 모델 추가
-  addLanguageDetail(detail: VocaLanguageDetail): void {
-    this.languageDetails.set(detail.languageCode, detail);
-  }
-
-  // 특정 언어의 서브 모델 조회
-  getLanguageDetail(languageCode: string): VocaLanguageDetail | undefined {
-    return this.languageDetails.get(languageCode);
-  }
-
-  // 전체 단어 정보와 서브 모델 정보를 통합하여 비즈니스 로직 수행 가능
-  getFullInfo(): string {
-    let detailsInfo = '';
-    for (const detail of this.languageDetails.values()) {
-      detailsInfo += detail.getFormattedInfo() + '\n';
+  // 특정 언어의 상세 정보 추가
+  addLanguageDetail(entity: BaseVocaEntity): void {
+    if (this.translations.has(entity.languageCode)) {
+      throw new Error(
+        `Detail for language ${entity.languageCode} already exists.`,
+      );
     }
-    return `Word: ${this.word}\n${detailsInfo}`;
+    this.translations.set(entity.languageCode, entity);
+  }
+
+  // 특정 언어의 상세 정보 조회
+  getLanguageDetail(languageCode: string): BaseVocaEntity | undefined {
+    return this.translations.get(languageCode);
+  }
+
+  // Aggregate 전체 정보를 포맷팅해서 반환
+  getFullInfo(): string {
+    let details = '';
+    for (const detail of this.translations.values()) {
+      details += detail.getFormattedInfo() + '\n';
+    }
+    return `Word: ${this.word}\n${details}`;
   }
 }

@@ -1,10 +1,9 @@
 import { BaseVocaEntity } from './base-voca.entity';
 import { Column, Entity } from 'typeorm';
 import { DifficultyJp } from '../value-objects/difficulty-jp';
-import { VocaLanguageDetail } from '../aggregates/voca.aggregate';
 
 @Entity('voca_jp')
-export class VocaJpEntity extends BaseVocaEntity implements VocaLanguageDetail {
+export class VocaJpEntity extends BaseVocaEntity {
   @Column()
   reading: string;
 
