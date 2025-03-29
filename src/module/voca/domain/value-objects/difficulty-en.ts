@@ -1,6 +1,6 @@
 import { BaseDifficulty } from './base-difficulty';
 
-export class DifficultyJp extends BaseDifficulty {
+export class DifficultyEn extends BaseDifficulty {
   constructor(private readonly level: number) {
     super();
   }

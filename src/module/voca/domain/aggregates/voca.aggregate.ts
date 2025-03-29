@@ -1,37 +1,62 @@
+import { LanguageCode } from '@/common/enums/language-code.enum';
 import { BaseVocaEntity } from '../entities/base-voca.entity';
 
 export class VocaAggregate {
-  private readonly id: string;
-  private readonly word: string;
-  private translations: Map<string, BaseVocaEntity>;
+  private readonly id: number;
+  private readonly coreWord: string;
+  private languageDetails: Map<LanguageCode, BaseVocaEntity>;
 
-  constructor(id: string, word: string) {
+  constructor(id: number, word: string) {
     this.id = id;
-    this.word = word;
-    this.translations = new Map();
+    this.coreWord = word;
+    this.languageDetails = new Map();
   }
 
-  // 특정 언어의 상세 정보 추가
+  getId(): number {
+    return this.id;
+  }
+
+  getCoreWord(): string {
+    return this.coreWord;
+  }
+
+  getSupportedLanguageCodes(): LanguageCode[] {
+    return Array.from(this.languageDetails.keys());
+  }
+
+  hasLanguage(languageCode: LanguageCode): boolean {
+    return this.languageDetails.has(languageCode);
+  }
+
+  getLanguageDetail(languageCode: LanguageCode): BaseVocaEntity {
+    return this.languageDetails.get(languageCode);
+  }
+
   addLanguageDetail(entity: BaseVocaEntity): void {
-    if (this.translations.has(entity.languageCode)) {
-      throw new Error(
-        `Detail for language ${entity.languageCode} already exists.`,
-      );
+    const languageCode = entity.languageCode as LanguageCode;
+    if (this.languageDetails.has(languageCode)) {
+      throw new Error(`Detail for language ${languageCode} already exists.`);
     }
-    this.translations.set(entity.languageCode, entity);
+    this.languageDetails.set(languageCode, entity);
   }
 
-  // 특정 언어의 상세 정보 조회
-  getLanguageDetail(languageCode: string): BaseVocaEntity | undefined {
-    return this.translations.get(languageCode);
+  updateLanguageDetail(entity: BaseVocaEntity): void {
+    const languageCode = entity.languageCode as LanguageCode;
+    if (!this.languageDetails.has(languageCode)) {
+      throw new Error(`Detail for language ${languageCode} does not exist.`);
+    }
+    this.languageDetails.set(languageCode, entity);
   }
 
-  // Aggregate 전체 정보를 포맷팅해서 반환
-  getFullInfo(): string {
-    let details = '';
-    for (const detail of this.translations.values()) {
-      details += detail.getFormattedInfo() + '\n';
+  removeLanguageDetail(languageCode: LanguageCode): void {
+    if (!this.languageDetails.has(languageCode)) {
+      throw new Error(`Detail for language ${languageCode} does not exist.`);
     }
-    return `Word: ${this.word}\n${details}`;
+    this.languageDetails.delete(languageCode);
+  }
+
+  checkMeaning(languageCode: LanguageCode, meaning: string): boolean {
+    const languageDetail = this.getLanguageDetail(languageCode);
+    return languageDetail.isMeaningCorrect(meaning);
   }
 }

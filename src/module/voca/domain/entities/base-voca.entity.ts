@@ -1,9 +1,12 @@
-import { PrimaryGeneratedColumn, Column, BaseEntity } from 'typeorm';
+import { Column, ManyToOne } from 'typeorm';
 import { BaseDifficulty } from '../value-objects/base-difficulty';
+import { LanguageCode } from '@/common/enums/language-code.enum';
+import { BaseEntity } from '@/common/entities/base.entity';
+import { VocaCoreEntity } from './voca-core.entity';
 
 export abstract class BaseVocaEntity extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @ManyToOne(() => VocaCoreEntity)
+  vocaId: string;
 
   @Column()
   word: string;
@@ -12,19 +15,11 @@ export abstract class BaseVocaEntity extends BaseEntity {
   meaning: string;
 
   @Column()
-  example: string;
-
-  @Column()
-  example_meaning: string;
-
-  @Column()
-  languageCode: string;
+  languageCode: LanguageCode;
 
   abstract difficulty: BaseDifficulty;
 
-  isMeaningCorrect({ meaning }: { meaning: string }): boolean {
+  isMeaningCorrect(meaning: string): boolean {
     return this.meaning === meaning;
   }
-
-  abstract getFormattedInfo(): string;
 }

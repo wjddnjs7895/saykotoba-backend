@@ -4,18 +4,14 @@ import { DifficultyJp } from '../value-objects/difficulty-jp';
 
 @Entity('voca_jp')
 export class VocaJpEntity extends BaseVocaEntity {
-  @Column()
+  @Column({ nullable: true })
   reading: string;
 
-  @Column()
+  @Column({ nullable: true })
   example_reading: string;
 
   @Column(() => DifficultyJp)
   difficulty: DifficultyJp;
-
-  getFormattedInfo(): string {
-    return `JP: ${this.reading} - ${this.meaning} (Example: ${this.example})`;
-  }
 
   convertKanaToRomaji(): string {
     return `Romaji(${this.reading})`;
