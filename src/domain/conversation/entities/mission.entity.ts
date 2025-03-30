@@ -1,4 +1,4 @@
-import { BaseEntity } from 'src/common/entities/base.entity';
+import { BaseEntity } from '@/common/base/base.entity';
 import { Column, Entity, ManyToOne, JoinColumn } from 'typeorm';
 import { ConversationEntity } from './conversation.entity';
 

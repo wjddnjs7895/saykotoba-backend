@@ -101,6 +101,13 @@ export enum VocaErrorCodeEnum {
   InvalidDifficulty = 'VOC05',
 }
 
+export enum RepositoryErrorCodeEnum {
+  EntityNotFound = 'REPO01',
+  SaveFailed = 'REPO02',
+  DeleteFailed = 'REPO03',
+  UpdateFailed = 'REPO04',
+}
+
 export enum UnexpectedErrorCodeEnum {
   Unexpected = 'UNEX99',
 }

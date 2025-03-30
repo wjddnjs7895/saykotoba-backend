@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 import { ConversationEntity } from './conversation.entity';
-import { BaseEntity } from '@/common/entities/base.entity';
+import { BaseEntity } from '@/common/base/base.entity';
 
 @Entity('feedback')
 export class FeedbackEntity extends BaseEntity {

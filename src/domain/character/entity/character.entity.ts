@@ -1,5 +1,5 @@
 import { CHARACTER_GENDER } from '@/common/constants/character.constants';
-import { BaseEntity } from '@/common/entities/base.entity';
+import { BaseEntity } from '@/common/base/base.entity';
 import { Column, Entity } from 'typeorm';
 
 @Entity('character')

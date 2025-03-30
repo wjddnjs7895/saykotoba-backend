@@ -1,4 +1,4 @@
-import { BaseEntity } from 'src/common/entities/base.entity';
+import { BaseEntity } from '@/common/base/base.entity';
 import { UserEntity } from 'src/domain/user/entities/user.entity';
 import {
   Column,
