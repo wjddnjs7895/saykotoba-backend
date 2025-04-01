@@ -185,4 +185,5 @@ export const RepositoryErrorMessage: RepositoryErrorMessageType = {
   [RepositoryErrorCodeEnum.SaveFailed]: 'Save failed',
   [RepositoryErrorCodeEnum.DeleteFailed]: 'Delete failed',
   [RepositoryErrorCodeEnum.UpdateFailed]: 'Update failed',
+  [RepositoryErrorCodeEnum.RepositoryNotFound]: 'Repository not found',
 };

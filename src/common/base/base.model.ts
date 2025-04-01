@@ -1,16 +1,16 @@
 export abstract class BaseModel {
-  private id: number;
-  private createdAt: Date;
+  private _id: number;
+  private _createdAt: Date;
   constructor({ id, createdAt }: { id: number; createdAt: Date }) {
-    this.id = id;
-    this.createdAt = createdAt;
+    this._id = id;
+    this._createdAt = createdAt;
   }
 
-  getId(): number {
-    return this.id;
+  get id(): number {
+    return this._id;
   }
 
-  getCreatedAt(): Date {
-    return this.createdAt;
+  get createdAt(): Date {
+    return this._createdAt;
   }
 }

@@ -1,6 +1,6 @@
 import { BaseVocaEntity } from './base-voca.entity';
 import { Column, Entity } from 'typeorm';
-import { DifficultyJp } from '../value-objects/difficulty-jp';
+import { DifficultyJp } from '../../domain/value-objects/difficulty-jp';
 
 @Entity('voca_jp')
 export class VocaJpEntity extends BaseVocaEntity {
@@ -12,8 +12,4 @@ export class VocaJpEntity extends BaseVocaEntity {
 
   @Column(() => DifficultyJp)
   difficulty: DifficultyJp;
-
-  convertKanaToRomaji(): string {
-    return `Romaji(${this.reading})`;
-  }
 }

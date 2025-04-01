@@ -1,40 +1,49 @@
 import { Injectable } from '@nestjs/common';
-import { IVocaRepository } from '../../domain/repositories/base-voca.interface';
 import { VocaAggregate } from '../../domain/aggregates/voca.aggregate';
 import { LanguageCode } from '@/common/enums/language-code.enum';
-import { VocaJpRepository } from './voca-jp.repository';
-import { VocaCoreRepository } from './voca-core.repository';
+import { IVocaRepository } from '../../domain/interfaces/voca-repository.interface';
+import { VocaRepositoryStrategyProvider } from '../providers/voca-repository-strategy.provider';
 
 @Injectable()
 export class VocaRepositoryImpl implements IVocaRepository {
-  private entityRepositories: Map<LanguageCode, any>;
-
   constructor(
-    private readonly vocaCoreRepository: VocaCoreRepository,
-    private readonly vocaJpRepository: VocaJpRepository,
-  ) {
-    this.entityRepositories = new Map();
-    this.entityRepositories.set(LanguageCode.JP, vocaJpRepository);
+    private readonly vocaRepositoryStrategyProvider: VocaRepositoryStrategyProvider,
+  ) {}
+
+  async findById({
+    id,
+    languageCode,
+  }: {
+    id: string;
+    languageCode: string;
+  }): Promise<VocaAggregate | null> {
+    const strategy =
+      this.vocaRepositoryStrategyProvider.getStrategy(languageCode);
+    const detail = await strategy.findById(id);
+    if (!detail) {
+      return null;
+    }
+    // Aggregate 구성은 여기서 매퍼를 통해 수행
+    // 예: TestSessionMapper.fromEntity(detail) 같은 방식
+    // 간단히 Aggregate 객체를 생성한다고 가정
+    const aggregate = new VocaAggregate(detail.id, detail.word);
+    aggregate.addLanguageDetail(detail);
+    return aggregate;
   }
 
-  async findById(id: number): Promise<VocaAggregate> {
-    // 데이터베이스에서 VocaEntity 조회
-    const vocaEntity = await this.vocaCoreRepository.findById({ id });
-
-    if (!vocaEntity) return null;
-
-    // VocaAggregate 생성
-    const vocaAggregate = new VocaAggregate(vocaEntity.id, vocaEntity.coreWord);
-
-    // 각 언어별 엔티티 추가
-    vocaEntity.languageDetails.forEach((detail) => {
-      vocaAggregate.addLanguageDetail(detail);
-    });
-
-    return vocaAggregate;
+  async findByWord({ word }: { word: string }): Promise<VocaAggregate[]> {
+    return this.vocaJpRepository.findByWord({ word });
   }
 
-  async save(voca: VocaAggregate): Promise<void> {
+  async findByLanguage({
+    languageCode,
+  }: {
+    languageCode: LanguageCode;
+  }): Promise<VocaAggregate[]> {
+    return this.vocaCoreRepository.findByLanguage({ languageCode });
+  }
+
+  async save({ voca }: { voca: VocaAggregate }): Promise<void> {
     for (const languageCode of voca.getSupportedLanguageCodes()) {
       const entity = voca.getLanguageDetail(languageCode);
       const repo = this.entityRepositories.get(languageCode);
@@ -45,12 +54,11 @@ export class VocaRepositoryImpl implements IVocaRepository {
     }
   }
 
-  async delete(id: string): Promise<void> {
+  async delete({ id }: { id: number }): Promise<void> {
     // 모든 언어에서 엔티티 삭제
     const deletePromises = Array.from(this.entityRepositories.entries()).map(
       ([, repo]) => {
-        const numericId = parseInt(id);
-        return repo.repository.delete(numericId);
+        return repo.repository.delete(id);
       },
     );
     await Promise.all(deletePromises);

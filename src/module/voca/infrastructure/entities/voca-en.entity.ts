@@ -1,6 +1,6 @@
 import { BaseVocaEntity } from './base-voca.entity';
 import { Column, Entity } from 'typeorm';
-import { DifficultyEn } from '../value-objects/difficulty-en';
+import { DifficultyEn } from '../../domain/value-objects/difficulty-en';
 
 @Entity('voca_en')
 export class VocaEnEntity extends BaseVocaEntity {

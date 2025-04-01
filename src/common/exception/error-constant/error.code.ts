@@ -106,6 +106,7 @@ export enum RepositoryErrorCodeEnum {
   SaveFailed = 'REPO02',
   DeleteFailed = 'REPO03',
   UpdateFailed = 'REPO04',
+  RepositoryNotFound = 'REPO05',
 }
 
 export enum UnexpectedErrorCodeEnum {

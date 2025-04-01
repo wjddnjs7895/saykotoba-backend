@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { VocaCoreEntity } from '../../domain/entities/voca-core.entity';
+import { VocaCoreEntity } from '../entities/voca-core.entity';
 
 @Injectable()
 export class VocaCoreRepository {

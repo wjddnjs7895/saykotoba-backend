@@ -42,3 +42,13 @@ export class UpdateFailedException extends CustomBaseException {
     );
   }
 }
+
+export class RepositoryNotFoundException extends CustomBaseException {
+  constructor() {
+    super(
+      RepositoryErrorCodeEnum.RepositoryNotFound,
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      RepositoryErrorMessage[RepositoryErrorCodeEnum.RepositoryNotFound],
+    );
+  }
+}
