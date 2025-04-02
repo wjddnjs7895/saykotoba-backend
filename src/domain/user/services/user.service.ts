@@ -73,6 +73,7 @@ export class UserService {
       solvedConversationIds: user.solvedConversationIds,
       subscriptionStatus: user.subscription.status,
       expiresAt: user.subscription.expiresAt,
+      freeTrialCount: user.freeTrialCount,
     };
   }
 
@@ -235,5 +236,14 @@ export class UserService {
       await manager.softDelete(ClassroomEntity, { user: { id: userId } });
       await manager.softDelete(UserEntity, userId);
     });
+  }
+
+  async hasFreeTrial({ userId }: { userId: number }): Promise<boolean> {
+    const user = await this.userRepository.findOneBy({ id: userId });
+    return user.freeTrialCount > 0;
+  }
+
+  async useFreeTrial({ userId }: { userId: number }): Promise<void> {
+    await this.userRepository.decrement({ id: userId }, 'freeTrialCount', 1);
   }
 }
