@@ -31,6 +31,10 @@ export class CreateUserRequestDto {
   @IsString()
   @IsOptional()
   appleId?: string;
+
+  @IsString()
+  @IsOptional()
+  timezone: string;
 }
 
 export class CreateUserResponseDto {

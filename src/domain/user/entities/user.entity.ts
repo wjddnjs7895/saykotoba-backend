@@ -101,6 +101,12 @@ export class UserEntity extends BaseEntity {
   freeTrialCount: number;
 
   @Column({
+    default: 'UTC',
+    comment: 'User timezone',
+  })
+  timezone: string;
+
+  @Column({
     type: 'enum',
     enum: TIER_MAP,
     default: TIER_MAP.BEGINNER_4,
