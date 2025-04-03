@@ -1,4 +1,4 @@
-import { BaseEntity } from '@/common/entities/base.entity';
+import { BaseEntity } from '@/common/base/base.entity';
 import { Column, Entity, ManyToOne } from 'typeorm';
 import { LectureEntity } from './lecture.entity';
 import { Language } from '@/common/constants/app.constants';

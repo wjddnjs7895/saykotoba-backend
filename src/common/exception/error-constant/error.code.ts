@@ -93,6 +93,22 @@ export enum SubscriptionErrorCodeEnum {
   InvalidGoogleNotification = 'SUBS13',
 }
 
+export enum VocaErrorCodeEnum {
+  VocaNotFound = 'VOC01',
+  VocaSaveFailed = 'VOC02',
+  VocaDeleteFailed = 'VOC03',
+  VocaUpdateFailed = 'VOC04',
+  InvalidDifficulty = 'VOC05',
+}
+
+export enum RepositoryErrorCodeEnum {
+  EntityNotFound = 'REPO01',
+  SaveFailed = 'REPO02',
+  DeleteFailed = 'REPO03',
+  UpdateFailed = 'REPO04',
+  RepositoryNotFound = 'REPO05',
+}
+
 export enum UnexpectedErrorCodeEnum {
   Unexpected = 'UNEX99',
 }

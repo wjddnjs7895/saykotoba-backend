@@ -1,4 +1,4 @@
-import { BaseEntity } from '@/common/entities/base.entity';
+import { BaseEntity } from '@/common/base/base.entity';
 import {
   StoreType,
   SubscriptionStatus,

@@ -1,5 +1,5 @@
 import { StoreType } from '@/common/constants/user.constants';
-import { BaseEntity } from '@/common/entities/base.entity';
+import { BaseEntity } from '@/common/base/base.entity';
 import { Entity, Column } from 'typeorm';
 
 @Entity('pending_webhooks')

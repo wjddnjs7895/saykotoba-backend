@@ -50,9 +50,9 @@ export class OnboardingService {
         user.interests = updateUserOnboardingDto.interestIds.map(
           (id) => ({ id }) as InterestEntity,
         );
+        user.timezone = updateUserOnboardingDto.timezone;
 
         await this.userRepository.save(user);
-        await this.paymentService.startTrial({ userId });
       } catch {
         throw new UserUpdateFailedException();
       }

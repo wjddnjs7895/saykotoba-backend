@@ -6,9 +6,11 @@ import {
   GoogleErrorCodeEnum,
   LectureErrorCodeEnum,
   OpenAIErrorCodeEnum,
+  RepositoryErrorCodeEnum,
   SubscriptionErrorCodeEnum,
   UnexpectedErrorCodeEnum,
   UserErrorCodeEnum,
+  VocaErrorCodeEnum,
 } from './error.code';
 
 type AuthErrorMessageType = {
@@ -49,6 +51,14 @@ type SubscriptionErrorMessageType = {
 
 type OpenAIErrorMessageType = {
   readonly [K in OpenAIErrorCodeEnum]: string;
+};
+
+type VocaErrorMessageType = {
+  readonly [K in VocaErrorCodeEnum]: string;
+};
+
+type RepositoryErrorMessageType = {
+  readonly [K in RepositoryErrorCodeEnum]: string;
 };
 
 export const AuthErrorMessage: AuthErrorMessageType = {
@@ -160,4 +170,20 @@ export const SubscriptionErrorMessage: SubscriptionErrorMessageType = {
 
 export const UnexpectedErrorMessage: UnexpectedErrorMessageType = {
   [UnexpectedErrorCodeEnum.Unexpected]: 'Unexpected error',
+};
+
+export const VocaErrorMessage: VocaErrorMessageType = {
+  [VocaErrorCodeEnum.VocaNotFound]: 'Voca not found',
+  [VocaErrorCodeEnum.VocaSaveFailed]: 'Voca save failed',
+  [VocaErrorCodeEnum.VocaDeleteFailed]: 'Voca delete failed',
+  [VocaErrorCodeEnum.VocaUpdateFailed]: 'Voca update failed',
+  [VocaErrorCodeEnum.InvalidDifficulty]: 'Invalid difficulty',
+};
+
+export const RepositoryErrorMessage: RepositoryErrorMessageType = {
+  [RepositoryErrorCodeEnum.EntityNotFound]: 'Entity not found',
+  [RepositoryErrorCodeEnum.SaveFailed]: 'Save failed',
+  [RepositoryErrorCodeEnum.DeleteFailed]: 'Delete failed',
+  [RepositoryErrorCodeEnum.UpdateFailed]: 'Update failed',
+  [RepositoryErrorCodeEnum.RepositoryNotFound]: 'Repository not found',
 };

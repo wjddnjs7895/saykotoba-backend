@@ -1,4 +1,4 @@
-import { BaseEntity } from 'src/common/entities/base.entity';
+import { BaseEntity } from '@/common/base/base.entity';
 import {
   Column,
   Entity,
@@ -93,6 +93,18 @@ export class UserEntity extends BaseEntity {
     comment: 'Number of conversations the user has solved',
   })
   solvedConversationCount: number;
+
+  @Column({
+    default: 10,
+    comment: 'Number of free trials the user has',
+  })
+  freeTrialCount: number;
+
+  @Column({
+    default: 'UTC',
+    comment: 'User timezone',
+  })
+  timezone: string;
 
   @Column({
     type: 'enum',

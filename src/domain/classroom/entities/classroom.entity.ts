@@ -1,4 +1,4 @@
-import { BaseEntity } from '@/common/entities/base.entity';
+import { BaseEntity } from '@/common/base/base.entity';
 import { UserEntity } from '@/domain/user/entities/user.entity';
 import { Entity, ManyToOne, OneToMany, Column } from 'typeorm';
 import { ClassroomLectureEntity } from './classroom-lecture.entity';
