@@ -17,4 +17,7 @@ export class UpdateUserOnboardingRequestDto {
   @IsArray()
   @IsNumber({}, { each: true })
   interestIds: number[];
+
+  @IsString()
+  timezone: string;
 }
