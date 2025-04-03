@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { VersionCheckRequestDto } from './dtos/check-version.dto';
 import { LogParams } from '@/common/decorators/log-params.decorator';
+import { compare as semverCompare } from 'semver';
 
 @Injectable()
 export class SystemService {
@@ -16,10 +17,14 @@ export class SystemService {
     const forceUpdate = this.configService.get(
       platform === 'ios' ? 'IOS_FORCE_UPDATE' : 'ANDROID_FORCE_UPDATE',
     );
+
+    const needsUpdate = semverCompare(currentVersion, latestVersion) < 0;
+    const isLatest = semverCompare(currentVersion, latestVersion) >= 0;
+
     return {
-      isLatest: latestVersion === currentVersion,
+      isLatest: isLatest,
       latestVersion: latestVersion,
-      forceUpdate: forceUpdate && latestVersion !== currentVersion,
+      forceUpdate: forceUpdate === 'true' && needsUpdate,
       storeUrl:
         platform === 'ios'
           ? this.configService.get('IOS_STORE_URL')
