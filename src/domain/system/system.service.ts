@@ -24,7 +24,7 @@ export class SystemService {
     return {
       isLatest: isLatest,
       latestVersion: latestVersion,
-      forceUpdate: forceUpdate === 'true' && needsUpdate,
+      forceUpdate: forceUpdate && needsUpdate,
       storeUrl:
         platform === 'ios'
           ? this.configService.get('IOS_STORE_URL')
