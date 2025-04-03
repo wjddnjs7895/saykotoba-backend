@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository, InjectDataSource } from '@nestjs/typeorm';
 import { UserEntity } from '../entities/user.entity';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, In } from 'typeorm';
 import {
   CreateUserRequestDto,
   CreateUserResponseDto,
@@ -26,6 +26,7 @@ import { LogParams } from '@/common/decorators/log-params.decorator';
 import { ConversationGroupEntity } from '@/domain/conversation/entities/conversation_group.entity';
 import { ClassroomEntity } from '@/domain/classroom/entities/classroom.entity';
 import { GetUserInfoRespondDto } from '../dtos/get-user-info.dto';
+import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class UserService {
@@ -73,6 +74,7 @@ export class UserService {
       solvedConversationIds: user.solvedConversationIds,
       subscriptionStatus: user.subscription.status,
       expiresAt: user.subscription.expiresAt,
+      freeTrialCount: user.freeTrialCount,
     };
   }
 
@@ -235,5 +237,66 @@ export class UserService {
       await manager.softDelete(ClassroomEntity, { user: { id: userId } });
       await manager.softDelete(UserEntity, userId);
     });
+  }
+
+  async hasFreeTrial({ userId }: { userId: number }): Promise<boolean> {
+    const user = await this.userRepository.findOneBy({ id: userId });
+    return user.freeTrialCount > 0;
+  }
+
+  async useFreeTrial({ userId }: { userId: number }): Promise<void> {
+    await this.userRepository.decrement({ id: userId }, 'freeTrialCount', 1);
+  }
+
+  /**
+   * 현지 시간 기준 자정에 사용자의 무료 체험 횟수를 초기화합니다.
+   * 시간대별로 사용자를 그룹화하여 각 그룹의 현지 시간이 자정일 때 초기화합니다.
+   */
+  @Cron('0,15,30,45 * * * *') // 매 15분마다 실행
+  @LogParams()
+  async resetFreeTrialCountAtMidnight(): Promise<void> {
+    // 모든 사용자와 그들의 시간대 정보를 가져옵니다
+    const users = await this.userRepository.find({
+      select: ['id', 'timezone', 'freeTrialCount'],
+    });
+
+    // 시간대별로 사용자 그룹화
+    const usersByTimezone = users.reduce(
+      (acc, user) => {
+        const timezone = user.timezone || 'UTC'; // 기본값은 UTC
+        if (!acc[timezone]) {
+          acc[timezone] = [];
+        }
+        acc[timezone].push(user);
+        return acc;
+      },
+      {} as Record<string, UserEntity[]>,
+    );
+
+    // 각 시간대별로 현재 시간 확인 및 처리
+    for (const [timezone, timezoneUsers] of Object.entries(usersByTimezone)) {
+      try {
+        // 해당 시간대의 현재 시간 계산
+        const now = new Date();
+        const localTime = new Date(
+          now.toLocaleString('en-US', { timeZone: timezone }),
+        );
+
+        // 현지 시간이 자정(00:00~00:14) 범위인지 확인
+        if (localTime.getHours() === 0 && localTime.getMinutes() < 15) {
+          // 해당 시간대의 사용자들 freeTrialCount 초기화
+          const userIds = timezoneUsers.map((user) => user.id);
+          await this.userRepository.update(
+            { id: In(userIds) },
+            { freeTrialCount: 10 },
+          );
+        }
+      } catch (error) {
+        console.error(
+          `시간대 ${timezone}의 사용자 무료 체험 초기화 중 오류 발생:`,
+          error,
+        );
+      }
+    }
   }
 }

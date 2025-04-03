@@ -61,13 +61,15 @@ export class ConversationController {
   @LogParams()
   async getResponseFromAudio(
     @UploadedFile() audio: Express.Multer.File,
+    @User() user: UserEntity,
     @Body() body: { conversationId: string; speakingRate: string },
   ): Promise<ChatResponseDto> {
-    return this.conversationService.getAndProcessConversationFromAudio(
-      parseInt(body.conversationId, 10),
-      parseFloat(body.speakingRate),
+    return this.conversationService.getAndProcessConversationFromAudio({
+      conversationId: parseInt(body.conversationId, 10),
+      speakingRate: parseFloat(body.speakingRate),
       audio,
-    );
+      userId: user.id,
+    });
   }
 
   @Post('generate-scenario')
@@ -133,7 +135,6 @@ export class ConversationController {
     );
   }
 
-  @RequireSubscription()
   @Post('hint/:conversationId')
   @LogParams()
   async generateHint(
