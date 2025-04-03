@@ -38,4 +38,7 @@ export class GetUserInfoRespondDto {
 
   @IsDate()
   expiresAt: Date;
+
+  @IsNumber()
+  freeTrialCount: number;
 }

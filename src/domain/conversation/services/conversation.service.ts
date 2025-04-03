@@ -301,12 +301,19 @@ export class ConversationService {
   }
 
   @LogParams()
-  async getAndProcessConversationFromAudio(
-    conversationId: number,
-    speakingRate: number,
-    audio: Express.Multer.File,
-  ): Promise<ChatResponseDto> {
+  async getAndProcessConversationFromAudio({
+    conversationId,
+    speakingRate,
+    audio,
+    userId,
+  }: {
+    conversationId: number;
+    speakingRate: number;
+    audio: Express.Multer.File;
+    userId: number;
+  }): Promise<ChatResponseDto> {
     try {
+      await this.userService.useFreeTrial({ userId });
       const response = new ChatResponseDto();
       const userText = await this.openAIService.getTextFromAudio(audio);
 

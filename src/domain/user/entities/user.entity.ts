@@ -95,6 +95,18 @@ export class UserEntity extends BaseEntity {
   solvedConversationCount: number;
 
   @Column({
+    default: 10,
+    comment: 'Number of free trials the user has',
+  })
+  freeTrialCount: number;
+
+  @Column({
+    default: 'UTC',
+    comment: 'User timezone',
+  })
+  timezone: string;
+
+  @Column({
     type: 'enum',
     enum: TIER_MAP,
     default: TIER_MAP.BEGINNER_4,
